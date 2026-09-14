@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "project": { "id": "MeteoHubSensor", "type": "firmware" },
+  "packaging": {
+    "provider": "project",
+    "targets": {
+      "supermini": { "platform": { "os": "esp32s3" }, "build": { "tool": "platformio", "env": "supermini" }, "package": { "format": "bin" } },
+      "c3oled":    { "platform": { "os": "esp32c3" }, "build": { "tool": "platformio", "env": "c3oled" }, "package": { "format": "bin" } }
+    }
+  }
+}
