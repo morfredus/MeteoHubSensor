@@ -20,7 +20,7 @@ public:
     void turnOffLed();
     
     // Passe l'ESP32-S3 en mode veille profonde pour une durée donnée
-    void enterDeepSleep(uint32_t seconds = MEASUREMENT_INTERVAL_SEC);
+    void enterDeepSleep(uint32_t seconds = SENSOR_MEASUREMENT_INTERVAL_SECONDS);
 
 private:
     float _lastVoltage = 0.0f;

@@ -78,12 +78,17 @@ void PowerManager::readBattery(MeteoPacket& packet) {
         _lastPercent = (uint8_t)(((_lastVoltage - BATTERY_VOLTAGE_MIN) / (BATTERY_VOLTAGE_MAX - BATTERY_VOLTAGE_MIN)) * 100.0f);
     }
 
-    // GP4 flottant (pas de pont) donne 0.3 V a 1.5 V : on n'empoisonne pas le hub.
-    if (_lastVoltage < 2.8f || _lastVoltage > 4.5f) {
+    // Garde de plausibilite : rejette une lecture aberrante (pont absent, pin
+    // flottant) SANS masquer une pile reellement faible. On borne donc autour de
+    // la plage de la CARTE (BATTERY_VOLTAGE_MIN/MAX, chimie-dependante) avec une
+    // marge : une pile presque vide (proche de MIN) doit encore etre signalee.
+    constexpr float kGuardMargin = 0.5f;
+    if (_lastVoltage < (BATTERY_VOLTAGE_MIN - kGuardMargin)
+        || _lastVoltage > (BATTERY_VOLTAGE_MAX + kGuardMargin)) {
         packet.battery_voltage = 0.0f;
         packet.battery_percent = 0;
-        Serial.printf("[POWER] Batterie ignoree (%.2f V) : pont absent ou hors plage sur GP4\n",
-                      _lastVoltage);
+        Serial.printf("[POWER] Batterie ignoree (%.2f V) : hors plage carte [%.1f-%.1f V]\n",
+                      _lastVoltage, BATTERY_VOLTAGE_MIN, BATTERY_VOLTAGE_MAX);
         return;
     }
 

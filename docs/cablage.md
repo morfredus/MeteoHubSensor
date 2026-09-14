@@ -1,71 +1,99 @@
-# Schéma de câblage - MeteoHubSensor (ESP32-S3 Super Mini)
+# Câblage et fonctionnement - MeteoHubSensor
 
-Raccordement des capteurs et de l'alimentation sur **ESP32-S3 Super Mini**. Pas d'écran OLED : le statut passe par la LED RGB onboard et le log USB CDC.
+Sonde météo extérieure autonome, reliée à la station **MeteoHub** par **ESP-NOW**.
+Deux cartes sont prises en charge, choisies par l'environnement PlatformIO :
 
-Les GPIO 19/20 sont le USB natif. GPIO 0 est le bouton BOOT (non sorti). GPIO 45 et 46 sont des straps ; GPIO 46 est input-only.
+- **ESP32-C3 HW-675** (`c3oled`) : OLED 0.42" intégré, LED RGB, TX ESP-NOW plafonnée.
+- **ESP32-S3 Super Mini** (`supermini`) : LED RGB seule (pas d'écran, pour réduire la consommation), TX pleine puissance.
+
+Le brochage vit dans `include/board_config.h` (sélectionné par `SENSOR_BOARD_*`) et les
+réglages dans `include/config.h`.
 
 ---
 
-## 1. Brochage utilisé
+## 1. Brochage - ESP32-C3 HW-675
+
+L'écran OLED est câblé d'usine sur le bus I2C GP5/GP6. Les capteurs se greffent sur
+**ce même bus** (I2C est multi-esclave : chaque périphérique a son adresse).
 
 | Broche | GPIO | Usage firmware |
 | :--- | :--- | :--- |
-| **5V** | -- | USB / charge |
+| **3V3** | -- | Alim capteurs + OLED |
+| **GND** | -- | Masse |
+| **GP5** | 5 | I2C **SDA** (OLED 0x3C + AHT20 0x38 + BMP280 0x76/0x77) |
+| **GP6** | 6 | I2C **SCL** |
+| **GP8** | 8 | LED RGB **WS2812B** (interne HW-675) |
+| **GP9** | 9 | Bouton **BOOT** |
+| **GP4** | 4 | ADC batterie (pont 100k/100k) |
+| **GP10** | 10 | Anémomètre (réserve) |
+| **GP3** | 3 | Girouette ADC (réserve) |
+| **GP7** | 7 | Pluviomètre (réserve) |
+| **GP2** | 2 | ADC auxiliaire (réserve) |
+| **GP0 / GP1** | 0 / 1 | Libres |
+
+- Écran **OLED 0.42" SSD1306 72x40** intégré (adresse I2C 0x3C).
+- La liaison ESP-NOW C3 → hub S3 exige une **TX plafonnée** : à pleine puissance elle
+  est instable (constat matériel). Le niveau vit dans `config.h`
+  (`SENSOR_TX_POWER_LEVEL`), le C3 le demande via `SENSOR_NEEDS_TX_LIMIT`.
+
+---
+
+## 2. Brochage - ESP32-S3 Super Mini
+
+USB natif sur GPIO 19/20. BOOT sur GPIO 0. Straps 45/46 (GP46 input-only).
+
+| Broche | GPIO | Usage firmware |
+| :--- | :--- | :--- |
 | **3V3** | -- | Alim capteurs I2C |
 | **GND** | -- | Masse |
-| **GP8** | **8** | `PIN_SENSOR_SDA` - fil SDA AHT/BMP |
-| **GP9** | **9** | `PIN_SENSOR_SCL` - fil SCL AHT/BMP |
-| **GP48** | **48** | LED RGB WS2812 onboard |
-| **GP4** | **4** | ADC batterie (pont 100k/100k) |
-| **GP1** | **1** | Anémomètre (reed, réserve) |
-| **GP2** | **2** | Girouette ADC (réserve) |
-| **GP7** | **7** | Pluviomètre reed (réserve) |
-| **GP10** | **10** | ADC auxiliaire (réserve) |
+| **GP8** | 8 | I2C **SDA** (AHT20 / BMP280) |
+| **GP9** | 9 | I2C **SCL** |
+| **GP48** | 48 | LED RGB **WS2812** onboard (pas GP46) |
+| **GP0** | 0 | Bouton **BOOT** |
+| **GP4** | 4 | ADC batterie (pont 100k/100k) |
+| **GP1** | 1 | Anémomètre (réserve) |
+| **GP2** | 2 | Girouette ADC (réserve) |
+| **GP7** | 7 | Pluviomètre (réserve) |
+| **GP10** | 10 | ADC auxiliaire (réserve) |
+| **GP5 / GP6** | 5 / 6 | Libres |
 
-Le pinout constructeur annote parfois **DIN WS2812 = GP46**. Sur ESP32-S3, GPIO 46 ne peut pas piloter une LED. Le firmware utilise **GPIO 48**. Si la LED reste éteinte après flash, tester GPIO 47 (certaines clones Lolin).
-
-```
-Face USB (haut du pinout)
-                +---------------+
-                |     USB-C     |
-                +------| |------+
-         5V  --| TX         RX |-- GND
-        3V3  --|               |-- 5V3 OUT
-   (ADC) GP1 --|               |-- GP13
-         GP2 --|               |-- GP12
-         GP3 --|   Super Mini  |-- GP11
-   (BAT) GP4 --|               |-- GP10  (aux ADC)
-   (libre) GP5 --|              |-- GP9   (SCL)
-   (libre) GP6 --|              |-- GP8   (SDA)
-   (pluie) GP7 --|             |
-                +---------------+
-LED RGB onboard = GPIO 48 (pas GP46)
-```
+- **Pas d'écran** : le statut passe par la LED RGB et le log USB CDC.
+- TX ESP-NOW **pleine puissance** (liaison stable).
+- La LED RGB onboard est sur **GPIO 48**. Le pinout constructeur annote parfois
+  DIN WS2812 = GP46 : sur ESP32-S3, GP46 ne peut pas la piloter. Si la LED reste
+  éteinte après flash, tester GPIO 47 (certains clones Lolin).
 
 ---
 
-## 2. Capteurs I2C
+## 3. Capteurs I2C (commun aux deux cartes)
 
 ```
-ESP32-S3 Super Mini      Capteur AHT20 / BMP280
-┌──────────┐             ┌─────────────────────┐
-│      3V3 ├────────────►│ VCC (3.3V)          │
-│      GND ├────────────►│ GND                 │
-│ GP8 SDA  ├────────────►│ SDA                 │
-│ GP9 SCL  ├────────────►│ SCL                 │
-└──────────┘             └─────────────────────┘
+Carte                     Capteur AHT20 / BMP280
+┌──────────┐              ┌─────────────────────┐
+│      3V3 ├─────────────►│ VCC (3.3V)          │
+│      GND ├─────────────►│ GND                 │
+│  SDA     ├─────────────►│ SDA                 │
+│  SCL     ├─────────────►│ SCL                 │
+└──────────┘              └─────────────────────┘
 ```
 
-Pull-up I2C : beaucoup de modules AHT/BMP les ont déjà. Sinon 4.7 kΩ vers 3V3.
+- SDA/SCL : **GP5/GP6** sur le C3, **GP8/GP9** sur le S3.
+- Adresses : AHT20 = 0x38, BMP280/BME280 = 0x76 ou 0x77, OLED (C3) = 0x3C.
+- Pull-up I2C : la plupart des modules AHT/BMP les intègrent ; sinon 4,7 kΩ vers 3V3.
 
 ---
 
-## 3. Tension batterie sur GP4
+## 4. Alimentation batterie
 
-Pont 100 kΩ / 100 kΩ (ratio 2.0 dans `config.h`). GPIO 0 n'est pas utilisé : c'est BOOT.
+L'alimentation et la **mesure de batterie dépendent de la carte** (`board_config.h`) :
+la plage 0 % / 100 % (`BATTERY_VOLTAGE_MIN` / `MAX`) suit la chimie, et le ratio du
+pont (`BATTERY_DIVIDER_RATIO`, commun) vaut 2,0 pour un pont 100 kΩ / 100 kΩ.
+
+**ESP32-C3 HW-675 : 2 piles alcalines 1,5 V** (~3,0 V nominal), tension lue sur GP4
+via un pont 100 kΩ / 100 kΩ.
 
 ```
-             BAT+ (3.0V - 4.2V)
+             BAT+ (2 x 1,5 V ~ 2,0 à 3,2 V)
                │
               ┌┴┐
               │ │ R1 (100 kΩ)
@@ -78,8 +106,50 @@ Pont 100 kΩ / 100 kΩ (ratio 2.0 dans `config.h`). GPIO 0 n'est pas utilisé : 
              BAT- / GND
 ```
 
-Sans pont sur GP4, le firmware ignore la lecture (broche flottante).
+- Plage alcaline **2,0 V → 3,2 V** : ~3,2 V ≈ 100 %, ~3,0 V ≈ 83 %, ~2,0 V ≈ 0 %.
+- Le pourcentage et la tension sont transmis dans le paquet ESP-NOW ; MeteoHub lève une
+  **alerte pile faible** sous son seuil.
 
-Le pad BATTERY+ / BATTERY- de la carte alimente le chargeur. Le pont ADC est un circuit séparé si on veut le pourcentage dans le paquet.
+**ESP32-S3 Super Mini : module Breadvolt + accu Li-ion 14500** (3,7 V, 500 mAh). Le
+module sort un **3,3 V régulé** vers la carte et **gère lui-même l'accu** (protection
+décharge 2,4 V, charge 4,28 V, LEDs CHG/PWR).
 
-Ne pas activer le mode BOOST (100 mA -> 300 mA) si l'accu fait moins de 500 mAh.
+- La carte ne voit que le 3,3 V régulé (constant) : GP4 **ne peut pas mesurer la
+  cellule**. La mesure batterie est donc **désactivée** (`PIN_BATTERY_ADC = -1`) : pas
+  de pourcentage figé ni de fausse alerte. Quand l'accu se vide, la protection coupe et
+  la sonde s'arrête (MeteoHub voit **OUT absent**) ; l'état de charge se lit sur les
+  LEDs du module.
+- Pour retrouver le % : tirer un fil du **+ accu** (avant régulation) vers GP4 via un
+  pont 100 kΩ / 100 kΩ, et remettre `PIN_BATTERY_ADC = 4` (la plage Li-ion 3,0-4,2 V
+  est déjà prête dans `board_config.h`).
+
+---
+
+## 5. LED de statut (WS2812 / NeoPixel)
+
+Les deux cartes portent **une LED RGB adressable WS2812** (NeoPixel), pas une simple
+LED. Le firmware l'utilise comme **témoin d'activité et de résultat d'émission**, en
+luminosité douce (pour ne pas éblouir de nuit ni trop consommer). Il n'y a **pas
+d'écran sur le S3** : cette LED est le seul retour visuel local.
+
+| Couleur | Quand | Signification |
+| :--- | :--- | :--- |
+| 🔵 **Bleu** | Au démarrage, puis pendant **chaque acquisition** de mesure | « Je travaille » : lecture des capteurs et préparation de la trame en cours |
+| 🟢 **Vert** (bref) | Juste après l'envoi ESP-NOW, si l'émission a réussi | La trame **est partie** de la radio |
+| 🔴 **Rouge** (bref) | Juste après l'envoi ESP-NOW, si l'émission a échoué | La trame **n'a pas pu être émise** |
+| 🔴 **Rouge fixe** | Au boot, si l'init ESP-NOW échoue | Radio ESP-NOW indisponible (défaut au démarrage) |
+| ⚫ **Éteinte** | Au repos entre deux mesures (et avant la mise en veille) | Rien à signaler / cycle terminé |
+
+Précisions importantes :
+
+- **Vert = trame émise, pas trame reçue.** En ESP-NOW **broadcast**, il n'y a pas d'accusé
+  de réception du hub : le vert confirme que la radio a bien envoyé la trame, pas que
+  MeteoHub l'a reçue. Pour vérifier la réception réelle, regarder les compteurs `rx/ok`
+  côté hub (page Net. / logs).
+- Le clignotement vert/rouge est **court** (~60 ms) : à chaque cycle de mesure
+  (~30 s par défaut), on voit un bref éclat, puis la LED s'éteint.
+- En **mode veille profonde** (si activé), la LED est éteinte avant le sommeil pour ne
+  rien consommer ; chaque réveil rejoue la séquence bleu → vert/rouge.
+
+Le pilotage est dans `src/modules/power_manager.cpp` (`setLedColor`, `blinkStatus`,
+`turnOffLed`), déclenché depuis `src/main.cpp`.

@@ -78,8 +78,8 @@ void DisplayManager::showReading(const MeteoPacket& packet, bool txOk, uint8_t c
     else
         snprintf(pStr, sizeof(pStr), "P ---- hPa");
     if (packet.valid_fields & FIELD_BATTERY)
-        snprintf(statusStr, sizeof(statusStr), "ch%u  %s  bat%u%%", channel,
-                 txOk ? "TX OK" : "TX XX", packet.battery_percent);
+        snprintf(statusStr, sizeof(statusStr), "ch%u %s %.2fV %u%%", channel,
+                 txOk ? "TX OK" : "TX XX", packet.battery_voltage, packet.battery_percent);
     else
         snprintf(statusStr, sizeof(statusStr), "ch%u  %s", channel,
                  txOk ? "TX OK" : "TX XX");
@@ -98,10 +98,10 @@ void DisplayManager::showReading(const MeteoPacket& packet, bool txOk, uint8_t c
 #else
     // 72x40 : disposition compacte, une grandeur par ligne. La ligne d'etat
     // complete deborderait sur 72 px : on la reduit ici.
-    char statusSmall[16];
+    char statusSmall[20];
     if (packet.valid_fields & FIELD_BATTERY)
-        snprintf(statusSmall, sizeof(statusSmall), "c%u %s b%u", channel,
-                 txOk ? "OK" : "XX", packet.battery_percent);
+        snprintf(statusSmall, sizeof(statusSmall), "c%u %s %.1fV", channel,
+                 txOk ? "OK" : "XX", packet.battery_voltage);
     else
         snprintf(statusSmall, sizeof(statusSmall), "c%u %s", channel,
                  txOk ? "OK" : "XX");

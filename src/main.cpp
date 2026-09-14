@@ -15,6 +15,12 @@ static DisplayManager displayManager; // ecran sur HW-675, no-op sur S3
 
 // Compteur de cycles d'exécution
 static uint32_t lastMeasurementTime = 0;
+static uint32_t lastChannelCheck = 0;
+
+// Dernier état batterie connu (pour sauter la revérification de canal quand la
+// pile est presque vide : ne pas gaspiller le peu qui reste en scans Wi-Fi).
+static bool g_lastBatteryValid = false;
+static uint8_t g_lastBatteryPct = 100;
 
 void performMeasurementAndSend() {
     Serial.println("\n----------------------------------------");
@@ -29,6 +35,8 @@ void performMeasurementAndSend() {
 
     sensorManager.readAll(packet);
     powerManager.readBattery(packet);
+    g_lastBatteryValid = (packet.valid_fields & FIELD_BATTERY) != 0;
+    g_lastBatteryPct = packet.battery_percent;
 
     bool success = espNowSender.send(packet);
 
@@ -107,16 +115,32 @@ void setup() {
 
     if (ENABLE_DEEP_SLEEP) {
         delay(200);
-        powerManager.enterDeepSleep(MEASUREMENT_INTERVAL_SEC);
+        powerManager.enterDeepSleep(SENSOR_MEASUREMENT_INTERVAL_SECONDS);
     }
 }
 
 void loop() {
     if (!ENABLE_DEEP_SLEEP) {
         uint32_t now = millis();
-        if (now - lastMeasurementTime >= (MEASUREMENT_INTERVAL_SEC * 1000UL)) {
+        if (now - lastMeasurementTime >= (SENSOR_MEASUREMENT_INTERVAL_SECONDS * 1000UL)) {
             lastMeasurementTime = now;
             performMeasurementAndSend();
+        }
+
+        // Revérification périodique du canal : le hub peut migrer de canal. On
+        // rescanne « MH-NOW » et on bascule si besoin. On saute si la pile est
+        // presque vide (un scan coûte, et un silence dû à la pile n'est pas un
+        // problème de canal). En mode deep sleep, chaque réveil rescanne via
+        // begin(), donc cette boucle ne concerne que le mode continu.
+        if (now - lastChannelCheck >= (ESPNOW_CHANNEL_RECHECK_SEC * 1000UL)) {
+            lastChannelCheck = now;
+            const bool batteryCritical =
+                g_lastBatteryValid && g_lastBatteryPct < ESPNOW_RESCAN_SKIP_BELOW_PCT;
+            if (batteryCritical) {
+                Serial.println("[MAIN] Revérif canal sautée (batterie critique)");
+            } else {
+                espNowSender.refreshChannel();
+            }
         }
         delay(10);
     }

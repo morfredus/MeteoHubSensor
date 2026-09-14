@@ -43,9 +43,12 @@ constexpr uint8_t NUM_PIXELS = 1;
 // Bouton BOOT / flash (GP9).
 constexpr uint8_t PIN_BOOT_BUTTON = 9;
 
-// Batterie : GP4 (ADC1_CH4) libre. Ignoree par PowerManager si aucun pont n'est
-// cable (lecture hors plage filtree).
+// Batterie sur GP4 (ADC1_CH4) via pont diviseur. Alimentation : 2 piles alcalines
+// 1,5 V en serie. Neuves ~3,2 V (2x1,6), nominal 3,0 V, considerees vides vers
+// ~2,0 V (2x1,0). Une echelle Li-ion (3,3-4,2) classerait ces 3,0 V a 0 %.
 constexpr uint8_t PIN_BATTERY_ADC = 4;
+constexpr float BATTERY_VOLTAGE_MIN = 2.0f; // 0 %  (2 x ~1,0 V)
+constexpr float BATTERY_VOLTAGE_MAX = 3.2f; // 100 % (2 x ~1,6 V neuves)
 
 // --- Reserves meteo (GPIO libres de la HW-675) ---
 constexpr uint8_t PIN_ANEMOMETER_PULSE = 10; // GP10 (numerique)
@@ -61,10 +64,11 @@ constexpr uint8_t PIN_FREE_GP1 = 1;
 // Adresse I2C de l'ecran (SSD1306 par defaut).
 constexpr uint8_t OLED_I2C_ADDRESS = 0x3C;
 
-// Le C3 Super Mini / HW-675 exige une puissance TX ESP-NOW reduite pour
+// Le C3 Super Mini / HW-675 demande une puissance TX ESP-NOW plafonnee pour
 // communiquer de facon stable avec le MeteoHub S3 : a pleine puissance, la
-// liaison echoue (constat materiel valide par test, cf. CHANGELOG). Voir
-// EspNowSender::begin().
+// liaison echoue (constat materiel, cf. CHANGELOG). Voir EspNowSender::begin().
+// C'est un TRAIT DE CARTE (ce brochage/cette radio le demande) ; la VALEUR du
+// plafond, elle, est un reglage et vit dans config.h (SENSOR_TX_POWER_LEVEL).
 #define SENSOR_NEEDS_TX_LIMIT 1
 
 #else
@@ -88,8 +92,18 @@ constexpr uint8_t NUM_PIXELS = 1;
 // Bouton BOOT.
 constexpr uint8_t PIN_BOOT_BUTTON = 0;
 
-// Batterie : pont 100k/100k sur GP4 (ADC1).
-constexpr uint8_t PIN_BATTERY_ADC = 4;
+// Alimentation : module Breadvolt + accu Li-ion 14500 (3,7 V, 500 mAh). Le
+// module fournit un 3,3 V REGULE a la carte et gere lui-meme l'accu (protection
+// decharge 2,4 V / charge 4,28 V, LEDs CHG/PWR). GP4 ne verrait donc que ce 3,3 V
+// regule (constant) : il ne peut PAS mesurer la cellule -> mesure batterie
+// DESACTIVEE (PIN_BATTERY_ADC = -1), pas de pourcentage figé ni de fausse alerte.
+// Quand l'accu se vide, la protection coupe et la sonde s'arrete (MeteoHub voit
+// OUT absent). Pour retrouver le %, tirer un fil du + accu vers GP4 (pont 100k/
+// 100k) et remettre PIN_BATTERY_ADC = 4 ci-dessous ; la plage Li-ion 3,0-4,2 est
+// deja prete.
+constexpr int8_t PIN_BATTERY_ADC = -1;
+constexpr float BATTERY_VOLTAGE_MIN = 3.0f; // 0 %  (Li-ion 14500, seuil bas utile)
+constexpr float BATTERY_VOLTAGE_MAX = 4.2f; // 100 % (Li-ion pleine charge)
 
 // --- Reserves meteo ---
 constexpr uint8_t PIN_ANEMOMETER_PULSE = 1;
@@ -99,14 +113,21 @@ constexpr uint8_t PIN_AUX_ADC = 10;
 constexpr uint8_t PIN_FREE_GP5 = 5;
 constexpr uint8_t PIN_FREE_GP6 = 6;
 
-// Ecran externe 0.96" (SSD1306 128x64) cable sur le meme bus I2C que les
-// capteurs (GP8 SDA / GP9 SCL). Adresse 0x3C, ne gene pas AHT20 (0x38) /
-// BMP280 (0x76/0x77).
-#define SENSOR_HAS_OLED 1
-#define SENSOR_OLED_128X64 1
-constexpr uint8_t OLED_I2C_ADDRESS = 0x3C;
+// Pas d'ecran gere sur le S3 : le statut passe par la LED RGB seule. L'OLED
+// n'est volontairement PAS piloté ici pour reduire la consommation (un ecran
+// jamais allume reste dans son etat reset basse conso). Le C3, lui, garde son
+// ecran integre. Pour reactiver un ecran sur le S3 : redefinir SENSOR_HAS_OLED
+// et SENSOR_OLED_128X64 + OLED_I2C_ADDRESS ici.
 
-// Pas de plafond TX sur le S3 (liaison ESP-NOW stable a pleine puissance).
+// Plafond TX ESP-NOW AUSSI sur le S3 (2026-09-14). Preuve terrain (logs USB,
+// firmware 0.13.0 unicast) : a pleine puissance, le S3 emet mais le hub ne
+// renvoie PAS d'ACK (NACK a tous les essais), tandis que le C3 plafonne a
+// 8,5 dBm est livre du 1er coup sur le meme canal, meme MAC hub. L'antenne PCB du
+// S3 Super Mini est mal adaptee : trop de puissance = signal trop degrade pour
+// etre acquitte. On plafonne donc, valeur reglee dans config.h
+// (SENSOR_TX_POWER_LEVEL). A remonter progressivement (menu config.h) pour
+// retrouver le maximum de portee qui reste stable.
+#define SENSOR_NEEDS_TX_LIMIT 1
 
 #endif
 

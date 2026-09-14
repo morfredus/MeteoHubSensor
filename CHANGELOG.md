@@ -5,6 +5,200 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.0] - 2026-09-14
+
+### Changed
+
+- **Per-board TX power.** The two PCB antennas do not behave alike, so the level is
+  now set per board in config.h (guarded by `SENSOR_BOARD_*`), each with its own
+  commented menu: **S3 = 11 dBm**, **C3 = 8.5 dBm** (both proven delivered on
+  field logs; the S3 at full power got no ACK at all).
+- **Deep sleep re-enabled** (`ENABLE_DEEP_SLEEP = true`) now that the unicast link
+  is confirmed on battery, outdoors. Continuous mode drains the 14500 in hours;
+  deep sleep is the autonomous mode. The unicast chain already handles the wake
+  path (waits for the ACK before sleeping, keeps the channel in RTC), and the
+  on-failure channel re-scan covers a hub channel migration between wakes.
+
+## [0.13.1] - 2026-09-14
+
+### Fixed
+
+- **S3 delivered nothing to the hub** (unicast NACK on every attempt) while the C3
+  was delivered first try on the same channel and hub MAC. USB serial logs proved
+  the frame left the S3 but the hub sent no ACK, at full TX power only. Root cause:
+  the ESP32-S3 Super Mini's onboard PCB antenna is poorly matched, so full power
+  degrades the signal past the point the hub can acknowledge it. **TX power is now
+  capped on the S3 too** (`SENSOR_NEEDS_TX_LIMIT` in board_config.h), using the
+  same `SENSOR_TX_POWER_LEVEL` knob as the C3 (8.5 dBm, proven-good). Raise it via
+  the config.h menu to recover range while it stays delivered.
+
+## [0.13.0] - 2026-09-14
+
+### Changed
+
+- **Transmission rewritten to unicast** (clean rebuild of the whole chain). The
+  sonde now sends ESP-NOW **unicast to the hub MAC** (`ESPNOW_RECEIVER_MAC`)
+  instead of broadcast. This gets the hub's 802.11 hardware ACK and MAC-layer
+  retransmission, far more reliable outdoors — and makes `onDataSent` a *real*
+  delivery signal: `SUCCESS` now means the hub acknowledged the frame. In
+  broadcast mode the callback always returned success, so the sonde blinked green
+  ("sent") while the hub received nothing.
+- **Self-healing channel on send failure**: if a send gets no ACK after several
+  attempts, the sonde re-scans the hub's SoftAP (`MH-NOW`), switches channel and
+  retries within the same cycle, instead of emitting into the void until the next
+  periodic recheck. Fixes the "chaotic at 300 s interval" behaviour (a channel
+  migration between sparse sends was silently dropping whole samples).
+
+### Notes
+
+- The green status LED now means **delivered (ACK received)**, red means **not
+  delivered**. Requires that `ESPNOW_RECEIVER_MAC` is exactly the hub's **STA**
+  MAC (shown on the hub's Net page / serial `sta=` line).
+
+## [0.12.2] - 2026-09-14
+
+### Changed
+
+- **Deep sleep temporarily disabled** (`ENABLE_DEEP_SLEEP = false`) to isolate a
+  battery-only reception issue: on USB the hub receives every cycle, on the 14500
+  cell nothing reaches it. In continuous mode the radio stays initialised and the
+  cold-start current spikes of each wake are avoided; if data then flows on
+  battery, the fault is specific to the deep-sleep wake path (likely a brownout on
+  the wake Wi-Fi burst). Field diagnostic step, to be re-enabled once resolved.
+
+## [0.12.1] - 2026-09-14
+
+### Fixed
+
+- No data reaching MeteoHub in deep-sleep mode (sonde sent "ok" but the hub
+  received nothing). Two deep-sleep pitfalls:
+  - **TX not completing before sleep**: `esp_now_send` (broadcast) only queues the
+    frame; the radio then slept before it was transmitted. Now the sonde waits for
+    the send callback (`onDataSent`, up to `ACK_WAIT_MS`) before returning.
+  - **Fallback channel poisoning the RTC cache**: a failed first scan cached the
+    default channel (6) in RTC, so every wake emitted on the wrong channel. The
+    RTC cache is now updated only on a *confirmed* scan; a failed scan is a
+    one-shot fallback and the next wake re-scans.
+
+## [0.12.0] - 2026-09-14
+
+### Added
+
+- **Deep sleep enabled** (`ENABLE_DEEP_SLEEP = true`): wake → measure → send →
+  deep sleep, every `SENSOR_MEASUREMENT_INTERVAL_SECONDS` (5 min). Fits the small
+  14500 cell — continuous mode drained it in hours.
+- **Channel kept in RTC memory** across sleeps and reused on wake, so the ~2 s
+  Wi-Fi scan is not paid on every wake. It is still re-scanned periodically
+  (`ESPNOW_RESCAN_EVERY_N_WAKES`, ~1 h at 5 min) to catch a hub channel change;
+  `applyChannel` updates the RTC cache so any switch persists across sleeps.
+
+## [0.11.0] - 2026-09-14
+
+### Changed
+
+- S3 Super Mini power is now a **Breadvolt module + 14500 Li-ion** (3.7 V,
+  500 mAh) delivering a **regulated 3.3 V**. Since the board only sees the
+  regulated rail (not the cell), **battery sensing is disabled on the S3**
+  (`PIN_BATTERY_ADC = -1`): no false static percentage or low-battery alert. The
+  module handles protection (2.4 V cutoff / 4.28 V) and shows charge via its
+  CHG/PWR LEDs; when the cell empties the sonde simply stops (MeteoHub shows OUT
+  absent). The Li-ion range (3.0-4.2 V) is kept for the case where the raw cell
+  is tapped to GP4. The C3 is unchanged (alkaline).
+
+## [0.10.0] - 2026-09-14
+
+### Changed
+
+- Measurement cadence is now `SENSOR_MEASUREMENT_INTERVAL_SECONDS` in config.h,
+  **default 300 s (5 min)** instead of 30 s — weather changes slowly, and 30 s
+  over-samples. Single source of truth (drives the continuous loop and the future
+  deep-sleep cycle), easy to change for tests (30 / 120 / 300 / 600). The indoor
+  side (MeteoHub) uses the same cadence so IN and OUT history stay homogeneous.
+
+## [0.9.2] - 2026-09-14
+
+### Docs
+
+- Rewrite `docs/cablage.md` for both boards (C3 HW-675 and S3 Super Mini): full
+  pinout tables, shared I2C sensors, alkaline battery wiring/range, and a
+  dedicated status-LED (WS2812/NeoPixel) section explaining when it lights, why,
+  and what each colour means (blue = working, green = frame sent, red = send
+  failure, off = idle), including the broadcast "sent ≠ received" nuance.
+
+## [0.9.1] - 2026-09-13
+
+### Fixed
+
+- S3 Super Mini battery range set to 2x alkaline (2.0-3.2 V) like the C3 (was
+  Li-ion): both boards run on alkaline cells for now. A 0 % at 3.26 V seen
+  earlier was on USB power (no cell on the divider), not a real reading.
+
+## [0.9.0] - 2026-09-13
+
+### Added
+
+- **Adaptive ESP-NOW channel.** The hub follows the Livebox channel (not fixed),
+  so the sensor now discovers it by scanning the hub's "MH-NOW" SoftAP beacon at
+  startup (falling back to `ESPNOW_HUB_CHANNEL` if not found). In continuous mode
+  it re-scans every `ESPNOW_CHANNEL_RECHECK_SEC` (5 min) and switches if the
+  channel changed; the re-scan is skipped when the battery is below
+  `ESPNOW_RESCAN_SKIP_BELOW_PCT` (a Wi-Fi scan costs power, and a battery-caused
+  silence is not a channel problem). Deep-sleep wake re-scans via begin(). The
+  broadcast peer now uses channel 0 (follows the radio), so switching channel
+  needs no peer re-registration.
+
+## [0.8.0] - 2026-09-13
+
+### Changed
+
+- Drop OLED management on the ESP32-S3 Super Mini to lower power consumption:
+  `SENSOR_HAS_OLED` is no longer defined for the S3, so `DisplayManager` is a
+  no-op and the screen is never powered on (it stays in its low-power reset
+  state). U8g2 is dropped from the S3 build. The S3 is LED-only again; the C3
+  keeps its integrated OLED.
+
+## [0.7.3] - 2026-09-13
+
+### Fixed
+
+- C3 battery range corrected to **2x alkaline 1.5 V** (2.0-3.2 V), not LiFePO4:
+  0.7.2 mislabelled the chemistry, so a nominal 3.0 V pack still read ~14 %. Now
+  ~3.0 V reads ~83 %.
+- The battery plausibility guard is now derived from the board's voltage range
+  (±0.5 V) instead of a hard-coded Li-ion window, so a genuinely low pack (down
+  toward MIN) is still reported instead of being dropped as "no divider".
+
+## [0.7.2] - 2026-09-13
+
+### Fixed
+
+- Battery percentage used a Li-ion scale (3.3-4.2 V) for every board. The C3 runs
+  on LiFePO4 (~2.9-3.6 V, ~3.3 V nominal), so a healthy cell read as 0 % and made
+  MeteoHub raise a false low-battery alert. The 0 %/100 % voltage range is now
+  per board in board_config.h: C3 = LiFePO4 (2.9-3.6 V), S3 = Li-ion (3.3-4.2 V).
+  The divider ratio stays shared (same wiring).
+
+## [0.7.1] - 2026-09-13
+
+### Changed
+
+- Move the ESP-NOW TX power level (`SENSOR_TX_POWER_LEVEL`) from board_config.h
+  to config.h: it is a tunable setting, not board wiring. board_config.h keeps
+  only the board trait `SENSOR_NEEDS_TX_LIMIT`.
+
+## [0.7.0] - 2026-09-13
+
+### Changed
+
+- C3 ESP-NOW TX cap is now configurable via `SENSOR_TX_POWER_LEVEL`
+  (board_config.h). Under test at **15 dBm** (was 8.5 dBm) for better range with
+  the MeteoHub S3; easy to revert if the link degrades.
+
+### Added
+
+- OLED status line now shows the battery **voltage** (e.g. `3.95V`) alongside
+  the percentage (72x40 shows voltage compactly).
+
 ## [0.6.1] - 2026-09-13
 
 ### Added

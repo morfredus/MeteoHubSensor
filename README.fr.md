@@ -1,10 +1,10 @@
 # MeteoHubSensor
 
-[![Version](https://img.shields.io/badge/version-0.6.1-blue.svg)](VERSION)
+[![Version](https://img.shields.io/badge/version-0.14.0-blue.svg)](VERSION)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Platform: ESP32-S3 / C3](https://img.shields.io/badge/Platform-ESP32--S3%20%2F%20C3-orange.svg)](https://www.espressif.com/)
 
-Sonde météo extérieure autonome, en liaison **ESP-NOW** avec la station **MeteoHub**. Deux cartes possibles : **ESP32-S3 Super Mini** (LED RGB + OLED 0.96" externe) ou **ESP32-C3 HW-675** (OLED 0.42" intégré).
+Sonde météo extérieure autonome, en liaison **ESP-NOW** avec la station **MeteoHub**. Deux cartes possibles : **ESP32-S3 Super Mini** (LED RGB, sans écran) ou **ESP32-C3 HW-675** (OLED 0.42" intégré).
 
 ---
 
@@ -47,10 +47,9 @@ Le brochage de chaque carte vit dans `include/board_config.h`, sélectionné par
 le define `SENSOR_BOARD_*` posé par l'environnement PlatformIO.
 
 **ESP32-S3 Super Mini** (env `supermini`)
-- 4 Mo flash, **sans PSRAM**, USB CDC natif.
-- **OLED 0.96" (SSD1306 128x64) externe** sur l'I2C, affiche le dernier relevé.
+- 4 Mo flash, **sans PSRAM**, USB CDC natif. **Pas d'écran** (OLED non piloté, pour réduire la consommation).
 - Statut = LED RGB GPIO 48 (bleu acquisition, vert OK, rouge erreur).
-- **I2C** : SDA = GP8, SCL = GP9 (bus partagé OLED + capteurs). Batterie (option) : pont 100k/100k sur GP4.
+- **I2C** : SDA = GP8, SCL = GP9. Batterie : Li-ion, pont 100k/100k sur GP4.
 
 **ESP32-C3 HW-675** (env `c3oled`)
 - 4 Mo flash. **OLED 0.42" (SSD1306 72x40) intégré**, affiche le dernier relevé.
@@ -65,8 +64,8 @@ le define `SENSOR_BOARD_*` posé par l'environnement PlatformIO.
 ## 4. LED RGB
 
 - **Bleu** : boot et acquisition.
-- **Vert** : ESP-NOW OK.
-- **Rouge** : échec d'émission.
+- **Vert** : livraison confirmée (le hub a accusé réception, ACK unicast).
+- **Rouge** : non livré (pas d'ACK du hub).
 
 ---
 
