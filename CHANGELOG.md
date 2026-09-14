@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.2] - 2026-09-15
+
+### Changed
+
+- **Battery fine-calibration factor is now per board.** `BATTERY_VREF_CALIBRATION`
+  moved from `config.h` (shared) to `board_config.h` (per board): it corrects the
+  ADC eFuse of a specific chip and the actual resistor tolerance, which differ
+  between the C3 and the S3. The divider ratio (2.0) stays common. The C3 factor
+  is set to 1.0098 (measured 2026-09-15: multimeter 4.11 V vs 4.070 V read, ~1 %);
+  the S3 keeps 1.0 pending a measurement on the S3 itself.
+
 ## [0.15.1] - 2026-09-15
 
 ### Changed

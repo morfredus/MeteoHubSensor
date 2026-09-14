@@ -49,6 +49,10 @@ constexpr uint8_t PIN_BOOT_BUTTON = 9;
 constexpr uint8_t PIN_BATTERY_ADC = 4;
 constexpr float BATTERY_VOLTAGE_MIN = 2.0f; // 0 %  (2 x ~1,0 V)
 constexpr float BATTERY_VOLTAGE_MAX = 3.2f; // 100 % (2 x ~1,6 V neuves)
+// Facteur de calibration fin propre a cette carte (voir config.h). Calibre le
+// 2026-09-15 avec l'outil _calib-batterie : multimetre 4,11 V, ecran 4,070 V ->
+// 4,11 / 4,070 = 1,0098 (correction de ~1 %, tolerance des resistances).
+constexpr float BATTERY_VREF_CALIBRATION = 1.0098f;
 
 // --- Reserves meteo (GPIO libres de la HW-675) ---
 constexpr uint8_t PIN_ANEMOMETER_PULSE = 10; // GP10 (numerique)
@@ -113,6 +117,12 @@ constexpr int8_t PIN_BATTERY_ADC = 4;
 // dans cette queue) ; la jauge reste honnete, elle ne rallonge pas l'autonomie.
 constexpr float BATTERY_VOLTAGE_MIN = 2.6f; // 0 %  (0,2 V au-dessus de la coupure 2,4 V)
 constexpr float BATTERY_VOLTAGE_MAX = 4.2f; // 100 % (Li-ion pleine charge)
+// Facteur de calibration fin propre a CE S3 (voir config.h). Pas encore mesure
+// sur le S3 lui-meme : 1.0 (analogReadMilliVolts applique deja l'usine, on part
+// a ~1 % pres). Pour l'affiner, flasher l'outil _calib-batterie (env s3) sur le
+// S3, lire via Serial et poser VREF = Vmultimetre / Vlu. NB : la valeur du C3
+// (1,0098) ne se transpose pas, c'est une autre puce ADC.
+constexpr float BATTERY_VREF_CALIBRATION = 1.0f;
 
 // --- Reserves meteo ---
 constexpr uint8_t PIN_ANEMOMETER_PULSE = 1;

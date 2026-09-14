@@ -91,10 +91,14 @@ constexpr uint8_t ESPNOW_MAX_RETRIES = 3;
 // --- Paramètres Batterie ---
 // Ratio du diviseur de tension (R1 + R2) / R2
 // Ex: deux résistances de 100k -> ratio = (100 + 100) / 100 = 2.0f
+// COMMUN aux deux cartes : même montage 100k/100k.
 constexpr float BATTERY_DIVIDER_RATIO = 2.0f;
-constexpr float BATTERY_VREF_CALIBRATION = 1.0f; // Facteur d'ajustement fin ADC
 
-// Tension min/max (0 % / 100 %) : DÉPENDANTES DE LA CHIMIE, donc définies PAR
-// CARTE dans board_config.h (BATTERY_VOLTAGE_MIN / BATTERY_VOLTAGE_MAX). Une
-// LiFePO4 (~2,9-3,6 V) lue sur une échelle Li-ion (3,3-4,2) apparaîtrait à 0 %
-// alors qu'elle est pleine. Le ratio du pont, lui, est commun (même montage).
+// Tension min/max (0 % / 100 %) et FACTEUR DE CALIBRATION FIN
+// (BATTERY_VREF_CALIBRATION) : définis PAR CARTE dans board_config.h.
+// - min/max dépendent de la CHIMIE (une LiFePO4 ~2,9-3,6 V lue sur une échelle
+//   Li-ion 3,3-4,2 apparaîtrait à 0 % alors qu'elle est pleine).
+// - le facteur fin dépend de la PUCE (calibration ADC eFuse propre à chaque
+//   ESP32) et de la tolérance réelle des résistances de la carte : il se mesure
+//   carte par carte (outil _calib-batterie : VREF = Vmultimètre / Vlu).
+// Le ratio du pont, lui, reste commun (ci-dessus).
