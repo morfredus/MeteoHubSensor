@@ -22,6 +22,10 @@ L'objectif principal de ce projet est de déporter l'acquisition météo dans le
 2. **Phase de veille profonde (Deep Sleep)** :
    - ESP32-S3 Super Mini en deep sleep : plus gourmand que le C3 (LDO + USB
      PHY). Compter quelques dizaines de µA, à mesurer sur la carte réelle.
+   - S'ajoute le **pont de mesure batterie** (100k/100k sur le + accu) qui draine
+     ~20 µA en continu. Négligeable ici, mais présent aussi pendant le deep sleep :
+     pour le supprimer, on pourrait commander le pont par un GPIO (MOSFET) ; jugé
+     inutile vu l'ordre de grandeur.
 
 ### Autonomie théorique :
 - La cadence réelle est de **5 minutes** (`SENSOR_MEASUREMENT_INTERVAL_SECONDS`, configurable) : bien plus économe qu'une mesure par minute, l'essentiel du temps étant passé en deep sleep.

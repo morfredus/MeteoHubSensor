@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.1] - 2026-09-15
+
+### Changed
+
+- **S3 battery 0 % lowered from 3.0 V to 2.6 V.** The Breadvolt module cuts at
+  2.4 V (over-discharge protection); 0 % now sits 0.2 V above that so the probe
+  runs to the end instead of pinning at 0 % from 3.0 V. The plausibility guard
+  (reject below MIN - 0.5 V = 2.1 V) still accepts a real near-empty cell. Note:
+  below ~3.0 V the Li-ion curve collapses, so the last few percent drain fast (the
+  gauge is honest, it does not extend runtime). S3 only; the C3 alkaline scale is
+  unchanged.
+
+## [0.15.0] - 2026-09-15
+
+### Added
+
+- **Battery reading enabled on the ESP32-S3 board.** The Breadvolt module outputs
+  a constant regulated 3.3 V, so the cell is now tapped before the regulator: a
+  100k/100k divider from battery+ to GP4 (`PIN_BATTERY_ADC = 4`), GP4 reading the
+  midpoint (~2.0 V for 4.0 V). The firmware already had the full path; only the
+  pin was flipped from -1. The shared divider ratio (2.0) and the Li-ion 3.0-4.2 V
+  scale apply. The 4.28 V full-charge cell never reaches the pin directly (ADC
+  limit). Wiring and calibration documented in `docs/cablage.md`.
+
 ## [0.14.2] - 2026-09-14
 
 ### Documentation

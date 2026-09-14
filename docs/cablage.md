@@ -55,7 +55,7 @@ USB natif sur GPIO 19/20. BOOT sur GPIO 0. Straps 45/46 (GP46 input-only).
 | **GP9** | 9 | I2C **SCL** |
 | **GP48** | 48 | LED RGB **WS2812** onboard (pas GP46) |
 | **GP0** | 0 | Bouton **BOOT** |
-| **GP4** | 4 | ADC batterie **désactivée** (`PIN_BATTERY_ADC = -1`) : le module Breadvolt sort un 3,3 V régulé, GP4 ne verrait pas la cellule |
+| **GP4** | 4 | ADC batterie (`PIN_BATTERY_ADC = 4`) : pont 100k/100k depuis le **+ accu** (avant le régulateur 3,3 V) |
 | **GP1** | 1 | Anémomètre (réserve) |
 | **GP2** | 2 | Girouette ADC (réserve) |
 | **GP7** | 7 | Pluviomètre (réserve) |
@@ -120,14 +120,30 @@ via un pont 100 kΩ / 100 kΩ.
 module sort un **3,3 V régulé** vers la carte et **gère lui-même l'accu** (protection
 décharge 2,4 V, charge 4,28 V, LEDs CHG/PWR).
 
-- La carte ne voit que le 3,3 V régulé (constant) : GP4 **ne peut pas mesurer la
-  cellule**. La mesure batterie est donc **désactivée** (`PIN_BATTERY_ADC = -1`) : pas
-  de pourcentage figé ni de fausse alerte. Quand l'accu se vide, la protection coupe et
-  la sonde s'arrête (MeteoHub voit **OUT absent**) ; l'état de charge se lit sur les
-  LEDs du module.
-- Pour retrouver le % : tirer un fil du **+ accu** (avant régulation) vers GP4 via un
-  pont 100 kΩ / 100 kΩ, et remettre `PIN_BATTERY_ADC = 4` (la plage Li-ion 3,0-4,2 V
-  est déjà prête dans `board_config.h`).
+- Le 3,3 V régulé est **constant** : le mesurer ne dirait rien de l'accu. On tape donc
+  la **cellule**, **avant** le régulateur, au **+ accu** (multimètre ~4,0 V en charge).
+- Cet accu monte à **4,28 V** en pleine charge : il ne doit **jamais** arriver brut sur
+  la pin (limite ADC du S3 ~3,3 V). Un **pont 100 kΩ / 100 kΩ** divise la tension par
+  deux et GP4 lit le point milieu :
+
+  ```
+  + accu ──[R1 100k]──┬── GP4 (ADC1)
+                      │
+                   [R2 100k]
+                      │
+                     GND
+  ```
+
+  GP4 voit ~2,0 V pour 4,0 V accu ; le firmware remultiplie par le ratio du pont
+  (`BATTERY_DIVIDER_RATIO = 2,0`, commun aux deux cartes) et convertit sur la plage
+  Li-ion 3,0-4,2 V. `PIN_BATTERY_ADC = 4` (activé le 2026-09-15).
+- Le pont draine en continu ~4,0 V / 200 kΩ ≈ **20 µA**, négligeable devant les
+  réveils d'émission.
+- **Calibration fine (optionnelle)** : si la tension rapportée par la sonde diffère de
+  ton multimètre (tolérance des résistances + offset ADC), poser
+  `BATTERY_VREF_CALIBRATION = tension_multimètre / tension_rapportée` dans `config.h`.
+- Filet de sécurité : quand l'accu se vide sous ~3,0 V, le pourcentage tombe à 0 %,
+  puis la protection du module coupe et la sonde s'arrête (MeteoHub voit **OUT absent**).
 
 ---
 

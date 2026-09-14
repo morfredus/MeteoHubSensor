@@ -94,15 +94,24 @@ constexpr uint8_t PIN_BOOT_BUTTON = 0;
 
 // Alimentation : module Breadvolt + accu Li-ion 14500 (3,7 V, 500 mAh). Le
 // module fournit un 3,3 V REGULE a la carte et gere lui-meme l'accu (protection
-// decharge 2,4 V / charge 4,28 V, LEDs CHG/PWR). GP4 ne verrait donc que ce 3,3 V
-// regule (constant) : il ne peut PAS mesurer la cellule -> mesure batterie
-// DESACTIVEE (PIN_BATTERY_ADC = -1), pas de pourcentage figé ni de fausse alerte.
-// Quand l'accu se vide, la protection coupe et la sonde s'arrete (MeteoHub voit
-// OUT absent). Pour retrouver le %, tirer un fil du + accu vers GP4 (pont 100k/
-// 100k) et remettre PIN_BATTERY_ADC = 4 ci-dessous ; la plage Li-ion 3,0-4,2 est
-// deja prete.
-constexpr int8_t PIN_BATTERY_ADC = -1;
-constexpr float BATTERY_VOLTAGE_MIN = 3.0f; // 0 %  (Li-ion 14500, seuil bas utile)
+// decharge 2,4 V / charge 4,28 V, LEDs CHG/PWR). Le 3,3 V regule est CONSTANT :
+// le mesurer ne dirait rien de l'accu. On tape donc la CELLULE, AVANT le
+// regulateur, au + de l'accu (multimetre ~4,0 V en charge).
+//
+// Cablage batterie (2026-09-15) : + accu --[R1 100k]--(GP4)--[R2 100k]-- GND.
+// GP4 lit le point milieu = tension accu / 2 (~2,0 V pour 4,0 V), sous la limite
+// ADC du S3 : indispensable, l'accu monte a 4,28 V en pleine charge et ne doit
+// JAMAIS arriver brut sur la pin. Le firmware remultiplie par le ratio du pont
+// (BATTERY_DIVIDER_RATIO = 2,0 dans config.h, commun aux deux cartes). Le pont
+// draine en continu ~4,0 V / 200 k = 20 uA, negligeable devant les reveils TX.
+// La plage Li-ion 3,0-4,2 ci-dessous convertit en pourcentage.
+constexpr int8_t PIN_BATTERY_ADC = 4;
+// 0 % a 2,6 V : le module coupe a 2,4 V (protection decharge), on garde 0,2 V de
+// marge au-dessus pour afficher 0 % juste avant la coupure. La sonde tourne donc
+// jusqu'au bout au lieu de plafonner a 0 % des 3,0 V. Attention : sous ~3,0 V la
+// courbe Li-ion s'effondre, les derniers % defilent vite (peu de capacite reelle
+// dans cette queue) ; la jauge reste honnete, elle ne rallonge pas l'autonomie.
+constexpr float BATTERY_VOLTAGE_MIN = 2.6f; // 0 %  (0,2 V au-dessus de la coupure 2,4 V)
 constexpr float BATTERY_VOLTAGE_MAX = 4.2f; // 100 % (Li-ion pleine charge)
 
 // --- Reserves meteo ---
