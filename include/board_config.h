@@ -108,7 +108,7 @@ constexpr uint8_t PIN_BOOT_BUTTON = 0;
 // JAMAIS arriver brut sur la pin. Le firmware remultiplie par le ratio du pont
 // (BATTERY_DIVIDER_RATIO = 2,0 dans config.h, commun aux deux cartes). Le pont
 // draine en continu ~4,0 V / 200 k = 20 uA, negligeable devant les reveils TX.
-// La plage Li-ion 3,0-4,2 ci-dessous convertit en pourcentage.
+// La plage Li-ion 2,6-4,2 ci-dessous convertit en pourcentage.
 constexpr int8_t PIN_BATTERY_ADC = 4;
 // 0 % a 2,6 V : le module coupe a 2,4 V (protection decharge), on garde 0,2 V de
 // marge au-dessus pour afficher 0 % juste avant la coupure. La sonde tourne donc

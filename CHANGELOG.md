@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.3] - 2026-09-15
+
+### Documentation
+
+- Fix a stale comment in `board_config.h` (S3 battery range said "3,0-4,2", now
+  "2,6-4,2" to match `BATTERY_VOLTAGE_MIN`). No behaviour change. Verified the full
+  S3 battery chain (GP4 read -> packet -> ESP-NOW -> hub parse) is correct and the
+  packet struct is byte-identical between sensor and hub: a probe still reporting no
+  battery is simply running pre-0.15 firmware and must be reflashed.
+
 ## [0.15.2] - 2026-09-15
 
 ### Changed
