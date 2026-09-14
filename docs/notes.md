@@ -23,11 +23,10 @@ L'objectif principal de ce projet est de déporter l'acquisition météo dans le
    - ESP32-S3 Super Mini en deep sleep : plus gourmand que le C3 (LDO + USB
      PHY). Compter quelques dizaines de µA, à mesurer sur la carte réelle.
 
-### Autonomie théorique (sur batterie Li-ion 18650 de 2500 mAh) :
-- Pour une mesure toutes les **60 secondes** :
-  - Consommation moyenne globale : ~35 µA.
-  - Autonomie théorique : **plusieurs mois à plus d'un an** sans recharge.
-  - Avec un petit panneau solaire 5V 1W et un module de charge TP4056/CN3791, le système devient **100% autonome à l'année**.
+### Autonomie théorique :
+- La cadence réelle est de **5 minutes** (`SENSOR_MEASUREMENT_INTERVAL_SECONDS`, configurable) : bien plus économe qu'une mesure par minute, l'essentiel du temps étant passé en deep sleep.
+- Le nœud de prod actuel (S3 Super Mini + module Breadvolt + accu Li-ion **14500 ~500 mAh**) tient plusieurs jours ; l'autonomie exacte reste à mesurer sur la carte réelle (le S3 dort moins efficacement que le C3 à cause du LDO et du PHY USB).
+- Avec une cellule plus grosse (14500/18650) ou un petit panneau solaire + module de charge, le système peut viser une autonomie longue durée. Chiffres à confirmer par la mesure terrain, pas par le calcul seul.
 
 ---
 

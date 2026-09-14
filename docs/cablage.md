@@ -3,8 +3,13 @@
 Sonde météo extérieure autonome, reliée à la station **MeteoHub** par **ESP-NOW**.
 Deux cartes sont prises en charge, choisies par l'environnement PlatformIO :
 
-- **ESP32-C3 HW-675** (`c3oled`) : OLED 0.42" intégré, LED RGB, TX ESP-NOW plafonnée.
-- **ESP32-S3 Super Mini** (`supermini`) : LED RGB seule (pas d'écran, pour réduire la consommation), TX pleine puissance.
+- **ESP32-C3 HW-675** (`c3oled`) : OLED 0.42" intégré, LED RGB, TX ESP-NOW plafonnée (8,5 dBm).
+- **ESP32-S3 Super Mini** (`supermini`) : LED RGB seule (pas d'écran, pour réduire la consommation), TX ESP-NOW plafonnée (11 dBm).
+
+> La liaison est un **unicast** vers la MAC du hub : chaque envoi reçoit un accusé
+> de réception matériel (ACK). Les deux cartes plafonnent leur puissance d'émission
+> (l'antenne PCB de ces mini-cartes est mal adaptée : à pleine puissance, le hub
+> n'acquitte pas). Le niveau se règle **par carte** dans `include/config.h`.
 
 Le brochage vit dans `include/board_config.h` (sélectionné par `SENSOR_BOARD_*`) et les
 réglages dans `include/config.h`.
@@ -32,9 +37,9 @@ L'écran OLED est câblé d'usine sur le bus I2C GP5/GP6. Les capteurs se greffe
 | **GP0 / GP1** | 0 / 1 | Libres |
 
 - Écran **OLED 0.42" SSD1306 72x40** intégré (adresse I2C 0x3C).
-- La liaison ESP-NOW C3 → hub S3 exige une **TX plafonnée** : à pleine puissance elle
-  est instable (constat matériel). Le niveau vit dans `config.h`
-  (`SENSOR_TX_POWER_LEVEL`), le C3 le demande via `SENSOR_NEEDS_TX_LIMIT`.
+- **TX ESP-NOW plafonnée à 8,5 dBm** (constat matériel : à pleine puissance la
+  liaison est instable). Le niveau vit dans `config.h` (`SENSOR_TX_POWER_LEVEL`,
+  un menu commenté par carte), la carte le demande via `SENSOR_NEEDS_TX_LIMIT`.
 
 ---
 
@@ -50,7 +55,7 @@ USB natif sur GPIO 19/20. BOOT sur GPIO 0. Straps 45/46 (GP46 input-only).
 | **GP9** | 9 | I2C **SCL** |
 | **GP48** | 48 | LED RGB **WS2812** onboard (pas GP46) |
 | **GP0** | 0 | Bouton **BOOT** |
-| **GP4** | 4 | ADC batterie (pont 100k/100k) |
+| **GP4** | 4 | ADC batterie **désactivée** (`PIN_BATTERY_ADC = -1`) : le module Breadvolt sort un 3,3 V régulé, GP4 ne verrait pas la cellule |
 | **GP1** | 1 | Anémomètre (réserve) |
 | **GP2** | 2 | Girouette ADC (réserve) |
 | **GP7** | 7 | Pluviomètre (réserve) |
@@ -58,7 +63,8 @@ USB natif sur GPIO 19/20. BOOT sur GPIO 0. Straps 45/46 (GP46 input-only).
 | **GP5 / GP6** | 5 / 6 | Libres |
 
 - **Pas d'écran** : le statut passe par la LED RGB et le log USB CDC.
-- TX ESP-NOW **pleine puissance** (liaison stable).
+- **TX ESP-NOW plafonnée à 11 dBm** : à pleine puissance, le hub n'acquitte aucune
+  trame (antenne PCB du Super Mini mal adaptée). Réglable via le menu de `config.h`.
 - La LED RGB onboard est sur **GPIO 48**. Le pinout constructeur annote parfois
   DIN WS2812 = GP46 : sur ESP32-S3, GP46 ne peut pas la piloter. Si la LED reste
   éteinte après flash, tester GPIO 47 (certains clones Lolin).
@@ -135,19 +141,19 @@ d'écran sur le S3** : cette LED est le seul retour visuel local.
 | Couleur | Quand | Signification |
 | :--- | :--- | :--- |
 | 🔵 **Bleu** | Au démarrage, puis pendant **chaque acquisition** de mesure | « Je travaille » : lecture des capteurs et préparation de la trame en cours |
-| 🟢 **Vert** (bref) | Juste après l'envoi ESP-NOW, si l'émission a réussi | La trame **est partie** de la radio |
-| 🔴 **Rouge** (bref) | Juste après l'envoi ESP-NOW, si l'émission a échoué | La trame **n'a pas pu être émise** |
+| 🟢 **Vert** (bref) | Juste après l'envoi ESP-NOW, si le hub a **accusé réception** | La trame est **livrée** (ACK reçu du hub) |
+| 🔴 **Rouge** (bref) | Juste après l'envoi ESP-NOW, si **aucun ACK** n'est revenu | La trame **n'a pas été livrée** (hub hors de portée / éteint) |
 | 🔴 **Rouge fixe** | Au boot, si l'init ESP-NOW échoue | Radio ESP-NOW indisponible (défaut au démarrage) |
 | ⚫ **Éteinte** | Au repos entre deux mesures (et avant la mise en veille) | Rien à signaler / cycle terminé |
 
 Précisions importantes :
 
-- **Vert = trame émise, pas trame reçue.** En ESP-NOW **broadcast**, il n'y a pas d'accusé
-  de réception du hub : le vert confirme que la radio a bien envoyé la trame, pas que
-  MeteoHub l'a reçue. Pour vérifier la réception réelle, regarder les compteurs `rx/ok`
-  côté hub (page Net. / logs).
+- **Vert = trame réellement livrée.** L'envoi est un **unicast** vers la MAC du hub :
+  la couche radio renvoie un ACK matériel. Le vert confirme donc que MeteoHub a bien
+  reçu la trame (et non seulement qu'elle est partie) ; le rouge signale l'absence
+  d'ACK (hub éteint, hors de portée, ou mauvais canal).
 - Le clignotement vert/rouge est **court** (~60 ms) : à chaque cycle de mesure
-  (~30 s par défaut), on voit un bref éclat, puis la LED s'éteint.
+  (5 min par défaut), on voit un bref éclat, puis la LED s'éteint.
 - En **mode veille profonde** (si activé), la LED est éteinte avant le sommeil pour ne
   rien consommer ; chaque réveil rejoue la séquence bleu → vert/rouge.
 
