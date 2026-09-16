@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <esp_system.h>   // esp_reset_reason() pour le diagnostic (paquet v2)
+#include <esp_sleep.h>    // esp_light_sleep_start() (mode light sleep experimental)
 #include "board_config.h"
 #include "config.h"
 #include "meteo_packet.h"
@@ -127,13 +128,30 @@ void setup() {
     performMeasurementAndSend();
     lastMeasurementTime = millis();
 
-    if (ENABLE_DEEP_SLEEP) {
+    // Deep sleep = ne revient jamais (reboot au reveil). Le light sleep, lui, se
+    // gere dans loop() car il REPREND l'execution apres le timer.
+    if (ENABLE_DEEP_SLEEP && !USE_LIGHT_SLEEP) {
         delay(200);
         powerManager.enterDeepSleep(SENSOR_MEASUREMENT_INTERVAL_SECONDS);
     }
 }
 
 void loop() {
+    if (USE_LIGHT_SLEEP) {
+        // Light sleep : on eteint la LED, on arme le timer et on dort. La RAM et le
+        // contexte sont conserves (pas de reboot) ; au reveil, l'execution reprend
+        // ICI. On incremente wake_count (le diagnostic v2 suit ainsi les cycles) et
+        // on refait un cycle mesure+envoi. La radio se recoupe pendant le sommeil et
+        // reprend au reveil ; si le canal a migre, l'auto-guerison de send() gere.
+        powerManager.turnOffLed();
+        esp_sleep_enable_timer_wakeup(
+            (uint64_t)SENSOR_MEASUREMENT_INTERVAL_SECONDS * 1000000ULL);
+        esp_light_sleep_start();   // bloque jusqu'au timer
+        g_wakeCount++;
+        performMeasurementAndSend();
+        return;
+    }
+
     if (!ENABLE_DEEP_SLEEP) {
         uint32_t now = millis();
         if (now - lastMeasurementTime >= (SENSOR_MEASUREMENT_INTERVAL_SECONDS * 1000UL)) {

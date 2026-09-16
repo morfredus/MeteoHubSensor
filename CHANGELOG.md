@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.0] - 2026-09-16
+
+### Added
+
+- **Light-sleep mode (`USE_LIGHT_SLEEP`, experimental).** Alternative to deep
+  sleep for battery power: light sleep keeps RAM/context (no reboot) and draws
+  noticeably more current (~hundreds of µA vs ~10 µA). Diagnostic: on the Breadvolt
+  module the probe drops out only after deep-sleep cycles (never on USB); the
+  AP2004H boost likely can't hold the rail at the deep-sleep µA load, browning out
+  the RTC so the timer wake never fires. Light sleep loads the boost more - a
+  hardware-free test. When true it takes precedence over `ENABLE_DEEP_SLEEP`; the
+  loop sleeps then measures on wake, incrementing `wake_count`. Set back to false
+  to return to deep sleep.
+
 ## [0.17.2] - 2026-09-16
 
 ### Fixed

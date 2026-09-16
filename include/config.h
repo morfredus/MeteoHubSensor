@@ -16,6 +16,18 @@ constexpr uint8_t SENSOR_NODE_ID = 1; // ID unique du nœud (pour distinguer plu
 // mémorisé en RAM RTC). Passer à FALSE seulement pour un debug sur USB.
 constexpr bool ENABLE_DEEP_SLEEP = true;
 
+// EXPERIMENTAL (test alim) : dormir en LIGHT SLEEP au lieu de DEEP SLEEP.
+//   - Deep sleep : ~10 µA, mais REBOOT au reveil (setup rejoue, RTC conservee).
+//   - Light sleep : conserve la RAM/le contexte (pas de reboot), la radio se coupe
+//     puis reprend, et tire NETTEMENT plus de courant (~centaines de µA).
+// But du test : le module Breadvolt (boost AP2004H) semble decrocher a la charge
+// tres faible du deep sleep -> le rail 3,3 V flechit, le domaine RTC brownout, la
+// sonde ne se reveille plus (aucune perte en USB, seulement sur Breadvolt). Le
+// light sleep charge davantage le boost : s'il tient, on a la reponse sans
+// materiel. Prend le pas sur ENABLE_DEEP_SLEEP quand true. Repasser a false pour
+// revenir au deep sleep une fois le test conclu.
+constexpr bool USE_LIGHT_SLEEP = true;
+
 // Cadence de MESURE et d'émission, en secondes. NE PAS coder en dur ailleurs :
 // c'est la seule source de vérité. IN (côté MeteoHub) doit utiliser la même
 // cadence, pour que les deux séries de l'historique soient homogènes.
