@@ -26,7 +26,10 @@ constexpr bool ENABLE_DEEP_SLEEP = true;
 // light sleep charge davantage le boost : s'il tient, on a la reponse sans
 // materiel. Prend le pas sur ENABLE_DEEP_SLEEP quand true. Repasser a false pour
 // revenir au deep sleep une fois le test conclu.
-constexpr bool USE_LIGHT_SLEEP = true;
+// Remis a false : on teste d'abord un AUTRE module S3 (cense identique) en DEEP
+// SLEEP, pour isoler si le decrochage vient de la carte elle-meme. L'option reste
+// disponible : repasser a true pour tester le light sleep si besoin.
+constexpr bool USE_LIGHT_SLEEP = false;
 
 // Cadence de MESURE et d'émission, en secondes. NE PAS coder en dur ailleurs :
 // c'est la seule source de vérité. IN (côté MeteoHub) doit utiliser la même

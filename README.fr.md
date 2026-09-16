@@ -1,6 +1,6 @@
 # MeteoHubSensor
 
-[![Version](https://img.shields.io/badge/version-0.18.0-blue.svg)](VERSION)
+[![Version](https://img.shields.io/badge/version-0.18.1-blue.svg)](VERSION)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Platform: ESP32-S3](https://img.shields.io/badge/Platform-ESP32--S3-orange.svg)](https://www.espressif.com/)
 
