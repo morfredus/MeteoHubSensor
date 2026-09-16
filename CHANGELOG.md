@@ -5,12 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.1] - 2026-09-16
+
+### Changed
+
+- **Build environment renamed `supermini` → `esp32-s3`** (single S3 target). Build
+  with `pio run -e esp32-s3`. Docs updated. No firmware behaviour change.
+
 ## [0.17.0] - 2026-09-16
 
 ### Removed
 
 - **ESP32-C3 HW-675 target dropped.** The firmware now builds for a single board,
-  the **ESP32-S3 Super Mini** (env `supermini`, `SENSOR_BOARD_S3`), to stay within
+  the **ESP32-S3 Super Mini** (env `esp32-s3`, `SENSOR_BOARD_S3`), to stay within
   one hardware family. Removed the `c3oled` environment and its U8g2 dependency,
   the `SENSOR_BOARD_C3` branch in `board_config.h`, and the C3 TX-power menu in
   `config.h`. `SENSOR_NEEDS_TX_LIMIT` stays: the S3 needs the TX cap too (full
@@ -90,7 +97,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Packaging contract (`morfproject.json`)** so the probe is published in the
   parc releases like the other projects: a firmware project with two PlatformIO
-  targets, `supermini` (ESP32-S3) and `c3oled` (ESP32-C3), each producing a
+  targets, `esp32-s3` (ESP32-S3) and `c3oled` (ESP32-C3), each producing a
   renamed `firmware.bin`. Picked up by `package-all.py` as a companion repo
   ("extra"), without ever entering `morf doctor` scope.
 
@@ -302,7 +309,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Dual board target: the sensor now builds for both the ESP32-S3 Super Mini
-  (env `supermini`, LED-only) and the ESP32-C3 HW-675 (env `c3oled`), selected
+  (env `esp32-s3`, LED-only) and the ESP32-C3 HW-675 (env `c3oled`), selected
   by a `SENSOR_BOARD_*` define. Board pinout lives in `board_config.h`.
 - C3 HW-675 integrated 0.42" OLED (SSD1306 72x40) support via U8g2, in a new
   `DisplayManager` module. Shows T/H/P, channel, TX status and battery. The

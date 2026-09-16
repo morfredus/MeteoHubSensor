@@ -1,7 +1,7 @@
 # Câblage et fonctionnement - MeteoHubSensor
 
 Sonde météo extérieure autonome, reliée à la station **MeteoHub** par **ESP-NOW**.
-Carte cible : **ESP32-S3 Super Mini** (`supermini`) - LED RGB seule (pas d'écran,
+Carte cible : **ESP32-S3 Super Mini** (`esp32-s3`) - LED RGB seule (pas d'écran,
 pour réduire la consommation), TX ESP-NOW plafonnée (11 dBm).
 
 > La liaison est un **unicast** vers la MAC du hub : chaque envoi reçoit un accusé
