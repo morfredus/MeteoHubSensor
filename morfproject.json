@@ -4,8 +4,7 @@
   "packaging": {
     "provider": "project",
     "targets": {
-      "supermini": { "platform": { "os": "esp32s3" }, "build": { "tool": "platformio", "env": "supermini" }, "package": { "format": "bin" } },
-      "c3oled":    { "platform": { "os": "esp32c3" }, "build": { "tool": "platformio", "env": "c3oled" }, "package": { "format": "bin" } }
+      "esp32-s3": { "platform": { "os": "esp32s3" }, "build": { "tool": "platformio", "env": "esp32-s3" }, "package": { "format": "bin" } }
     }
   }
 }

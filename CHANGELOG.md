@@ -10,7 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Build environment renamed `supermini` → `esp32-s3`** (single S3 target). Build
-  with `pio run -e esp32-s3`. Docs updated. No firmware behaviour change.
+  with `pio run -e esp32-s3`. Docs updated. No firmware behaviour change. The
+  packaging manifest (`morfproject.json`) is updated accordingly: a single
+  `esp32-s3` target (the stale `supermini` / `c3oled` targets are gone, which was
+  breaking the release build).
 
 ## [0.17.0] - 2026-09-16
 
