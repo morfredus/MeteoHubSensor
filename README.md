@@ -1,10 +1,10 @@
 # MeteoHubSensor
 
-[![Version](https://img.shields.io/badge/version-0.15.3-blue.svg)](VERSION)
+[![Version](https://img.shields.io/badge/version-0.17.0-blue.svg)](VERSION)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
-[![Platform: ESP32-S3 / C3](https://img.shields.io/badge/Platform-ESP32--S3%20%2F%20C3-orange.svg)](https://www.espressif.com/)
+[![Platform: ESP32-S3](https://img.shields.io/badge/Platform-ESP32--S3-orange.svg)](https://www.espressif.com/)
 
-Sonde météo extérieure autonome, en liaison **ESP-NOW** avec la station **MeteoHub**. Deux cartes possibles : **ESP32-S3 Super Mini** (LED RGB, sans écran) ou **ESP32-C3 HW-675** (OLED 0.42" intégré).
+Sonde météo extérieure autonome, en liaison **ESP-NOW** avec la station **MeteoHub**. Carte cible : **ESP32-S3 Super Mini** (LED RGB, sans écran).
 
 ---
 
@@ -41,22 +41,17 @@ Ce nœud n'est **pas une nouvelle brique de morfSystem**. Pas de serveur web, pa
 
 ---
 
-## 3. Matériel (deux cartes possibles)
+## 3. Matériel
 
-Le brochage de chaque carte vit dans `include/board_config.h`, sélectionné par
-le define `SENSOR_BOARD_*` posé par l'environnement PlatformIO.
+Le brochage vit dans `include/board_config.h`, sélectionné par le define
+`SENSOR_BOARD_S3` posé par l'environnement PlatformIO.
 
 **ESP32-S3 Super Mini** (env `supermini`)
-- 4 Mo flash, **sans PSRAM**, USB CDC natif. **Pas d'écran** (OLED non piloté, pour réduire la consommation).
+- 4 Mo flash + 2 Mo PSRAM quad (inutilisée), USB CDC natif. **Pas d'écran** (statut par LED).
 - Statut = LED RGB GPIO 48 (bleu acquisition, vert OK, rouge erreur).
-- **I2C** : SDA = GP8, SCL = GP9. Batterie : Li-ion, pont 100k/100k sur GP4.
-
-**ESP32-C3 HW-675** (env `c3oled`)
-- 4 Mo flash. **OLED 0.42" (SSD1306 72x40) intégré**, affiche le dernier relevé.
-- **I2C** : SDA = GP5, SCL = GP6 (bus partagé OLED + capteurs). LED RGB sur GP8.
-- ESP-NOW plafonné à **8,5 dBm** (contrainte matérielle validée par test).
-
-- **Capteurs** (commun) : AHT20 (T/H), BMP280 (pression).
+- **I2C** : SDA = GP8, SCL = GP9. Batterie : Li-ion 14500 (Breadvolt), pont 100k/100k sur GP4.
+- ESP-NOW plafonné à **11 dBm** (contrainte matérielle validée par test : pleine puissance = pas d'ACK).
+- **Capteurs** : AHT20 (T/H), BMP280 (pression).
 - Détail : `docs/cablage.md`.
 
 ---
@@ -78,13 +73,6 @@ le define `SENSOR_BOARD_*` posé par l'environnement PlatformIO.
 pio run -e supermini
 pio run -e supermini -t upload
 pio run -e supermini -t monitor
-```
-
-```bash
-# ESP32-C3 HW-675 (OLED intégré)
-pio run -e c3oled
-pio run -e c3oled -t upload
-pio run -e c3oled -t monitor
 ```
 
 Si le port série n'apparaît pas : tenir BOOT, tap RESET, relâcher BOOT.

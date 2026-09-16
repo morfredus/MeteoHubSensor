@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <esp_system.h>   // esp_reset_reason() pour le diagnostic (paquet v2)
 #include "board_config.h"
 #include "config.h"
 #include "meteo_packet.h"
@@ -22,6 +23,12 @@ static uint32_t lastChannelCheck = 0;
 static bool g_lastBatteryValid = false;
 static uint8_t g_lastBatteryPct = 100;
 
+// Diagnostic (paquet v2) : compteur de reveils qui SURVIT au deep sleep (RTC) et
+// repart de 0 a un power-cycle, plus la raison du dernier reset captee au boot.
+// Emportes dans chaque trame, ils disent au hub POURQUOI la sonde a decroche.
+RTC_DATA_ATTR static uint32_t g_wakeCount = 0;
+static uint8_t g_resetReason = 0;
+
 void performMeasurementAndSend() {
     Serial.println("\n----------------------------------------");
     Serial.println("[MAIN] Debut du cycle de mesure");
@@ -29,6 +36,8 @@ void performMeasurementAndSend() {
     MeteoPacket packet;
     memset(&packet, 0, sizeof(MeteoPacket));
     packet.uptime_sec = millis() / 1000;
+    packet.reset_reason = g_resetReason;         // diagnostic v2 (voir setup)
+    packet.wake_count = (uint16_t)g_wakeCount;
 
     // Temoin bleu pendant l'acquisition (plus d'OLED : la LED est le statut)
     powerManager.setLedColor(0, 40, 120);
@@ -71,6 +80,11 @@ void performMeasurementAndSend() {
 }
 
 void setup() {
+    // Diagnostic v2, capte AU PLUS TOT : raison du reset de ce boot + incrementation
+    // du compteur de reveils (RTC). Un power-cycle a remis g_wakeCount a 0.
+    g_resetReason = (uint8_t)esp_reset_reason();
+    g_wakeCount++;
+
     Serial.begin(115200);
     // USB CDC du Super Mini : laisser le host enumerer, sans bloquer sans cable.
     uint32_t serialWait = millis();

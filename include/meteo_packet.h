@@ -3,12 +3,14 @@
 
 // ============================================================================
 // Protocole de transmission ESP-NOW - MeteoHub Packet
-// Structure partagée entre l'émetteur (sondes) et le récepteur (MeteoHub S3)
+// Structure partagée entre l'émetteur (ESP32-C3) et le récepteur (MeteoHub S3)
 // ============================================================================
 
 constexpr uint8_t METEO_PACKET_MAGIC_0 = 'M';
 constexpr uint8_t METEO_PACKET_MAGIC_1 = 'H';
-constexpr uint8_t METEO_PROTOCOL_VERSION = 1;
+// v2 : ajout des champs de diagnostic reset_reason + wake_count. Le recepteur
+// rejette une version differente, donc sonde ET hub doivent etre en v2 ensemble.
+constexpr uint8_t METEO_PROTOCOL_VERSION = 2;
 
 // Masque binaire des métriques présentes / valides dans le paquet
 enum MeteoFieldFlags : uint16_t {
@@ -51,11 +53,22 @@ struct __attribute__((packed)) MeteoPacket {
     float battery_voltage;         // Volts (ex: 3.85V)
     uint8_t battery_percent;       // 0-100%
     uint32_t uptime_sec;           // Uptime en secondes ou boot count
-    
+
+    // Diagnostic d'alimentation / réveil (v2). Lus au RETOUR d'une trame après un
+    // trou, ils disent POURQUOI la sonde a décroché, sans avoir à la brancher :
+    //   reset_reason : esp_reset_reason() du dernier boot (POWERON, BROWNOUT,
+    //                  DEEPSLEEP, PANIC, SW…). BROWNOUT/POWERON après un trou =
+    //                  coupure d'alimentation ; DEEPSLEEP = réveil normal.
+    //   wake_count   : compteur de réveils en RTC. Survit au deep sleep, repart de
+    //                  0 à un power-cycle. Un saut > au nombre de trames reçues
+    //                  révèle des réveils qui n'ont pas abouti à un envoi.
+    uint8_t reset_reason;
+    uint16_t wake_count;
+
     uint16_t crc16;                // CRC16 de contrôle d'intégrité
 };
 
-static_assert(sizeof(MeteoPacket) == 51, "MeteoPacket must stay packed at 51 bytes");
+static_assert(sizeof(MeteoPacket) == 54, "MeteoPacket must stay packed at 54 bytes");
 
 // Calcul rapide de CRC16 CCITT
 inline uint16_t calculateCrc16(const uint8_t* data, size_t length) {

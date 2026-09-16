@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.0] - 2026-09-16
+
+### Removed
+
+- **ESP32-C3 HW-675 target dropped.** The firmware now builds for a single board,
+  the **ESP32-S3 Super Mini** (env `supermini`, `SENSOR_BOARD_S3`), to stay within
+  one hardware family. Removed the `c3oled` environment and its U8g2 dependency,
+  the `SENSOR_BOARD_C3` branch in `board_config.h`, and the C3 TX-power menu in
+  `config.h`. `SENSOR_NEEDS_TX_LIMIT` stays: the S3 needs the TX cap too (full
+  power yields no ACK). Docs (README en/fr, `docs/cablage.md`) updated to S3-only.
+
+## [0.16.0] - 2026-09-16
+
+### Added
+
+- **Diagnostics carried in each ESP-NOW frame (protocol v2).** Every frame now
+  includes `reset_reason` (esp_reset_reason of the last boot) and `wake_count` (a
+  RTC counter that survives deep sleep and resets on a power cycle). Read by the
+  hub on reception, they explain - without a USB cable, which is impossible for an
+  outdoor probe - why the probe dropped out after a gap: a BROWNOUT/POWERON reset
+  points to power (Breadvolt/cell), a wake_count jump larger than the frames
+  received points to wake cycles that failed to send. Frame grows 51→54 bytes and
+  the protocol version bumps to 2: the probe and MeteoHub must be reflashed
+  together (a version mismatch is rejected on the hub side).
+
 ## [0.15.3] - 2026-09-15
 
 ### Documentation

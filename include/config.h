@@ -62,31 +62,19 @@ constexpr uint8_t ESPNOW_RECEIVER_MAC[6] = {0x20, 0x6E, 0xF1, 0x85, 0x58, 0x68};
 constexpr uint8_t ESPNOW_MAX_RETRIES = 3;
 
 // --- Puissance d'émission ESP-NOW ---
-// Appliquée sur les cartes qui le demandent (SENSOR_NEEDS_TX_LIMIT, trait de
-// carte défini dans board_config.h) : le C3 ET le S3. Valeur d'un wifi_power_t :
-// la macro n'est développée que dans espnow_sender.cpp (WiFi.h).
+// Appliquée quand la carte le demande (SENSOR_NEEDS_TX_LIMIT, trait de carte
+// défini dans board_config.h). Valeur d'un wifi_power_t : la macro n'est
+// développée que dans espnow_sender.cpp (WiFi.h).
 //
-// Niveau PAR CARTE : les deux antennes PCB ne se comportent pas pareil. Prouvé
-// terrain (logs USB unicast) : à pleine puissance le S3 n'obtient AUCUN ACK ; il
-// est stable et livré à 11 dBm (testé sur batterie, dehors). Le C3 est stable à
-// 8.5 dBm. Chaque carte garde son propre menu commenté : pour tester une autre
-// valeur, décommenter la ligne voulue et reflasher, en gardant le maximum de
-// portée qui reste livré (ACK).
-#if defined(SENSOR_BOARD_C3)
-// --- Menu C3 (HW-675) : stable à 8.5 dBm ---
-#define SENSOR_TX_POWER_LEVEL WIFI_POWER_8_5dBm
-//#define SENSOR_TX_POWER_LEVEL WIFI_POWER_11dBm
-//#define SENSOR_TX_POWER_LEVEL WIFI_POWER_15dBm
-//#define SENSOR_TX_POWER_LEVEL WIFI_POWER_17dBm
-//#define SENSOR_TX_POWER_LEVEL WIFI_POWER_19dBm
-#else
-// --- Menu S3 (Super Mini) : stable à 11 dBm (pleine puissance = pas d'ACK) ---
+// Menu S3 (Super Mini) : stable à 11 dBm. Prouvé terrain (logs USB unicast) : à
+// pleine puissance le S3 n'obtient AUCUN ACK ; 11 dBm est livré (testé sur
+// batterie, dehors). Pour tester une autre valeur, décommenter la ligne voulue et
+// reflasher, en gardant le maximum de portée qui reste livré (ACK).
 //#define SENSOR_TX_POWER_LEVEL WIFI_POWER_8_5dBm
 #define SENSOR_TX_POWER_LEVEL WIFI_POWER_11dBm
 //#define SENSOR_TX_POWER_LEVEL WIFI_POWER_15dBm
 //#define SENSOR_TX_POWER_LEVEL WIFI_POWER_17dBm
 //#define SENSOR_TX_POWER_LEVEL WIFI_POWER_19dBm
-#endif
 
 // --- Paramètres Batterie ---
 // Ratio du diviseur de tension (R1 + R2) / R2
