@@ -53,58 +53,57 @@ static MeteoPacket buildRetransmitPacket(const mhs::StoredRecord& rec) {
     return p;
 }
 
-// Phase de synchronisation differee, ouverte APRES l'envoi live REUSSI (le hub a
-// donc recu au moins la trame courante et va repondre). Bornee dans le temps ET
-// en nombre de mesures : elle ne transforme jamais l'eveil en session illimitee.
-static void runDeferredSync() {
+// Phase de synchronisation differee, ouverte APRES un envoi live REUSSI (le hub
+// est donc joignable). Deux temps :
+//   1. On ECOUTE brievement un SyncControl (accuse cumulatif + heure du hub) et
+//      on l'applique s'il arrive. C'est un BONUS : ca elague le backlog et recale
+//      l'horloge.
+//   2. On RETRANSMET D'OFFICE un lot borne de nos plus vieilles mesures PENDING,
+//      que l'on ait recu ou non le SyncControl. C'est ce qui rattrape reellement
+//      les trous : la livraison ne depend plus d'une reponse captee au bon
+//      millieme de seconde (voie retour fragile). Le hub deduplique par seq, donc
+//      repousser une mesure deja recue est sans effet.
+// Bornee dans le temps ET en nombre : jamais de session illimitee. En regime
+// normal (rien en attente au-dela du live), le lot est vide -> aucun envoi en
+// plus, aucune conso supplementaire.
+static void runDeferredSync(uint32_t liveSeq) {
     if (!syncManager.ok()) return;
 
+    // 1) Ecoute (best-effort) de l'accuse cumulatif + heure du hub.
     SyncControl ctrl;
-    if (!espNowSender.receiveSyncControl(ctrl, SENSOR_SYNC_RX_WINDOW_MS)) {
-        // Pas de reponse du hub dans la fenetre : rien de grave. Les mesures non
-        // confirmees restent PENDING dans le buffer et seront rejouees au prochain
-        // reveil. On rend la main -> deep sleep.
-        Serial.println("[SYNC] Pas de SyncControl (hub muet) : rattrapage differe");
-        return;
-    }
-
-    // Recale l'horloge sur l'heure reelle du hub (NTP), transportee dans la
-    // reponse : la sonde horodate ensuite en absolu, sans le moindre cout radio.
-    syncManager.applyHubEpoch(ctrl.hub_epoch);
-
-    // Accuse cumulatif : tout seq <= ack_seq est confirme cote hub.
-    if (syncManager.applyAck(ctrl.ack_seq)) {
-        Serial.printf("[SYNC] ACK cumulatif seq<=%u (reste %u en attente)\n",
-                      ctrl.ack_seq, syncManager.unsyncedCount());
-    }
-
-    // Le hub indique le plus bas trou qu'il veut combler (want_from_seq). A defaut,
-    // on part de notre plus ancienne mesure encore PENDING.
-    const uint32_t fromSeq = (ctrl.want_from_seq != 0) ? ctrl.want_from_seq
-                                                        : syncManager.ackWatermark() + 1;
-
-    // Budget de retransmission BORNE : le minimum entre ce que le hub demande, le
-    // plafond par cycle et la taille du lot local. Jamais de boucle infinie.
-    uint32_t budget = SENSOR_RETX_MAX_PER_CYCLE;
-    if (ctrl.want_count != 0 && ctrl.want_count < budget) budget = ctrl.want_count;
-
-    mhs::StoredRecord batch[SENSOR_RETX_MAX_PER_CYCLE];
-    const uint32_t n = syncManager.selectRetransmit(fromSeq, budget, batch);
-    if (n == 0) return;
-
-    Serial.printf("[SYNC] Retransmission de %u mesure(s) a partir de seq=%u\n", n, fromSeq);
-    for (uint32_t i = 0; i < n; i++) {
-        MeteoPacket p = buildRetransmitPacket(batch[i]);
-        const bool ok = espNowSender.send(p, FRAME_RETRANSMIT);
-        Serial.printf("[SYNC] %s seq=%u\n", ok ? "Renvoye" : "Echec", batch[i].seq);
-    }
-
-    // Une derniere ecoute courte pour recolter l'accuse cumulatif mis a jour par
-    // le hub apres ce lot, et marquer synced ce qui vient d'etre confirme. Bornee.
     if (espNowSender.receiveSyncControl(ctrl, SENSOR_SYNC_RX_WINDOW_MS)) {
         syncManager.applyHubEpoch(ctrl.hub_epoch);
         if (syncManager.applyAck(ctrl.ack_seq)) {
-            Serial.printf("[SYNC] ACK cumulatif seq<=%u apres retransmission\n", ctrl.ack_seq);
+            Serial.printf("[SYNC] ACK cumulatif seq<=%u (reste %u en attente)\n",
+                          ctrl.ack_seq, syncManager.unsyncedCount());
+        }
+    }
+
+    // 2) Retransmission PROACTIVE, independante de l'etape 1 : on repousse les plus
+    //    vieilles mesures encore PENDING (au-dela du filigrane), plafonnee.
+    const uint32_t fromSeq = syncManager.ackWatermark() + 1;
+    mhs::StoredRecord batch[SENSOR_RETX_MAX_PER_CYCLE];
+    const uint32_t n = syncManager.selectRetransmit(fromSeq, SENSOR_RETX_MAX_PER_CYCLE, batch);
+
+    uint32_t sent = 0;
+    for (uint32_t i = 0; i < n; i++) {
+        // On ne rejoue pas la mesure qu'on vient d'emettre en live ce cycle.
+        if (batch[i].seq == liveSeq) continue;
+        MeteoPacket p = buildRetransmitPacket(batch[i]);
+        const bool ok = espNowSender.send(p, FRAME_RETRANSMIT);
+        if (ok) sent++;
+        Serial.printf("[SYNC] %s seq=%u\n", ok ? "Retransmis" : "Echec retx", batch[i].seq);
+    }
+    if (sent == 0) return;
+    Serial.printf("[SYNC] %u mesure(s) retransmise(s) a partir de seq=%u\n", sent, fromSeq);
+
+    // 3) Derniere ecoute courte : recolter l'accuse cumulatif mis a jour par le hub
+    //    apres ce lot et marquer synced ce qui vient d'etre confirme.
+    if (espNowSender.receiveSyncControl(ctrl, SENSOR_SYNC_RX_WINDOW_MS)) {
+        syncManager.applyHubEpoch(ctrl.hub_epoch);
+        if (syncManager.applyAck(ctrl.ack_seq)) {
+            Serial.printf("[SYNC] ACK cumulatif seq<=%u apres retransmission (reste %u)\n",
+                          ctrl.ack_seq, syncManager.unsyncedCount());
         }
     }
 }
@@ -150,6 +149,11 @@ void performCycle() {
                   seq, packet.sensor_ts, packet.valid_fields,
                   packet.temperature, packet.humidity, packet.pressure);
 
+    // Arme la capture de la voie retour AVANT l'envoi : un SyncControl qui
+    // arriverait dans l'instant suivant l'ACK ne doit pas etre perdu par une course
+    // de timing (sinon la fenetre d'ecoute demarrait trop tard).
+    espNowSender.resetSyncControl();
+
     // Envoi LIVE de la mesure courante.
     const bool success = espNowSender.send(packet, FRAME_LIVE);
 
@@ -164,9 +168,9 @@ void performCycle() {
     if (success) {
         Serial.printf("[SYNC] Sent seq=%u (ACK MAC ch=%u)\n", seq, (unsigned)espNowSender.channel());
         powerManager.blinkStatus(0, 150, 0, 60);
-        // Le hub a recu la trame : il va repondre. On ouvre la phase de synchro
-        // differee (accuse cumulatif + retransmission bornee des trous).
-        runDeferredSync();
+        // Le hub a recu la trame : phase de synchro differee (accuse cumulatif +
+        // retransmission proactive bornee des trous).
+        runDeferredSync(seq);
     } else {
         Serial.printf("[MAIN] [WARN] Echec d'envoi (seq=%u ch=%u) : mesure conservee (PENDING)\n",
                       seq, (unsigned)espNowSender.channel());

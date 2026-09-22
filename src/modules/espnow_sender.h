@@ -39,6 +39,10 @@ public:
     // Ne rallonge l'eveil que de la fenetre, puis rend la main -> deep sleep sur.
     bool receiveSyncControl(SyncControl& out, uint32_t windowMs);
 
+    // Arme la capture d'un SyncControl (remet le drapeau a zero). A appeler juste
+    // avant l'envoi live pour ne pas rater une reponse tres rapide du hub.
+    void resetSyncControl();
+
     // Rescanne le SoftAP du hub (« MH-NOW ») et bascule sur son canal s'il a
     // change. Appele periodiquement en mode continu. Renvoie true si change.
     bool refreshChannel();

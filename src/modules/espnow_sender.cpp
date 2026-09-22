@@ -247,15 +247,25 @@ bool EspNowSender::refreshChannel() {
 
 bool EspNowSender::receiveSyncControl(SyncControl& out, uint32_t windowMs) {
     // Ecoute BORNEE de la voie inverse. Le callback onDataRecv remplit _lastCtrl
-    // + _ctrlReceived des qu'un SyncControl valide arrive. On sonde le drapeau
-    // jusqu'a la fenetre, puis on rend la main quoi qu'il arrive : jamais de
-    // blocage du retour au deep sleep.
-    _ctrlReceived = false;
+    // + _ctrlReceived des qu'un SyncControl valide arrive. On NE remet PAS le
+    // drapeau a zero ici : c'est resetSyncControl(), appele AVANT l'envoi live, qui
+    // arme la capture. Ainsi une reponse arrivee juste apres l'ACK (avant meme
+    // d'entrer ici) n'est pas perdue par une course de timing. On consomme le
+    // drapeau a la lecture. Retour garanti a la fin de la fenetre (jamais bloquant).
     const uint32_t t0 = millis();
-    while (!_ctrlReceived && (millis() - t0) < windowMs) {
+    while ((millis() - t0) < windowMs) {
+        if (_ctrlReceived) {
+            out = _lastCtrl;
+            _ctrlReceived = false; // consomme : la prochaine ecoute attend une nouvelle reponse
+            return true;
+        }
         delay(2);
     }
-    if (!_ctrlReceived) return false;
-    out = _lastCtrl;
-    return true;
+    return false;
+}
+
+void EspNowSender::resetSyncControl() {
+    // Arme la capture d'un SyncControl : a appeler juste avant l'envoi live, pour
+    // que toute reponse du hub a partir de cet instant soit retenue.
+    _ctrlReceived = false;
 }

@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.21.0] - 2026-09-22
+
+### Fixed
+
+- **Gap recovery now actually happens (field test fix).** Retransmission used to
+  depend on receiving the hub's `SyncControl` inside a 300 ms window right after
+  the live send. A timing race cleared the "control received" flag just after the
+  reply had already arrived, so the probe almost never acted on it and never
+  retransmitted - measurements missed during a hub outage stayed stuck on the
+  probe (hub cumulative ACK frozen). Two fixes:
+  - the reverse-channel capture is now armed BEFORE the live send, so a fast reply
+    is no longer lost to the race;
+  - **retransmission is now PROACTIVE**: after a successful live send the probe
+    re-pushes a bounded batch of its oldest PENDING measurements regardless of
+    whether a `SyncControl` was received. The hub dedups by seq, and the cumulative
+    ACK (when received) trims the backlog. Delivery no longer hinges on catching the
+    reply at the right millisecond.
+
+### Notes
+
+- No power change in steady state: with nothing pending beyond the live frame, the
+  batch is empty and nothing extra is sent. Extra sends happen only during a
+  catch-up, and stay capped (`SENSOR_RETX_MAX_PER_CYCLE`).
+
 ## [0.20.0] - 2026-09-22
 
 ### Added
