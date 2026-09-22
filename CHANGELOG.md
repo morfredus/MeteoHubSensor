@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.22.0] - 2026-09-22
+
+### Fixed
+
+- **Retransmitted measurements no longer get an unusable timestamp (field test).**
+  Buffered measurements stamped BEFORE the probe knew the wall-clock time carry a
+  relative timestamp. Once the probe is aligned to the hub's real time, a live
+  frame is absolute while those old buffered frames are still relative; the hub,
+  with a single anchor, reconstructed the relative ones against an absolute anchor
+  and produced an out-of-range time, so the hub dropped them ("implausible ts").
+  Fix: when retransmitting, a relative stored timestamp is converted to absolute on
+  the fly (`stored + (real_now - relative_now)`) if the probe now has real time, so
+  the hub always receives a usable acquisition time and archives the measurement.
+
 ## [0.21.0] - 2026-09-22
 
 ### Fixed

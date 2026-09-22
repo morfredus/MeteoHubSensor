@@ -45,7 +45,10 @@ static MeteoPacket buildRetransmitPacket(const mhs::StoredRecord& rec) {
     p.battery_percent = rec.battery_pct;
     p.valid_fields = rec.valid_fields;
     p.sequence   = rec.seq;
-    p.sensor_ts  = rec.sensor_ts;
+    // Convertit un eventuel horodatage RELATIF (mesure stockee avant que la sonde
+    // connaisse l'heure) en ABSOLU si la sonde est desormais a l'heure : le hub
+    // recoit alors une heure de mesure exploitable, sans melange relatif/absolu.
+    p.sensor_ts  = syncManager.absoluteTs(rec.sensor_ts);
     p.oldest_seq = syncManager.oldestSeq();
     p.reset_reason = g_resetReason;
     p.wake_count = (uint16_t)g_wakeCount;

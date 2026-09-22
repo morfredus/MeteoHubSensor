@@ -72,6 +72,22 @@ public:
     // (on repasse alors en relatif jusqu'au prochain recalage par le hub).
     bool hasRealTime() const { return (uint32_t)time(nullptr) > kEpochPlausible; }
 
+    // Traduit un horodatage stocke en horodatage ABSOLU pour la transmission.
+    // Un enregistrement deja absolu (> seuil) part tel quel. Un enregistrement
+    // RELATIF (stocke avant que la sonde connaisse l'heure) est converti a la
+    // volee, SI la sonde est desormais a l'heure : absolu = relatif + (heure_reelle
+    // - horloge_relative_courante). Cela evite que le hub melange des trames
+    // relatives (vieux buffer) et absolues (live) avec une seule ancre -> plus de
+    // reconstruction aberrante ni de rejet « implausible ts ». Sans heure connue,
+    // on laisse le relatif (le hub reconstruira via son ancre relative).
+    uint32_t absoluteTs(uint32_t storedTs) const {
+        if (storedTs > kEpochPlausible) return storedTs; // deja absolu
+        if (!hasRealTime()) return storedTs;             // pas d'heure : reste relatif
+        const int64_t offset = (int64_t)time(nullptr) - (int64_t)_clock;
+        const int64_t abs = (int64_t)storedTs + offset;
+        return abs > (int64_t)kEpochPlausible ? (uint32_t)abs : storedTs;
+    }
+
     // Recale l'horloge systeme sur l'epoch fourni par le hub (recu dans le
     // SyncControl). Aucun cout radio : le champ voyage dans la reponse deja emise.
     // On n'ecrit l'horloge que si l'ecart est significatif, pour ne pas la toucher
