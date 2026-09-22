@@ -29,23 +29,34 @@ public:
 
     // Emet le paquet en unicast vers le hub. Renvoie true seulement si le hub a
     // accuse reception (ACK). Retente sur le canal courant, puis re-scanne le
-    // canal et retente si le hub semble avoir migre.
-    bool send(MeteoPacket& packet);
+    // canal et retente si le hub semble avoir migre. Le seq/sensor_ts/oldest_seq
+    // sont renseignes par l'appelant (SyncManager) ; `frameType` distingue une
+    // acquisition LIVE d'une RETRANSMISSION d'une mesure bufferisee.
+    bool send(MeteoPacket& packet, uint8_t frameType = FRAME_LIVE);
+
+    // Ecoute BORNEE : attend jusqu'a `windowMs` un SyncControl valide du hub
+    // (accuse cumulatif + trou a combler). Renvoie true si recu (dans `out`).
+    // Ne rallonge l'eveil que de la fenetre, puis rend la main -> deep sleep sur.
+    bool receiveSyncControl(SyncControl& out, uint32_t windowMs);
 
     // Rescanne le SoftAP du hub (« MH-NOW ») et bascule sur son canal s'il a
     // change. Appele periodiquement en mode continu. Renvoie true si change.
     bool refreshChannel();
 
-    uint32_t getNextSequence();
     uint8_t channel() const { return _channel; }
 
     static void onDataSent(const uint8_t *mac_addr, esp_now_send_status_t status);
+    static void onDataRecv(const uint8_t *mac_addr, const uint8_t *data, int len);
 
 private:
     uint8_t _channel;
     uint8_t _destMac[6]{}; // MAC du hub (unicast), copiee depuis ESPNOW_RECEIVER_MAC
     static volatile bool _sendComplete;
     static volatile bool _lastDeliverySuccess;
+    // Voie inverse : dernier SyncControl recu du hub + drapeau, remplis par le
+    // callback de reception (contexte ESP-NOW) et lus dans receiveSyncControl.
+    static volatile bool _ctrlReceived;
+    static SyncControl _lastCtrl;
 
     // Scanne les reseaux et renvoie le canal du SoftAP du hub, ou 0 si absent.
     uint8_t scanHubChannel();

@@ -40,6 +40,25 @@ constexpr bool USE_LIGHT_SLEEP = false;
 // énergétique : réveil -> mesure -> émission -> deep sleep -> réveil suivant.
 #define SENSOR_MEASUREMENT_INTERVAL_SECONDS 300
 
+// --- Buffer de securite local (synchronisation fiable v3) ------------------
+// Historique local en Flash (LittleFS, partition « spiffs » de 1,44 Mo). Ring
+// buffer borne : chaque mesure y est ecrite AVANT l'envoi et n'est declaree
+// synchronisee qu'apres l'accuse cumulatif du hub. Objectif de retention 30 j.
+//   30 j @ 5 min = 8640 mesures ; 8640 * 32 o + en-tete = ~270 Ko (~19 % de la
+//   partition) -> les 30 jours tiennent avec une large marge.
+constexpr uint32_t SENSOR_BUFFER_CAPACITY = 8640;
+constexpr char     SENSOR_BUFFER_PATH[]   = "/mhs_buffer.bin";
+
+// Retransmission BORNEE par cycle : on ne rejoue qu'un lot limite de mesures
+// historiques par reveil, pour ne pas transformer l'eveil en session illimitee
+// (l'autonomie prime). Le reste se rattrape aux reveils suivants.
+constexpr uint32_t SENSOR_RETX_MAX_PER_CYCLE = 10;
+
+// Fenetre d'ecoute (ms) ouverte APRES l'envoi live pour recevoir le SyncControl
+// du hub (accuse cumulatif + trou a combler). Courte et bornee : elle ne rallonge
+// l'eveil que de ce delai au maximum, puis on retransmet et on dort.
+constexpr uint32_t SENSOR_SYNC_RX_WINDOW_MS = 300;
+
 // --- ESP-NOW Configuration ---
 // SSID/mot de passe de l'AP du hub (identiques a ESPNOW_SOFTAP_* cote station).
 // La sonde s'associe ici : plus de scan Livebox ni de lock canal promiscuous.

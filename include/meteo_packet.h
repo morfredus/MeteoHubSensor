@@ -10,7 +10,21 @@ constexpr uint8_t METEO_PACKET_MAGIC_0 = 'M';
 constexpr uint8_t METEO_PACKET_MAGIC_1 = 'H';
 // v2 : ajout des champs de diagnostic reset_reason + wake_count. Le recepteur
 // rejette une version differente, donc sonde ET hub doivent etre en v2 ensemble.
-constexpr uint8_t METEO_PROTOCOL_VERSION = 2;
+// v3 : synchronisation fiable tolerante aux pertes. Ajout de sensor_ts (horloge
+// relative monotone du capteur, pour reconstruire l'heure de MESURE et non
+// d'arrivee) et frame_type (live vs retransmission d'une mesure bufferisee). Le
+// hub renvoie un SyncControl (voie inverse) pour l'accuse cumulatif + demande de
+// trou. Sonde ET hub doivent etre reflashes ensemble (version rejetee sinon).
+constexpr uint8_t METEO_PROTOCOL_VERSION = 3;
+
+// Type de trame de donnees (champ frame_type). Une retransmission porte la MEME
+// sequence et le MEME sensor_ts que l'acquisition d'origine : seule frame_type
+// change, ce qui permet au hub d'ancrer son horloge sur les trames LIVE
+// uniquement (une retransmission peut etre vieille de plusieurs heures).
+enum MeteoFrameType : uint8_t {
+    FRAME_LIVE       = 0, // acquisition du cycle courant (heure ~= maintenant)
+    FRAME_RETRANSMIT = 1, // mesure historique rejouee depuis le buffer local
+};
 
 // Masque binaire des métriques présentes / valides dans le paquet
 enum MeteoFieldFlags : uint16_t {
@@ -65,10 +79,60 @@ struct __attribute__((packed)) MeteoPacket {
     uint8_t reset_reason;
     uint16_t wake_count;
 
+    // --- Synchronisation fiable (v3) ---------------------------------------
+    // sensor_ts : secondes ecoulees sur l'horloge RELATIVE du capteur au moment
+    // de l'ACQUISITION (accumulee en NVS, survit deep sleep ET power-cycle). Le
+    // capteur n'a ni RTC ni NTP : il ne connait pas l'heure murale. Le hub, lui,
+    // ancre cette horloge sur l'heure reelle a chaque trame LIVE et reconstruit
+    // l'heure de mesure d'une trame retransmise (heure d'arrivee != heure de
+    // mesure). Porte par la trame d'origine ET par ses retransmissions.
+    uint32_t sensor_ts;
+    // frame_type : FRAME_LIVE ou FRAME_RETRANSMIT (voir MeteoFrameType).
+    uint8_t frame_type;
+    // oldest_seq : plus petit seq encore present dans le buffer local de la sonde
+    // (0 si buffer vide). Il dit au hub ce que la sonde peut ENCORE fournir : si
+    // oldest_seq depasse le prochain trou attendu par le hub, ce trou est
+    // definitivement perdu (mesure sortie du buffer de 30 j) et le hub avance son
+    // accuse cumulatif au-dela plutot que de reclamer sans fin une mesure
+    // introuvable. C'est le garde-fou anti-blocage du cas-limite « buffer plein ».
+    uint32_t oldest_seq;
+
     uint16_t crc16;                // CRC16 de contrôle d'intégrité
 };
 
-static_assert(sizeof(MeteoPacket) == 54, "MeteoPacket must stay packed at 54 bytes");
+static_assert(sizeof(MeteoPacket) == 63, "MeteoPacket must stay packed at 63 bytes");
+
+// ============================================================================
+// Voie inverse hub -> sonde : accuse de reception cumulatif + demande de trou
+// ============================================================================
+// Emise par MeteoHub vers la sonde APRES reception d'une trame, pendant la
+// courte fenetre d'eveil de la sonde. Magic 'M','C' (MeteoControl) pour la
+// distinguer d'une trame de donnees 'M','H'. Modele « TCP-like » : ack_seq est
+// le plus grand numero tel que le hub possede TOUT jusqu'a lui (accuse
+// cumulatif, idempotent, robuste aux doublons et aux pertes). want_from/want_count
+// est un indice borne du plus bas trou que le hub aimerait combler ensuite.
+constexpr uint8_t METEO_CONTROL_MAGIC_0 = 'M';
+constexpr uint8_t METEO_CONTROL_MAGIC_1 = 'C';
+
+struct __attribute__((packed)) SyncControl {
+    uint8_t magic[2];              // 'M', 'C'
+    uint8_t protocol_version;      // METEO_PROTOCOL_VERSION
+    uint8_t node_id;               // sonde visee par cet accuse
+    uint32_t ack_seq;              // le hub possede TOUT seq <= ack_seq (0 = rien)
+    uint32_t want_from_seq;        // plus bas seq manquant souhaite (0 = aucun)
+    uint16_t want_count;           // nb de mesures souhaitees a partir de want_from_seq
+    // hub_epoch : heure Unix reelle du hub (synchronisee NTP), 0 s'il n'est pas
+    // encore synchronise. La sonde n'a ni RTC ni NTP : elle recale son horloge
+    // systeme dessus (settimeofday) et l'ESP32 la maintient a travers le deep
+    // sleep. Chaque mesure est alors horodatee en heure ABSOLUE des l'acquisition,
+    // ce qui reste exact meme apres une coupure d'alimentation. Aucun cout radio :
+    // ce champ voyage dans la reponse deja emise, la sonde ne fait qu'un
+    // settimeofday (quelques µs), sans scan ni echange supplementaire.
+    uint32_t hub_epoch;
+    uint16_t crc16;                // CRC16 de controle d'integrite
+};
+
+static_assert(sizeof(SyncControl) == 20, "SyncControl must stay packed at 20 bytes");
 
 // Calcul rapide de CRC16 CCITT
 inline uint16_t calculateCrc16(const uint8_t* data, size_t length) {

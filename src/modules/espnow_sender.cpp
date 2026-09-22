@@ -4,8 +4,8 @@
 #include <esp_wifi.h>
 #include <cstring>
 
-// Compteur de sequence conserve en RTC apres deep sleep.
-RTC_DATA_ATTR static uint32_t rtcSequenceNumber = 0;
+// Le numero de sequence n'est PLUS en RTC (remis a 0 au power-cycle) : il vit
+// desormais en NVS via SyncManager, monotone meme apres un brownout.
 
 // Canal du hub memorise en RAM RTC : survit au deep sleep, reutilise au reveil
 // sans refaire un scan Wi-Fi. 0 = pas encore decouvert (premier boot).
@@ -15,6 +15,8 @@ RTC_DATA_ATTR static uint32_t rtcWakeCount = 0;
 
 volatile bool EspNowSender::_sendComplete = false;
 volatile bool EspNowSender::_lastDeliverySuccess = false;
+volatile bool EspNowSender::_ctrlReceived = false;
+SyncControl EspNowSender::_lastCtrl{};
 
 namespace {
 // Delai d'attente de l'ACK apres un esp_now_send unicast. L'ACK 802.11 revient
@@ -29,6 +31,21 @@ void EspNowSender::onDataSent(const uint8_t *mac_addr, esp_now_send_status_t sta
     // En UNICAST, ce statut est fiable : SUCCESS = le hub a accuse reception.
     _lastDeliverySuccess = (status == ESP_NOW_SEND_SUCCESS);
     _sendComplete = true;
+}
+
+void EspNowSender::onDataRecv(const uint8_t *mac_addr, const uint8_t *data, int len) {
+    (void)mac_addr;
+    // Voie inverse : on ne s'interesse qu'au SyncControl du hub (magic 'M','C').
+    // Trame trop courte / mauvais magic / mauvaise version / CRC KO -> ignoree.
+    if (data == nullptr || len < (int)sizeof(SyncControl)) return;
+    SyncControl ctrl;
+    memcpy(&ctrl, data, sizeof(SyncControl));
+    if (ctrl.magic[0] != METEO_CONTROL_MAGIC_0 || ctrl.magic[1] != METEO_CONTROL_MAGIC_1) return;
+    if (ctrl.protocol_version != METEO_PROTOCOL_VERSION) return;
+    const size_t lenForCrc = sizeof(SyncControl) - sizeof(uint16_t);
+    if (calculateCrc16(reinterpret_cast<const uint8_t*>(&ctrl), lenForCrc) != ctrl.crc16) return;
+    _lastCtrl = ctrl;
+    _ctrlReceived = true;
 }
 
 EspNowSender::EspNowSender() : _channel(ESPNOW_HUB_CHANNEL) {
@@ -85,6 +102,9 @@ bool EspNowSender::begin() {
         return false;
     }
     esp_now_register_send_cb(onDataSent);
+    // Voie inverse (v3) : le hub peut renvoyer un SyncControl pendant la fenetre
+    // d'eveil. On enregistre le callback de reception des maintenant.
+    esp_now_register_recv_cb(onDataRecv);
 
     if (!registerHubPeer()) {
         return false;
@@ -121,14 +141,16 @@ bool EspNowSender::registerHubPeer() {
     return true;
 }
 
-bool EspNowSender::send(MeteoPacket& packet) {
-    // En-tete + integrite. La sequence n'est incrementee qu'une fois : les
-    // retries reemetten la MEME trame (le hub deduplique par sequence si besoin).
+bool EspNowSender::send(MeteoPacket& packet, uint8_t frameType) {
+    // En-tete + integrite. Le seq / sensor_ts / oldest_seq sont deja renseignes
+    // par le SyncManager (propriétaire de l'identite et de l'horloge, persistees
+    // en NVS) : send() ne fait que finaliser l'en-tete et transmettre. Les retries
+    // reemetten la MEME trame (le hub deduplique par seq).
     packet.magic[0] = METEO_PACKET_MAGIC_0;
     packet.magic[1] = METEO_PACKET_MAGIC_1;
     packet.protocol_version = METEO_PROTOCOL_VERSION;
     packet.node_id = SENSOR_NODE_ID;
-    packet.sequence = getNextSequence();
+    packet.frame_type = frameType;
 
     const size_t dataLenForCrc = sizeof(MeteoPacket) - sizeof(uint16_t);
     packet.crc16 = calculateCrc16(reinterpret_cast<const uint8_t*>(&packet), dataLenForCrc);
@@ -223,7 +245,17 @@ bool EspNowSender::refreshChannel() {
     return changed;
 }
 
-uint32_t EspNowSender::getNextSequence() {
-    rtcSequenceNumber++;
-    return rtcSequenceNumber;
+bool EspNowSender::receiveSyncControl(SyncControl& out, uint32_t windowMs) {
+    // Ecoute BORNEE de la voie inverse. Le callback onDataRecv remplit _lastCtrl
+    // + _ctrlReceived des qu'un SyncControl valide arrive. On sonde le drapeau
+    // jusqu'a la fenetre, puis on rend la main quoi qu'il arrive : jamais de
+    // blocage du retour au deep sleep.
+    _ctrlReceived = false;
+    const uint32_t t0 = millis();
+    while (!_ctrlReceived && (millis() - t0) < windowMs) {
+        delay(2);
+    }
+    if (!_ctrlReceived) return false;
+    out = _lastCtrl;
+    return true;
 }

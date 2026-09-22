@@ -5,6 +5,66 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.20.0] - 2026-09-22
+
+### Added
+
+- **Absolute time alignment from the hub, at zero power cost.** The hub's
+  NTP-synced epoch now rides in the `SyncControl` reply the hub already sends
+  during the probe's wake window; the probe sets its system clock
+  (`settimeofday`), and the ESP32 keeps it across deep sleep. Each measurement is
+  then timestamped in ABSOLUTE time at acquisition, so a buffered measurement keeps
+  its correct time even across a probe power loss (the previous physical limit).
+  No extra radio, scan or wake time - only 4 extra bytes in an already-sent reply
+  and a microsecond `settimeofday`. The relative-clock reconstruction remains as a
+  fallback until the first alignment.
+
+### Notes
+
+- `SyncControl` grew from 16 to 20 bytes (`hub_epoch`). Reflash probe and hub
+  together (requires MeteoHub >= 1.40.0).
+
+## [0.19.0] - 2026-09-22
+
+### Added
+
+- **Loss-tolerant measurement sync (ESP-NOW protocol v3).** Every measurement is
+  now written to a persistent local ring buffer in flash BEFORE any send, and is
+  only marked SYNCED once the hub confirms it (cumulative ACK) - never merely
+  because it was sent. The buffer targets ~30 days of retention (8640 slots of
+  32 B on the `spiffs` partition, ~270 KB, ~19% of it); LittleFS provides the
+  flash wear leveling, the ring provides the bounded retention. On each normal
+  wake the probe sends the live measurement, then within a short bounded RX window
+  applies the hub's cumulative ACK and retransmits a capped batch of the
+  still-missing measurements. Deep sleep and autonomy are preserved: the sync is
+  bounded per cycle and the probe always returns to deep sleep, even if the hub is
+  unreachable or the buffer fails to mount.
+- **Monotonic sequence and relative clock persisted in NVS.** The sequence number
+  now survives a power cycle/brownout (it used to reset in RTC RAM), giving each
+  measurement a stable unique id for dedup and gap detection. A relative sensor
+  clock (also in NVS) lets the hub reconstruct each measurement's real acquisition
+  time instead of its arrival time.
+- **Explicit full-buffer policy.** If communication stays down long enough to fill
+  the whole buffer with unacked measurements, the oldest PENDING is overwritten to
+  keep the freshest data, counted (`dropped_pending`) and logged - never a silent
+  loss.
+- **Native unit tests** (`pio test -e native`) covering the buffer logic: append,
+  ring rotation, cumulative watermark, bounded retransmit selection, reboot
+  persistence, full-buffer PENDING drop, no duplicates.
+
+### Changed
+
+- The sequence number is no longer held in RTC RAM; it is owned by the new
+  SyncManager and persisted in NVS.
+
+### Notes
+
+- Requires MeteoHub >= 1.39.0. The two must be reflashed together: a v3 receiver
+  rejects a different protocol version.
+- Physical limit (no RTC on the probe): across a probe POWER LOSS, measurements
+  buffered but not yet synced before the outage are placed relative to the return.
+  Needs real-hardware validation.
+
 ## [0.18.1] - 2026-09-16
 
 ### Changed
