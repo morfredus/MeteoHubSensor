@@ -1,6 +1,6 @@
 # MeteoHubSensor
 
-[![Version](https://img.shields.io/badge/version-0.23.1-blue.svg)](VERSION)
+[![Version](https://img.shields.io/badge/version-0.24.0-blue.svg)](VERSION)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Platform: ESP32-S3](https://img.shields.io/badge/Platform-ESP32--S3-orange.svg)](https://www.espressif.com/)
 
@@ -48,8 +48,9 @@ ni de reflasher pour changer de hub.
 1. Ne laisser allumé, à portée radio, **que** le MeteoHub à associer
    (MeteoHub **≥ 1.46.0**).
 2. Sonde en marche, maintenir **BOOT environ 3 s**, jusqu'à ce que la LED passe
-   au **bleu fixe**, puis relâcher. (Ne pas maintenir BOOT en branchant la
-   sonde : c'est le mode de flashage de l'ESP32.)
+   au **bleu fixe**, puis **relâcher** : l'appairage démarre au relâchement.
+   Un appui de plus de 10 s est ignoré (bouton considéré comme coincé). Ne pas
+   maintenir BOOT en branchant la sonde : c'est le mode de flashage de l'ESP32.
 3. La sonde balaie les canaux 1 à 13 en demandant « qui est hub ? ». Le hub
    répond avec son identité et sa MAC ; la sonde confirme en unicast et attend
    l'accusé de réception du hub.
@@ -72,7 +73,13 @@ Règles :
 - **Pas de doublon, pas de trou.** La confirmation porte le dernier numéro de
   mesure accusé par l'ancien hub : le nouveau hub reprend de là et ne reçoit
   que les mesures encore en attente.
-- Recherche bornée à **60 s**. Un appui court est ignoré. L'appui réveille la
+- **Bouton coincé = aucun effet.** Un appui permanent (boîtier qui presse le
+  bouton, humidité sur GPIO0) ne se relâche jamais : il ne lance pas
+  d'appairage, et le réveil par bouton n'est même pas armé tant que GPIO0 reste
+  bas. Les mesures continuent normalement.
+- Recherche bornée à **60 s**. Un appui court est ignoré.
+- Le hub (≥ 1.47.0) **n'archive plus que la sonde qui l'a choisi** : une sonde
+  d'établi allumée à côté ne peut plus mélanger ses mesures à celles de dehors. L'appui réveille la
   sonde de son sommeil ; elle se rendort ensuite pour le temps restant, sans
   décaler la cadence des mesures.
 
@@ -80,6 +87,21 @@ Sans appairage enregistré, la sonde utilise `ESPNOW_RECEIVER_MAC` de
 `include/config.h` (une sonde déjà en service garde donc son hub après mise à
 jour). Mettre cette constante à zéro pour une sonde neuve, qui attend alors
 d'être appairée en gardant ses mesures.
+
+### Buffer local : aucune mesure perdue, sans vider l'accu
+
+Chaque mesure est écrite en Flash **avant** d'être envoyée, puis gardée jusqu'à
+ce que le hub en accuse réception. Si le hub est éteint ou hors de portée, la
+sonde renvoie ensuite ce qui manque, dans l'ordre, au plus 10 mesures par
+réveil. Rétention : 30 jours de mesures en attente.
+
+Depuis la 0.24.0, ce buffer est un **journal en segments** : un petit fichier
+par jour de mesures (`/mhs/<seq>.seg`), écrit uniquement par ajout. Le
+filigrane d'accusé vit en NVS, et un segment entièrement accusé est supprimé.
+L'ancien buffer, un seul fichier de 276 Ko, était recopié en entier par
+LittleFS à chaque mesure : 4,5 s mesurées, radio allumée. Au premier
+démarrage en 0.24.0, les mesures encore en attente de l'ancien fichier sont
+reprises, puis il est effacé.
 
 ---
 

@@ -31,15 +31,32 @@ static uint8_t g_lastBatteryPct = 100;
 // true tant que BOOT est enfonce (bouton actif a l'etat bas).
 static bool bootPressed() { return digitalRead(PIN_BOOT_BUTTON) == LOW; }
 
-// Attend la fin d'un appui en cours. Renvoie true si l'appui a atteint
-// PAIRING_LONG_PRESS_MS (compte depuis `pressStartMs`) : c'est alors un appui
-// LONG, et on n'attend pas le relachement pour lancer l'appairage.
-static bool waitLongPress(uint32_t pressStartMs) {
+// Geste sur BOOT, lu depuis `pressStartMs` :
+//   SHORT : relache avant PAIRING_LONG_PRESS_MS -> ignore ;
+//   PAIR  : relache entre PAIRING_LONG_PRESS_MS et PAIRING_STUCK_MS -> appairage.
+//           La LED passe au bleu des le seuil atteint : « tu peux relacher » ;
+//   STUCK : toujours enfonce a PAIRING_STUCK_MS -> bouton coince, rien. On
+//           n'attend pas le relachement (il peut ne jamais venir).
+// L'appairage exige donc un RELACHEMENT : un faux contact permanent (boitier qui
+// appuie sur le bouton, humidite) ne peut plus le declencher.
+enum class BootGesture : uint8_t { SHORT, PAIR, STUCK };
+
+static BootGesture readBootGesture(uint32_t pressStartMs) {
+    bool armed = false;
     while (bootPressed()) {
-        if (millis() - pressStartMs >= PAIRING_LONG_PRESS_MS) return true;
+        const uint32_t held = millis() - pressStartMs;
+        if (held >= PAIRING_STUCK_MS) {
+            powerManager.turnOffLed();
+            return BootGesture::STUCK;
+        }
+        if (!armed && held >= PAIRING_LONG_PRESS_MS) {
+            powerManager.setLedColor(0, 0, 150);
+            armed = true;
+        }
         delay(10);
     }
-    return false;
+    return (millis() - pressStartMs >= PAIRING_LONG_PRESS_MS) ? BootGesture::PAIR
+                                                               : BootGesture::SHORT;
 }
 
 // Procedure complete : LED bleue fixe pendant la recherche, puis 3 eclairs verts
@@ -239,11 +256,9 @@ void setup() {
     // de canal : sinon ces delais mangeraient le temps d'appui et un vrai appui
     // long passerait pour un court. LED bleue des que le seuil est atteint : on
     // peut relacher.
-    bool wantPairing = false;
-    if (buttonWake) {
-        wantPairing = waitLongPress(pressStartMs);
-        if (wantPairing) powerManager.setLedColor(0, 0, 150);
-    }
+    BootGesture gesture = BootGesture::SHORT;
+    if (buttonWake) gesture = readBootGesture(pressStartMs);
+    const bool wantPairing = (gesture == BootGesture::PAIR);
 
     Serial.begin(115200);
     // USB CDC du Super Mini : laisser le host enumerer, sans bloquer sans cable.
@@ -299,6 +314,9 @@ void setup() {
         // programme, sans mesure : la cadence et l'horloge ne bougent pas.
         if (wantPairing) {
             runPairing();
+        } else if (gesture == BootGesture::STUCK) {
+            Serial.println("[PAIR] [WARN] BOOT enfonce en permanence (bouton coince ?) : "
+                           "appairage ignore, reveil par bouton desarme");
         } else {
             Serial.println("[PAIR] Appui court sur BOOT : ignore");
         }
@@ -339,11 +357,19 @@ void loop() {
     }
 
     if (!ENABLE_DEEP_SLEEP) {
-        // Mode continu : le bouton est surveille ici (pas de reveil ext0).
-        if (bootPressed()) {
-            if (waitLongPress(millis())) {
+        // Mode continu : le bouton est surveille ici (pas de reveil ext0). Un
+        // bouton coince n'est relu qu'apres un relachement, pour ne pas bloquer
+        // la boucle 10 s a chaque tour.
+        static bool ignoreUntilRelease = false;
+        if (!bootPressed()) {
+            ignoreUntilRelease = false;
+        } else if (!ignoreUntilRelease) {
+            const BootGesture g = readBootGesture(millis());
+            if (g == BootGesture::PAIR) {
                 runPairing();
-                while (bootPressed()) delay(10); // ignore la fin de l'appui
+            } else if (g == BootGesture::STUCK) {
+                Serial.println("[PAIR] [WARN] BOOT enfonce en permanence : ignore");
+                ignoreUntilRelease = true;
             }
         }
 

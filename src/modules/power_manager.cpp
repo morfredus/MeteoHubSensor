@@ -134,9 +134,17 @@ void PowerManager::enterDeepSleep(uint32_t seconds) {
     // Réveil par le bouton BOOT (niveau bas = appuyé), pour l'appairage. ext0
     // garde le domaine RTC alimenté, ce qui permet le pull-up interne pendant le
     // sommeil (quelques µA de plus, négligeable devant les réveils radio).
-    rtc_gpio_pullup_en((gpio_num_t)PIN_BOOT_BUTTON);
-    rtc_gpio_pulldown_dis((gpio_num_t)PIN_BOOT_BUTTON);
-    esp_sleep_enable_ext0_wakeup((gpio_num_t)PIN_BOOT_BUTTON, 0);
+    // Armé SEULEMENT si le bouton est au repos maintenant : un bouton coincé
+    // (ou GPIO0 tiré à la masse par l'humidité) réveillerait la sonde en boucle,
+    // sans mesure. Il sera réarmé au premier sommeil où GPIO0 est revenu haut.
+    if (digitalRead(PIN_BOOT_BUTTON) == HIGH) {
+        rtc_gpio_pullup_en((gpio_num_t)PIN_BOOT_BUTTON);
+        rtc_gpio_pulldown_dis((gpio_num_t)PIN_BOOT_BUTTON);
+        esp_sleep_enable_ext0_wakeup((gpio_num_t)PIN_BOOT_BUTTON, 0);
+    } else {
+        Serial.println("[POWER] [WARN] BOOT au niveau bas : reveil par bouton non arme");
+        Serial.flush();
+    }
     
     // Extinction du Wi-Fi avant sommeil
     WiFi.disconnect(true);

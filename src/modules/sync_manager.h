@@ -4,14 +4,17 @@
 #include <time.h>
 #include <sys/time.h>
 #include "meteo_packet.h"
-#include "sync/measurement_store.h"
+#include "sync/measurement_store.h"   // ancien format : reprise unique a la migration
+#include "sync/segment_store.h"
 #include "littlefs_blob_store.h"
+#include "littlefs_segment_fs.h"
 
 // ============================================================================
 // SyncManager (sonde) - buffer local + identite + horloge relative
 // ============================================================================
 // Reunit ce qui rend la sonde tolerante aux pertes :
-//   - le ring buffer persistant en Flash (MeasurementStore + LittleFsBlobStore) ;
+//   - le buffer persistant en Flash : journal SEGMENTE en ajout seul (SegmentStore
+//     + LittleFsSegmentFs, 0.24.0), dont le filigrane d'accuse vit en NVS ;
 //   - le numero de sequence MONOTONE, persiste en NVS pour survivre au brownout
 //     (contrairement a l'ancien compteur RTC remis a 0 a chaque power-cycle) ;
 //   - l'horloge RELATIVE du capteur (secondes cumulees), aussi en NVS, qui
@@ -29,25 +32,69 @@ public:
     // stockage local est indisponible (la sonde continuera d'emettre en direct,
     // mais sans filet : c'est degrade, pas bloquant).
     bool begin() {
-        const uint32_t bytes = sizeof(StoreHeader)
-                             + SENSOR_BUFFER_CAPACITY * sizeof(StoredRecord);
-        if (!_backend.begin(SENSOR_BUFFER_PATH, bytes)) {
-            _ok = false;
-            return false;
-        }
-        if (!_store.begin(&_backend, SENSOR_BUFFER_CAPACITY)) {
-            _ok = false;
-            return false;
-        }
-        // NVS : source d'autorite du seq et de l'horloge (survivent au brownout).
+        // NVS : source d'autorite du seq, de l'horloge, du filigrane d'accuse et
+        // du compteur de pertes (petits entiers, frequents : le role de la NVS).
         _prefs.begin("mhs", /*readOnly=*/false);
         _seq = _prefs.getUInt("seq", 0);
         _clock = _prefs.getUInt("clock", 0);
+        const bool haveWm = _prefs.isKey("ack");
+        uint32_t wm = _prefs.getUInt("ack", 0);
+        uint32_t dropped = _prefs.getUInt("drop", 0);
+
+        if (!_fs.begin(SENSOR_SEGMENT_DIR)) {
+            _ok = false;
+            return false;
+        }
+
+        // Ancien buffer (fichier unique de 276 Ko, avant 0.24.0) : lu UNE fois.
+        // On en reprend le filigrane (si la NVS ne l'a pas encore) et les pertes,
+        // puis les mesures EN ATTENTE, recopiees une a une dans le journal (jamais
+        // tout le fichier en RAM : la sonde n'a pas de PSRAM active). Le fichier
+        // est ensuite efface.
+        const bool legacy = LittleFS.exists(SENSOR_BUFFER_PATH);
+        LittleFsBlobStore legacyBlob;
+        MeasurementStore old;
+        bool legacyOk = false;
+        if (legacy) {
+            const uint32_t bytes = sizeof(StoreHeader)
+                                 + SENSOR_BUFFER_CAPACITY * sizeof(StoredRecord);
+            legacyOk = legacyBlob.begin(SENSOR_BUFFER_PATH, bytes)
+                    && old.begin(&legacyBlob, SENSOR_BUFFER_CAPACITY);
+            if (legacyOk) {
+                if (!haveWm) wm = old.ackWatermark();
+                if (old.droppedPending() > dropped) dropped = old.droppedPending();
+            }
+        }
+
+        if (!_store.begin(&_fs, SENSOR_SEGMENT_RECORDS, SENSOR_MAX_SEGMENTS, wm, dropped)) {
+            legacyBlob.end();
+            _ok = false;
+            return false;
+        }
         _ok = true;
+
+        if (legacy) {
+            uint32_t imported = 0;
+            if (legacyOk) {
+                // Ordre logique du ring = ordre d'ecriture = seq croissants.
+                for (uint32_t i = 0; i < old.count(); i++) {
+                    StoredRecord r;
+                    if (!old.recordAt(i, r) || r.seq <= wm) continue;
+                    if (r.seq > _store.newestSeq() && _store.append(r)) imported++;
+                }
+            }
+            legacyBlob.end();
+            LittleFS.remove(SENSOR_BUFFER_PATH);
+            persistStoreState();
+            Serial.printf("[SYNC] Ancien buffer converti en journal segmente "
+                          "(%u mesure(s) en attente reprise(s), filigrane=%u)\n",
+                          imported, _store.ackWatermark());
+        }
+
         // Filigrane au-dela de toute mesure du buffer : accuse d'un hub qui
-        // suivait une AUTRE serie (sonde repartie de seq=1). Les mesures
-        // redeviennent en attente et seront retransmises.
+        // suivait une AUTRE serie. Les mesures redeviennent en attente.
         if (_store.repairWatermark()) {
+            persistStoreState();
             Serial.println("[SYNC] [WARN] Accuse incoherent (serie precedente) : "
                            "mesures du buffer remises en attente");
         }
@@ -57,7 +104,6 @@ public:
     bool ok() const { return _ok; }
 
     void end() {
-        _backend.end();
         _prefs.end();
     }
 
@@ -129,7 +175,14 @@ public:
         r.battery_v = packet.battery_voltage;
         r.battery_pct = packet.battery_percent;
         r.valid_fields = packet.valid_fields;
-        if (_ok) _store.append(r);
+        if (_ok) {
+            _store.append(r);
+            if (_store.takeRestarted()) {
+                Serial.println("[SYNC] [WARN] Numerotation repartie en arriere : "
+                               "ancien buffer ecarte");
+            }
+            persistStoreState(); // pertes eventuelles (retention) + filigrane
+        }
 
         // Persiste l'identite/horloge AVANT tout envoi : meme si le cycle est
         // coupe ensuite, on ne reattribuera jamais ce seq (pas de doublon d'id).
@@ -142,7 +195,9 @@ public:
         return _seq;
     }
 
-    uint32_t oldestSeq() const { return _ok ? oldestSeqImpl() : 0; }
+    // Plus ancienne mesure que la sonde peut encore FOURNIR (oldest_seq des
+    // trames) : la plus ancienne en attente, jamais une mesure deja accusee.
+    uint32_t oldestSeq() const { return _ok ? _store.oldestProvidableSeq() : 0; }
     uint32_t ackWatermark() const { return _ok ? _store.ackWatermark() : 0; }
     uint32_t unsyncedCount() const { return _ok ? _store.unsyncedCount() : 0; }
     uint32_t droppedPending() const { return _ok ? _store.droppedPending() : 0; }
@@ -150,7 +205,11 @@ public:
 
     // Applique l'accuse cumulatif du hub (marque synced <= ackSeq). Renvoie true
     // si le filigrane a avance.
-    bool applyAck(uint32_t ackSeq) { return _ok && _store.markSyncedUpTo(ackSeq); }
+    bool applyAck(uint32_t ackSeq) {
+        if (!_ok || !_store.markSyncedUpTo(ackSeq)) return false;
+        persistStoreState();
+        return true;
+    }
 
     // Selectionne jusqu'a maxN mesures a retransmettre (>= fromSeq, PENDING),
     // ordre chronologique. Renvoie le nombre ecrit dans out.
@@ -159,21 +218,16 @@ public:
     }
 
 private:
-    uint32_t oldestSeqImpl() const {
-        // Plus petit seq present dans le buffer (synced ou non) : c'est ce que la
-        // sonde peut ENCORE fournir. Sert au garde anti-blocage du hub.
-        uint32_t best = 0;
-        for (uint32_t i = 0; i < _store.count(); i++) {
-            StoredRecord r;
-            if (_store.recordAt(i, r) && r.seq != 0) {
-                if (best == 0 || r.seq < best) best = r.seq;
-            }
-        }
-        return best;
+    // Filigrane et pertes en NVS, ecrits seulement s'ils ont change.
+    void persistStoreState() {
+        if (_prefs.getUInt("ack", 0) != _store.ackWatermark() || !_prefs.isKey("ack"))
+            _prefs.putUInt("ack", _store.ackWatermark());
+        if (_prefs.getUInt("drop", 0) != _store.droppedPending())
+            _prefs.putUInt("drop", _store.droppedPending());
     }
 
-    LittleFsBlobStore _backend;
-    MeasurementStore _store;
+    LittleFsSegmentFs _fs;
+    SegmentStore _store;
     Preferences _prefs;
     uint32_t _seq = 0;
     uint32_t _clock = 0;

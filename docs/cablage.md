@@ -108,7 +108,7 @@ LED est le seul retour visuel local.
 | 🟢 **Vert** (bref) | Juste après l'envoi ESP-NOW, si le hub a **accusé réception** | La trame est **livrée** (ACK reçu du hub) |
 | 🔴 **Rouge** (bref) | Juste après l'envoi ESP-NOW, si **aucun ACK** n'est revenu | La trame **n'a pas été livrée** (hub hors de portée / éteint) |
 | 🔴 **Rouge fixe** | Au boot, si l'init ESP-NOW échoue | Radio ESP-NOW indisponible (défaut au démarrage) |
-| 🔵 **Bleu fixe** | Après ~3 s d'appui sur **BOOT** | Appairage en cours : recherche d'un hub (60 s max) |
+| 🔵 **Bleu fixe** | Après ~3 s d'appui sur **BOOT** | Relâcher : l'appairage démarre au relâchement (recherche d'un hub, 60 s max). Au-delà de 10 s d'appui, rien ne se passe (bouton coincé) |
 | 🟢 **3 éclairs verts** | Fin d'appairage | Nouveau hub enregistré, mesures redirigées vers lui |
 | 🔴 **3 éclairs rouges** | Fin d'appairage | Aucun hub, plusieurs hubs, ou pas d'accusé : **association inchangée** |
 | ⚫ **Éteinte** | Au repos entre deux mesures (et avant la mise en veille) | Rien à signaler / cycle terminé |

@@ -5,6 +5,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.24.0] - 2026-09-26
+
+### Changed
+
+- **The local buffer is now a segmented, append-only journal.** Measured on the
+  bench probe: 4.5 s blocked on every measurement write, radio on. The 30-day
+  buffer was a single 276 KB LittleFS file whose header, at offset 0, was
+  rewritten on every measurement and every hub ack; LittleFS being copy-on-write,
+  each flush copied the whole file. The new `SegmentStore`
+  (`include/sync/segment_store.h`, pure and host-tested) stores one small file per
+  day of measurements (`/mhs/<first_seq>.seg`, 288 x 32 B) written by append only;
+  the ack watermark and the drop counter live in NVS; fully acknowledged segments
+  are deleted (the last one is kept to append to). Retention stays 30 days of
+  pending measurements, drops beyond it are still counted, never silent.
+- **`oldest_seq` now announces the oldest measurement the probe can still
+  PROVIDE** (the oldest pending one), not the oldest stored one. The probe never
+  resends an acknowledged measurement; announcing one made a hub wait forever for
+  it (seen in the field: hub stuck on `want=1089`).
+- One-time migration at first boot: the pending measurements of the old file are
+  streamed into the journal one by one (no full load in RAM), its watermark is
+  kept if the NVS has none yet, then the old file is deleted.
+- A numbering that goes backwards (probe NVS erased) discards the old journal
+  instead of mixing two series.
+- Host tests: 9 new cases (`test_native_segments`), 30 in total.
+
+## [0.23.2] - 2026-09-26
+
+### Fixed
+
+- **A stuck BOOT button no longer triggers pairing nor starves measurements.**
+  Seen in the field: the outdoor probe, untouched, sent five pairing requests
+  and went ~17 min between two measurements (a button wake neither measures nor
+  counts as a wake). GPIO0 read low for more than 3 s while outdoors (enclosure
+  pressing the button, cable, or moisture). Pairing now starts on RELEASE of a
+  press lasting 3 to 10 s; a press still held at 10 s is treated as a stuck
+  button and ignored, without waiting for a release that may never come. The
+  ext0 wake on BOOT is armed only if GPIO0 is high when going to sleep, so a
+  stuck button cannot cause a wake storm; it is re-armed once GPIO0 is back
+  high. Continuous mode applies the same gesture and ignores a stuck button
+  until it is released.
+
 ## [0.23.1] - 2026-09-26
 
 ### Fixed

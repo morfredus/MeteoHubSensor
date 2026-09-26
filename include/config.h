@@ -46,6 +46,16 @@ constexpr bool USE_LIGHT_SLEEP = false;
 // synchronisee qu'apres l'accuse cumulatif du hub. Objectif de retention 30 j.
 //   30 j @ 5 min = 8640 mesures ; 8640 * 32 o + en-tete = ~270 Ko (~19 % de la
 //   partition) -> les 30 jours tiennent avec une large marge.
+//
+// Depuis 0.24.0 : journal SEGMENTE en ajout seul (un fichier par jour de mesures
+// dans SENSOR_SEGMENT_DIR), filigrane d'accuse en NVS. L'ancien fichier unique
+// (SENSOR_BUFFER_PATH) etait recopie en entier par LittleFS a chaque mesure
+// (4,5 s mesurees) ; il n'est plus lu qu'une fois, pour reprendre ses mesures
+// en attente, puis efface.
+constexpr uint32_t SENSOR_SEGMENT_RECORDS = 288;   // 1 jour @ 5 min = 9 Ko par fichier
+constexpr uint32_t SENSOR_MAX_SEGMENTS    = 30;    // retention : 30 jours en attente
+constexpr char     SENSOR_SEGMENT_DIR[]   = "/mhs";
+// Ancien format (lecture unique a la migration).
 constexpr uint32_t SENSOR_BUFFER_CAPACITY = 8640;
 constexpr char     SENSOR_BUFFER_PATH[]   = "/mhs_buffer.bin";
 
@@ -100,7 +110,13 @@ constexpr uint8_t ESPNOW_RECEIVER_MAC[6] = {0x20, 0x6E, 0xF1, 0x85, 0x58, 0x68};
 // Appui long = « je veux changer de hub ». Action VOLONTAIRE uniquement : une
 // perte de liaison ne declenche jamais d'appairage (un hub simplement eteint ne
 // doit pas faire basculer la sonde vers un autre).
-constexpr uint32_t PAIRING_LONG_PRESS_MS = 3000;   // duree d'appui pour lancer
+constexpr uint32_t PAIRING_LONG_PRESS_MS = 3000;   // appui minimal pour lancer
+// Au-dela, le bouton est considere COINCE (boitier, cable, humidite sur GPIO0) :
+// aucun appairage. Vu sur le terrain : une sonde dehors lancait seule des
+// appairages et sautait ses mesures. L'appairage part au RELACHEMENT d'un appui
+// compris entre PAIRING_LONG_PRESS_MS et PAIRING_STUCK_MS : un appui permanent ne
+// se relache jamais, il ne peut donc rien declencher.
+constexpr uint32_t PAIRING_STUCK_MS = 10000;
 constexpr uint32_t PAIRING_TIMEOUT_MS = 60000;     // abandon (association inchangee)
 constexpr uint8_t  PAIRING_MAX_CHANNEL = 13;       // canaux Wi-Fi balayes (Europe)
 constexpr uint8_t  PAIRING_REQUESTS_PER_CHANNEL = 3; // demandes par canal
