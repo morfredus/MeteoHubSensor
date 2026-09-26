@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <esp_system.h>   // esp_reset_reason() pour le diagnostic (paquet v2)
 #include <esp_sleep.h>    // esp_light_sleep_start() (mode light sleep experimental)
+#include <driver/rtc_io.h> // liberation de GPIO0 apres un reveil ext0 (bouton BOOT)
 #include "board_config.h"
 #include "config.h"
 #include "meteo_packet.h"
@@ -25,6 +26,37 @@ static uint32_t lastChannelCheck = 0;
 // pile est presque vide : ne pas gaspiller le peu qui reste en scans Wi-Fi).
 static bool g_lastBatteryValid = false;
 static uint8_t g_lastBatteryPct = 100;
+
+// --- Appairage par appui long sur BOOT --------------------------------------
+// true tant que BOOT est enfonce (bouton actif a l'etat bas).
+static bool bootPressed() { return digitalRead(PIN_BOOT_BUTTON) == LOW; }
+
+// Attend la fin d'un appui en cours. Renvoie true si l'appui a atteint
+// PAIRING_LONG_PRESS_MS (compte depuis `pressStartMs`) : c'est alors un appui
+// LONG, et on n'attend pas le relachement pour lancer l'appairage.
+static bool waitLongPress(uint32_t pressStartMs) {
+    while (bootPressed()) {
+        if (millis() - pressStartMs >= PAIRING_LONG_PRESS_MS) return true;
+        delay(10);
+    }
+    return false;
+}
+
+// Procedure complete : LED bleue fixe pendant la recherche, puis 3 eclairs verts
+// (appaire) ou rouges (echec, association INCHANGEE). Le nouveau hub reprend
+// apres le dernier seq accuse par l'ancien : il ne reclamera que les mesures
+// encore en attente.
+static void runPairing() {
+    Serial.println("[PAIR] Appui long sur BOOT : appairage d'un nouveau hub");
+    powerManager.setLedColor(0, 0, 150);
+    const PairingReport r = espNowSender.pair(syncManager.ackWatermark(), PAIRING_TIMEOUT_MS);
+    const bool ok = (r.result == PairingReport::PAIRED);
+    for (int i = 0; i < 3; i++) {
+        powerManager.blinkStatus(ok ? 0 : 150, ok ? 150 : 0, 0, 250);
+        delay(250);
+    }
+    powerManager.turnOffLed();
+}
 
 // Diagnostic (paquet v2) : compteur de reveils qui SURVIT au deep sleep (RTC) et
 // repart de 0 a un power-cycle, plus la raison du dernier reset captee au boot.
@@ -188,7 +220,30 @@ void setup() {
     // Diagnostic v2, capte AU PLUS TOT : raison du reset de ce boot + incrementation
     // du compteur de reveils (RTC). Un power-cycle a remis g_wakeCount a 0.
     g_resetReason = (uint8_t)esp_reset_reason();
-    g_wakeCount++;
+    // Reveil par le bouton BOOT (ext0) : ce n'est PAS un intervalle de mesure
+    // ecoule. On ne compte pas ce reveil et on ne mesure pas (l'horloge relative
+    // de la sonde avance d'un intervalle a chaque reveil compte).
+    const bool buttonWake = (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT0);
+    const uint32_t pressStartMs = millis();
+    if (!buttonWake) g_wakeCount++;
+
+    // GPIO0 reste en mode RTC apres un reveil ext0 : le rendre au GPIO numerique
+    // avant de le lire.
+    rtc_gpio_deinit((gpio_num_t)PIN_BOOT_BUTTON);
+    pinMode(PIN_BOOT_BUTTON, INPUT_PULLUP);
+
+    // LED disponible au plus tot : elle sert de retour pendant l'appui.
+    powerManager.begin();
+
+    // L'appui long se mesure TOUT DE SUITE, avant l'attente USB (2 s) et le scan
+    // de canal : sinon ces delais mangeraient le temps d'appui et un vrai appui
+    // long passerait pour un court. LED bleue des que le seuil est atteint : on
+    // peut relacher.
+    bool wantPairing = false;
+    if (buttonWake) {
+        wantPairing = waitLongPress(pressStartMs);
+        if (wantPairing) powerManager.setLedColor(0, 0, 150);
+    }
 
     Serial.begin(115200);
     // USB CDC du Super Mini : laisser le host enumerer, sans bloquer sans cable.
@@ -206,8 +261,7 @@ void setup() {
 #endif
     Serial.println("========================================");
 
-    powerManager.begin();
-    powerManager.setLedColor(0, 50, 150);
+    if (!wantPairing) powerManager.setLedColor(0, 50, 150);
 
     sensorManager.begin();
 
@@ -236,7 +290,24 @@ void setup() {
         powerManager.setLedColor(150, 0, 0);
     } else {
         Serial.printf("[MAIN] ESP-NOW pret, canal %u\n", (unsigned)espNowSender.channel());
-        powerManager.turnOffLed();
+        if (!wantPairing) powerManager.turnOffLed();
+    }
+
+    if (buttonWake) {
+        // Reveil par BOOT : appui long -> appairage ; appui court -> rien. Dans
+        // les deux cas, on se rendort pour le temps RESTANT jusqu'au reveil
+        // programme, sans mesure : la cadence et l'horloge ne bougent pas.
+        if (wantPairing) {
+            runPairing();
+        } else {
+            Serial.println("[PAIR] Appui court sur BOOT : ignore");
+        }
+        const uint32_t left = powerManager.secondsUntilScheduledWake();
+        if (left >= 2 && ENABLE_DEEP_SLEEP && !USE_LIGHT_SLEEP) {
+            syncManager.end();
+            powerManager.enterDeepSleep(left);
+        }
+        // Reveil programme imminent (ou mode continu) : cycle normal ci-dessous.
     }
 
     performCycle();
@@ -268,6 +339,14 @@ void loop() {
     }
 
     if (!ENABLE_DEEP_SLEEP) {
+        // Mode continu : le bouton est surveille ici (pas de reveil ext0).
+        if (bootPressed()) {
+            if (waitLongPress(millis())) {
+                runPairing();
+                while (bootPressed()) delay(10); // ignore la fin de l'appui
+            }
+        }
+
         uint32_t now = millis();
         if (now - lastMeasurementTime >= (SENSOR_MEASUREMENT_INTERVAL_SECONDS * 1000UL)) {
             lastMeasurementTime = now;

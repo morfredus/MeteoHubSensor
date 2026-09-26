@@ -89,8 +89,23 @@ constexpr uint32_t ESPNOW_RESCAN_EVERY_N_WAKES = 12;
 // chasser un canal (une silence radio due à la pile n'est pas un souci de canal).
 constexpr uint8_t ESPNOW_RESCAN_SKIP_BELOW_PCT = 10;
 
-// Copier la MAC STA affichee page Net. du hub (pas la MAC AP).
+// MAC STA du hub PAR DEFAUT, utilisee seulement tant qu'aucun appairage n'est
+// enregistre en NVS (une sonde deja en service garde ainsi son hub apres une mise
+// a jour du firmware). Depuis l'appairage par appui long sur BOOT, la MAC n'a
+// plus besoin d'etre connue a la compilation : laisser {0,0,0,0,0,0} pour une
+// sonde neuve, qui attend alors d'etre appairee (mesures gardees en attente).
 constexpr uint8_t ESPNOW_RECEIVER_MAC[6] = {0x20, 0x6E, 0xF1, 0x85, 0x58, 0x68};
+
+// --- Appairage (appui long sur BOOT) ---
+// Appui long = « je veux changer de hub ». Action VOLONTAIRE uniquement : une
+// perte de liaison ne declenche jamais d'appairage (un hub simplement eteint ne
+// doit pas faire basculer la sonde vers un autre).
+constexpr uint32_t PAIRING_LONG_PRESS_MS = 3000;   // duree d'appui pour lancer
+constexpr uint32_t PAIRING_TIMEOUT_MS = 60000;     // abandon (association inchangee)
+constexpr uint8_t  PAIRING_MAX_CHANNEL = 13;       // canaux Wi-Fi balayes (Europe)
+constexpr uint8_t  PAIRING_REQUESTS_PER_CHANNEL = 3; // demandes par canal
+constexpr uint32_t PAIRING_REQUEST_GAP_MS = 150;   // ecoute apres chaque demande
+// Un balayage complet dure ~13 x 3 x 150 ms = ~6 s ; 60 s en permettent ~10.
 
 // Nombre maximal de tentatives d'émission avant abandon si ACK requis
 constexpr uint8_t ESPNOW_MAX_RETRIES = 3;

@@ -5,6 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.23.0] - 2026-09-26
+
+### Added
+
+- **Hub pairing by a long press on BOOT.** The probe still talks to a single
+  MeteoHub in unicast, but the hub MAC now lives in NVS (`mhpair/hub`, one
+  CRC-protected blob written atomically) instead of being compiled in. Holding
+  BOOT ~3 s (solid blue LED) starts a pairing: the probe broadcasts a request on
+  channels 1..13, the hub answers with its STA MAC, SoftAP BSSID, channel and
+  name, then the probe confirms in unicast and waits for the 802.11 ACK before
+  writing anything. 3 green flashes = paired, 3 red = failed.
+- **A failed pairing never erases the current association**: no hub, no ACK on
+  the confirmation, NVS write failure or timeout (60 s) all leave the previous
+  MAC untouched, in NVS, in RAM and in the ESP-NOW peer table.
+- **Several hubs in range.** A full sweep is done before deciding; if two
+  different hubs answer, pairing is refused rather than guessed. Once paired,
+  the channel scan matches the exact BSSID of the paired hub's "MH-NOW" SoftAP
+  instead of the first "MH-NOW" seen.
+- **Seamless takeover.** The confirmation carries the last sequence acknowledged
+  by the previous hub; the new hub resumes from there and only asks for the
+  measurements still pending (no 30-day backlog replay).
+- **Wake on BOOT from deep sleep** (ext0, RTC pull-up). A button wake is not a
+  measurement interval: it does not measure, does not advance the probe clock,
+  and goes back to sleep for the remaining time until the scheduled wake.
+- Pairing logic is pure and host-tested (`include/pairing/pairing_logic.h`,
+  `test/test_native_pairing`, 8 cases). `meteo_packet.h` gains `MeteoPairFrame`
+  (magic 'M','P', 44 bytes) and compiles natively.
+
+### Changed
+
+- `ESPNOW_RECEIVER_MAC` is now only the default used while no pairing is stored,
+  so an already deployed probe keeps its hub after the update. Set it to zeros
+  for a brand-new probe, which then waits to be paired (measurements kept).
+- Requires MeteoHub >= 1.46.0 to answer pairing requests (older hubs simply
+  ignore them; normal operation is unaffected).
+
 ## [0.22.0] - 2026-09-22
 
 ### Fixed

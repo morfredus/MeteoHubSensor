@@ -38,8 +38,11 @@ L'objectif principal de ce projet est de déporter l'acquisition météo dans le
 
 ESP-NOW n'existe que sur **le canal de l'AP** auquel MeteoHub est associé.
 
-La sonde rejoint l'AP `MH-NOW` du hub pour caler le canal, puis envoie en
-unicast. Recopier la MAC STA de la page **Net.** du hub dans `config.h`.
+La sonde repère le canal grâce à l'AP `MH-NOW` du hub, puis envoie en unicast.
+La MAC du hub vient de la NVS, écrite par l'appairage (appui long sur BOOT, voir
+le README). Une fois appairée, la sonde cherche le BSSID exact de l'AP de SON
+hub : plusieurs hubs peuvent cohabiter. `ESPNOW_RECEIVER_MAC` (`config.h`) ne
+sert plus que de valeur par défaut tant qu'aucun appairage n'est enregistré.
 Le statut local est la LED RGB et le moniteur série (plus d'OLED sur la sonde).
 
 - Copier `include/secrets_example.h` vers `include/secrets.h` ici (ignoré par git).

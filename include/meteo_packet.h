@@ -1,5 +1,12 @@
 #pragma once
+// Arduino pour le firmware ; types standards seuls pour les tests natifs (hote),
+// qui compilent ce protocole sans framework.
+#ifdef ARDUINO
 #include <Arduino.h>
+#else
+#include <cstdint>
+#include <cstddef>
+#endif
 
 // ============================================================================
 // Protocole de transmission ESP-NOW - MeteoHub Packet
@@ -134,6 +141,48 @@ struct __attribute__((packed)) SyncControl {
 
 static_assert(sizeof(SyncControl) == 20, "SyncControl must stay packed at 20 bytes");
 
+// ============================================================================
+// Appairage sonde <-> hub (volontaire, declenche par un appui long sur BOOT)
+// ============================================================================
+// La sonde ne parle qu'a UN hub, en unicast, dont la MAC est memorisee en NVS
+// (plus besoin de la connaitre a la compilation). Pour changer de hub :
+//   1. REQUEST  sonde -> broadcast, sur chaque canal 1..13 : « qui est hub ? »
+//               (sta_mac = MAC de la sonde, nonce tire au hasard) ;
+//   2. RESPONSE hub -> sonde, unicast : identite du hub (sta_mac = MAC STA du
+//               hub, ap_mac = BSSID de son SoftAP « MH-NOW », channel = son
+//               canal, name = son nom) ; le nonce de la demande est renvoye ;
+//   3. CONFIRM  sonde -> nouveau hub, unicast AVEC ACK 802.11 : prouve la liaison
+//               dans les deux sens avant que la sonde n'ecrive quoi que ce soit.
+//               base_seq = dernier seq accuse par l'ANCIEN hub : le nouveau hub
+//               reprend de la, et ne reclame que les mesures encore en attente
+//               (pas 30 jours d'historique deja livres ailleurs).
+// Le broadcast est limite a cette phase ; mesures et synchro restent en unicast.
+// Magic 'M','P' (MeteoPair), distinct de 'M','H' (donnees) et 'M','C' (controle).
+constexpr uint8_t METEO_PAIR_MAGIC_0 = 'M';
+constexpr uint8_t METEO_PAIR_MAGIC_1 = 'P';
+
+enum MeteoPairType : uint8_t {
+    PAIR_REQUEST  = 1,
+    PAIR_RESPONSE = 2,
+    PAIR_CONFIRM  = 3,
+};
+
+struct __attribute__((packed)) MeteoPairFrame {
+    uint8_t magic[2];              // 'M', 'P'
+    uint8_t protocol_version;      // METEO_PROTOCOL_VERSION
+    uint8_t type;                  // MeteoPairType
+    uint8_t node_id;               // sonde concernee (REQUEST / CONFIRM)
+    uint32_t nonce;                // tire par la sonde, renvoye tel quel par le hub
+    uint32_t base_seq;             // CONFIRM : dernier seq accuse par l'ancien hub
+    uint8_t sta_mac[6];            // MAC STA de l'EMETTEUR (sonde ou hub)
+    uint8_t ap_mac[6];             // RESPONSE : BSSID du SoftAP du hub
+    uint8_t channel;               // RESPONSE : canal radio du hub
+    char name[16];                 // RESPONSE : nom du hub (termine par NUL)
+    uint16_t crc16;                // CRC16 de controle d'integrite
+};
+
+static_assert(sizeof(MeteoPairFrame) == 44, "MeteoPairFrame must stay packed at 44 bytes");
+
 // Calcul rapide de CRC16 CCITT
 inline uint16_t calculateCrc16(const uint8_t* data, size_t length) {
     uint16_t crc = 0xFFFF;
@@ -148,4 +197,26 @@ inline uint16_t calculateCrc16(const uint8_t* data, size_t length) {
         }
     }
     return crc;
+}
+
+// Finalise une trame d'appairage (magic, version, CRC).
+inline void sealPairFrame(MeteoPairFrame& f) {
+    f.magic[0] = METEO_PAIR_MAGIC_0;
+    f.magic[1] = METEO_PAIR_MAGIC_1;
+    f.protocol_version = METEO_PROTOCOL_VERSION;
+    f.crc16 = calculateCrc16(reinterpret_cast<const uint8_t*>(&f),
+                             sizeof(MeteoPairFrame) - sizeof(uint16_t));
+}
+
+// Verifie la forme d'une trame d'appairage recue (taille, magic, version, CRC).
+inline bool isValidPairFrame(const uint8_t* data, int len, MeteoPairFrame* out) {
+    if (data == nullptr || len != (int)sizeof(MeteoPairFrame)) return false;
+    MeteoPairFrame f;
+    for (size_t i = 0; i < sizeof(f); i++) reinterpret_cast<uint8_t*>(&f)[i] = data[i];
+    if (f.magic[0] != METEO_PAIR_MAGIC_0 || f.magic[1] != METEO_PAIR_MAGIC_1) return false;
+    if (f.protocol_version != METEO_PROTOCOL_VERSION) return false;
+    if (calculateCrc16(reinterpret_cast<const uint8_t*>(&f),
+                       sizeof(MeteoPairFrame) - sizeof(uint16_t)) != f.crc16) return false;
+    if (out) *out = f;
+    return true;
 }

@@ -1,5 +1,7 @@
 #include "power_manager.h"
 #include <esp_sleep.h>
+#include <driver/rtc_io.h>
+#include <sys/time.h>
 #include <WiFi.h>
 
 PowerManager::PowerManager() 
@@ -99,6 +101,25 @@ void PowerManager::readBattery(MeteoPacket& packet) {
     Serial.printf("[POWER] Batterie: %.2f V (%d %%)\n", _lastVoltage, _lastPercent);
 }
 
+// Heure (horloge système, maintenue par le RTC à travers le deep sleep) du
+// prochain réveil programmé, en µs. 0 = inconnue.
+RTC_DATA_ATTR static int64_t rtcScheduledWakeUs = 0;
+
+static int64_t nowUs() {
+    struct timeval tv;
+    gettimeofday(&tv, nullptr);
+    return (int64_t)tv.tv_sec * 1000000LL + tv.tv_usec;
+}
+
+uint32_t PowerManager::secondsUntilScheduledWake() const {
+    if (rtcScheduledWakeUs == 0) return 0;
+    const int64_t left = rtcScheduledWakeUs - nowUs();
+    if (left <= 0) return 0;
+    // Borne de sécurité : jamais plus d'un intervalle (horloge recalée entre-temps).
+    const int64_t maxUs = (int64_t)SENSOR_MEASUREMENT_INTERVAL_SECONDS * 1000000LL;
+    return (uint32_t)((left < maxUs ? left : maxUs) / 1000000LL);
+}
+
 void PowerManager::enterDeepSleep(uint32_t seconds) {
     Serial.printf("[POWER] Mise en veille profonde (Deep Sleep) pour %u secondes...\n", seconds);
     Serial.flush();
@@ -108,6 +129,14 @@ void PowerManager::enterDeepSleep(uint32_t seconds) {
 
     // Configuration du réveil par timer
     esp_sleep_enable_timer_wakeup((uint64_t)seconds * 1000000ULL);
+    rtcScheduledWakeUs = nowUs() + (int64_t)seconds * 1000000LL;
+
+    // Réveil par le bouton BOOT (niveau bas = appuyé), pour l'appairage. ext0
+    // garde le domaine RTC alimenté, ce qui permet le pull-up interne pendant le
+    // sommeil (quelques µA de plus, négligeable devant les réveils radio).
+    rtc_gpio_pullup_en((gpio_num_t)PIN_BOOT_BUTTON);
+    rtc_gpio_pulldown_dis((gpio_num_t)PIN_BOOT_BUTTON);
+    esp_sleep_enable_ext0_wakeup((gpio_num_t)PIN_BOOT_BUTTON, 0);
     
     // Extinction du Wi-Fi avant sommeil
     WiFi.disconnect(true);
