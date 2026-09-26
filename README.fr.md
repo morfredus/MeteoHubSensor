@@ -1,6 +1,6 @@
 # MeteoHubSensor
 
-[![Version](https://img.shields.io/badge/version-0.24.1-blue.svg)](VERSION)
+[![Version](https://img.shields.io/badge/version-0.25.0-blue.svg)](VERSION)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Platform: ESP32-S3](https://img.shields.io/badge/Platform-ESP32--S3-orange.svg)](https://www.espressif.com/)
 
@@ -83,10 +83,12 @@ Règles :
   sonde de son sommeil ; elle se rendort ensuite pour le temps restant, sans
   décaler la cadence des mesures.
 
-Sans appairage enregistré, la sonde utilise `ESPNOW_RECEIVER_MAC` de
-`include/config.h` (une sonde déjà en service garde donc son hub après mise à
-jour). Mettre cette constante à zéro pour une sonde neuve, qui attend alors
-d'être appairée en gardant ses mesures.
+Sans appairage enregistré (sonde neuve, flash effacée), la sonde **n'envoie
+rien** : `ESPNOW_RECEIVER_MAC` (`include/config.h`) est à zéro depuis la 0.25.0.
+Elle garde ses mesures en attente et ne scanne plus de canal tant qu'un appui
+long sur BOOT ne l'a pas appairée. Une MAC en dur aurait visé un hub précis, et
+après un échange de hubs (prod ↔ banc de test) une sonde effacée aurait envoyé
+ses mesures au mauvais hub.
 
 ### Buffer local : aucune mesure perdue, sans vider l'accu
 

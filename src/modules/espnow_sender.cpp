@@ -123,8 +123,8 @@ void EspNowSender::loadAssociation() {
         }
         return;
     }
-    // Aucun appairage enregistre : MAC par defaut de config.h (sonde deja en
-    // service avant l'appairage). Toute a zero = sonde neuve, non appairee.
+    // Aucun appairage enregistre : MAC par defaut de config.h, a zero par
+    // defaut (0.25.0) -> sonde non appairee, qui attend un appui long sur BOOT.
     memcpy(_destMac, ESPNOW_RECEIVER_MAC, 6);
     _haveAp = false;
     _paired = mhpair::isUnicastMac(_destMac);
@@ -163,7 +163,13 @@ bool EspNowSender::begin() {
     rtcWakeCount++;
 
     uint8_t ch;
-    if (needScan) {
+    if (!_paired) {
+        // Sonde non appairee : aucun hub a joindre, un scan (~2 s de radio a
+        // chaque reveil) serait de l'energie perdue. L'appairage balaie lui-meme
+        // tous les canaux ; ESP-NOW demarre simplement sur un canal valide.
+        ch = (rtcChannel != 0) ? rtcChannel : _channel;
+        Serial.printf("[ESPNOW] Non appairee : pas de scan, canal=%d\n", ch);
+    } else if (needScan) {
         const uint8_t scanned = scanHubChannel();
         if (scanned != 0) {
             rtcChannel = ch = scanned; // resultat confirme : on le cache en RTC

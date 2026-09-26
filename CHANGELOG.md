@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.25.0] - 2026-09-27
+
+### Changed
+
+- **No default hub MAC: an unpaired probe sends nothing until it is paired.**
+  `ESPNOW_RECEIVER_MAC` is now all zeros. It used to hold the production hub's
+  STA MAC, so a probe whose flash was erased silently targeted that one hub.
+  After swapping hubs (production board <-> bench board), an erased probe would
+  have sent its measurements to the wrong hub, and a bench probe to the
+  production history. Now an erased or new probe keeps its measurements pending
+  in the local buffer and waits for a long press on BOOT. **Upgrade note:** a
+  probe in service that was never paired (still relying on the old default)
+  stops sending after this update until it is paired; nothing is lost, its
+  measurements wait in the buffer.
+- An unpaired probe no longer scans for the hub channel on each wake (~2 s of
+  radio for nothing): pairing sweeps every channel by itself.
+
 ## [0.24.1] - 2026-09-26
 
 ### Changed

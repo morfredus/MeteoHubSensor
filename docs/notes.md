@@ -41,8 +41,8 @@ ESP-NOW n'existe que sur **le canal de l'AP** auquel MeteoHub est associé.
 La sonde repère le canal grâce à l'AP `MH-NOW` du hub, puis envoie en unicast.
 La MAC du hub vient de la NVS, écrite par l'appairage (appui long sur BOOT, voir
 le README). Une fois appairée, la sonde cherche le BSSID exact de l'AP de SON
-hub : plusieurs hubs peuvent cohabiter. `ESPNOW_RECEIVER_MAC` (`config.h`) ne
-sert plus que de valeur par défaut tant qu'aucun appairage n'est enregistré.
+hub : plusieurs hubs peuvent cohabiter. `ESPNOW_RECEIVER_MAC` (`config.h`) vaut
+zéro : sans appairage enregistré, la sonde n'envoie rien et attend un appui long.
 Le statut local est la LED RGB et le moniteur série (plus d'OLED sur la sonde).
 
 - Copier `include/secrets_example.h` vers `include/secrets.h` ici (ignoré par git).

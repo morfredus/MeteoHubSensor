@@ -100,11 +100,12 @@ constexpr uint32_t ESPNOW_RESCAN_EVERY_N_WAKES = 12;
 constexpr uint8_t ESPNOW_RESCAN_SKIP_BELOW_PCT = 10;
 
 // MAC STA du hub PAR DEFAUT, utilisee seulement tant qu'aucun appairage n'est
-// enregistre en NVS (une sonde deja en service garde ainsi son hub apres une mise
-// a jour du firmware). Depuis l'appairage par appui long sur BOOT, la MAC n'a
-// plus besoin d'etre connue a la compilation : laisser {0,0,0,0,0,0} pour une
-// sonde neuve, qui attend alors d'etre appairee (mesures gardees en attente).
-constexpr uint8_t ESPNOW_RECEIVER_MAC[6] = {0x20, 0x6E, 0xF1, 0x85, 0x58, 0x68};
+// enregistre en NVS. VOLONTAIREMENT A ZERO (0.25.0) : apres un effacement de la
+// flash, la sonde n'envoie RIEN tant qu'elle n'a pas ete appairee (appui long sur
+// BOOT), ses mesures restent en attente dans le buffer local. Une MAC en dur
+// visait un hub precis : apres un echange de hubs (prod <-> banc de test), une
+// sonde effacee aurait envoye ses mesures au mauvais hub sans le dire.
+constexpr uint8_t ESPNOW_RECEIVER_MAC[6] = {0, 0, 0, 0, 0, 0};
 
 // --- Appairage (appui long sur BOOT) ---
 // Appui long = « je veux changer de hub ». Action VOLONTAIRE uniquement : une
