@@ -93,12 +93,18 @@ bool SensorManager::initBmp() {
 
 bmp_ok:
 
-    // Configuration optimale pour station meteo
+    // Reglage « weather monitoring » de la fiche technique Bosch : mode force,
+    // suréchantillonnage x1, filtre IIR DESACTIVE. Avec une mesure toutes les
+    // 5 min, un filtre IIR x16 lissait la pression sur plus d'une heure, ou
+    // repartait de zero a un redemarrage (saut). La sonde doit rendre la reponse
+    // REELLE du capteur : la qualification des mesures se fait plus haut (hub,
+    // analyses), jamais ici. Le suréchantillonnage x1 suffit a la resolution
+    // affichee (0,1 hPa) et raccourcit la conversion (moins d'eveil).
     _bmp.setSampling(Adafruit_BMP280::MODE_FORCED,
-                     Adafruit_BMP280::SAMPLING_X2,    // Temperature
-                     Adafruit_BMP280::SAMPLING_X16,   // Pression
-                     Adafruit_BMP280::FILTER_X16,     // Filtrage
-                     Adafruit_BMP280::STANDBY_MS_500);
+                     Adafruit_BMP280::SAMPLING_X1,    // Temperature
+                     Adafruit_BMP280::SAMPLING_X1,    // Pression
+                     Adafruit_BMP280::FILTER_OFF,     // Pas de filtre : reponse brute
+                     Adafruit_BMP280::STANDBY_MS_500); // sans effet en mode force
     return true;
 }
 

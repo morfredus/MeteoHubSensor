@@ -5,7 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.24.0] - 2026-09-26
+## [0.24.1] - 2026-09-26
+
+### Changed
+
+- **BMP280 set to Bosch's "weather monitoring" profile**: forced mode, x1
+  oversampling for temperature and pressure, IIR filter OFF (was x2/x16 with an
+  x16 IIR filter). With one measurement every 5 min, the x16 filter either
+  smoothed pressure over more than an hour or restarted from scratch on a
+  reboot, creating a step. The probe must report the sensor's real response;
+  qualifying measurements belongs higher up the chain (hub, analytics), never
+  in the probe. x1 oversampling is enough for the displayed 0.1 hPa and
+  shortens the conversion (less awake time).
+
+ - 2026-09-26
 
 ### Changed
 
