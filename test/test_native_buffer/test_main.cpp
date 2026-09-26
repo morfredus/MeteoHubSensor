@@ -193,6 +193,44 @@ void test_native_capacity_30_days_geometry() {
     TEST_ASSERT_TRUE(bytesFor(cap) < 1441792u);
 }
 
+// --- Accuse d'une AUTRE serie (sonde repartie de seq=1) : refuse, repare ------
+void test_native_rejects_ack_beyond_newest() {
+    MemoryBlobStore mem(bytesFor(16));
+    MeasurementStore store;
+    TEST_ASSERT_TRUE(store.begin(&mem, 16));
+    for (uint32_t s = 1; s <= 6; s++) store.append(mk(s, s * 300));
+    TEST_ASSERT_FALSE(store.markSyncedUpTo(945));   // hub qui se souvient d'avant
+    TEST_ASSERT_EQUAL_UINT32(0, store.ackWatermark());
+    TEST_ASSERT_EQUAL_UINT32(6, store.unsyncedCount()); // rien marque livre a tort
+    TEST_ASSERT_TRUE(store.markSyncedUpTo(4));       // accuse coherent : accepte
+    TEST_ASSERT_EQUAL_UINT32(4, store.ackWatermark());
+    TEST_ASSERT_FALSE(store.repairWatermark());      // coherent : rien a reparer
+}
+
+void test_native_repairs_inconsistent_watermark() {
+    // Etat laisse par un ancien firmware : un accuse 945 accepte (avant le garde)
+    // pour un buffer dont les mesures vont de 1 a 6. Reproduit en ecrivant
+    // l'en-tete persiste a la main, puis en remontant le store comme au boot.
+    MemoryBlobStore mem(bytesFor(16));
+    {
+        MeasurementStore first;
+        TEST_ASSERT_TRUE(first.begin(&mem, 16));
+        for (uint32_t s = 1; s <= 6; s++) first.append(mk(s, s * 300));
+    }
+    StoreHeader h{};
+    mem.read(0, &h, sizeof(h));
+    h.ack_watermark = 945;
+    mem.write(0, &h, sizeof(h));
+
+    MeasurementStore store;
+    TEST_ASSERT_TRUE(store.begin(&mem, 16));
+    TEST_ASSERT_EQUAL_UINT32(945, store.ackWatermark());
+    TEST_ASSERT_EQUAL_UINT32(0, store.unsyncedCount());   // tout croit livre : le bug
+    TEST_ASSERT_TRUE(store.repairWatermark());
+    TEST_ASSERT_EQUAL_UINT32(0, store.ackWatermark());
+    TEST_ASSERT_EQUAL_UINT32(6, store.unsyncedCount());   // seront retransmises
+}
+
 int main(int, char**) {
     UNITY_BEGIN();
     RUN_TEST(test_native_append_and_order);
@@ -206,5 +244,7 @@ int main(int, char**) {
     RUN_TEST(test_native_full_overwrites_synced_without_flag);
     RUN_TEST(test_native_reformat_on_geometry_change);
     RUN_TEST(test_native_capacity_30_days_geometry);
+    RUN_TEST(test_native_rejects_ack_beyond_newest);
+    RUN_TEST(test_native_repairs_inconsistent_watermark);
     return UNITY_END();
 }

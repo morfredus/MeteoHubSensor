@@ -44,6 +44,13 @@ public:
         _seq = _prefs.getUInt("seq", 0);
         _clock = _prefs.getUInt("clock", 0);
         _ok = true;
+        // Filigrane au-dela de toute mesure du buffer : accuse d'un hub qui
+        // suivait une AUTRE serie (sonde repartie de seq=1). Les mesures
+        // redeviennent en attente et seront retransmises.
+        if (_store.repairWatermark()) {
+            Serial.println("[SYNC] [WARN] Accuse incoherent (serie precedente) : "
+                           "mesures du buffer remises en attente");
+        }
         return true;
     }
 

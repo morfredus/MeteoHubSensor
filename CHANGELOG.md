@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.23.1] - 2026-09-26
+
+### Fixed
+
+- **An acknowledgement beyond the probe's newest measurement is refused.** A hub
+  that still tracked a previous series (probe restarted from seq=1) answered
+  `ack<=945` to a probe at seq 6; accepting it marked measurements "delivered"
+  that the hub had never archived. `markSyncedUpTo` now ignores any ack above the
+  newest seq in the buffer, and `repairWatermark()` (at boot) turns an already
+  inconsistent watermark back to 0 so the buffered measurements are retransmitted
+  (the hub deduplicates). Pairs with MeteoHub 1.46.1, which detects the counter
+  restart on its side. No protocol change. Two host tests added.
+
+### Changed
+
+- Hardware pairing validated on the real probe and hub (long press on BOOT,
+  confirmation acknowledged, `reprise apres seq=` logged by the hub).
+- TX power log no longer mentions the retired C3 board.
+
 ## [0.23.0] - 2026-09-26
 
 ### Added

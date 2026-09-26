@@ -144,8 +144,33 @@ public:
     // filigrane a avance.
     bool markSyncedUpTo(uint32_t ackSeq) {
         if (ackSeq <= _hdr.ack_watermark) return false;
+        // Un hub ne peut pas accuser une mesure que la sonde n'a jamais emise. Un
+        // accuse au-dela de notre plus grand seq vient d'un hub qui se souvient
+        // d'une AUTRE serie (sonde repartie de seq=1) : l'accepter marquerait
+        // « livrees » des mesures jamais archivees. Refuse.
+        if (ackSeq > newestSeq()) return false;
         _hdr.ack_watermark = ackSeq;
         return persistHeader();
+    }
+
+    // Plus grand seq present dans le buffer (0 si vide).
+    uint32_t newestSeq() const {
+        uint32_t best = 0;
+        for (uint32_t i = 0; i < _hdr.count; i++) {
+            StoredRecord r;
+            if (readSlot(physicalSlot(i), r) && r.seq > best) best = r.seq;
+        }
+        return best;
+    }
+
+    // Repare un filigrane incoherent (au-dela de toute mesure du buffer), herite
+    // d'un accuse accepte avant le garde ci-dessus : les mesures redeviennent
+    // PENDING et seront retransmises (le hub deduplique). Renvoie true si repare.
+    bool repairWatermark() {
+        if (_hdr.count == 0 || _hdr.ack_watermark <= newestSeq()) return false;
+        _hdr.ack_watermark = 0;
+        persistHeader();
+        return true;
     }
 
     // Plus petit seq encore PENDING (0 si tout est synchronise / buffer vide).

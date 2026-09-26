@@ -148,10 +148,10 @@ bool EspNowSender::begin() {
     esp_wifi_set_ps(WIFI_PS_NONE);
 
 #if defined(SENSOR_NEEDS_TX_LIMIT)
-    // Contrainte materielle (C3) : a pleine puissance, la liaison C3 -> hub S3
-    // echoue de facon intermittente. Plafond defini dans board_config.h/config.h.
+    // Contrainte materielle : a pleine puissance, l'antenne PCB du Super Mini
+    // n'obtient aucun ACK du hub. Plafond defini dans board_config.h/config.h.
     WiFi.setTxPower(SENSOR_TX_POWER_LEVEL);
-    Serial.printf("[ESPNOW] TX plafonnee (contrainte C3), niveau=%d\n",
+    Serial.printf("[ESPNOW] TX plafonnee (antenne Super Mini), niveau=%d\n",
                   (int)SENSOR_TX_POWER_LEVEL);
 #endif
 
