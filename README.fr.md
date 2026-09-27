@@ -1,8 +1,10 @@
 # MeteoHubSensor
 
-[![Version](https://img.shields.io/badge/version-0.25.0-blue.svg)](VERSION)
+[![Version](https://img.shields.io/badge/version-0.25.1-blue.svg)](VERSION)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Platform: ESP32-S3](https://img.shields.io/badge/Platform-ESP32--S3-orange.svg)](https://www.espressif.com/)
+
+> 🇬🇧 English version: [README.md](README.md)
 
 Sonde météo extérieure autonome, en liaison **ESP-NOW** avec la station **MeteoHub**. Carte cible : **ESP32-S3 Super Mini** (LED RGB, sans écran).
 
@@ -117,9 +119,8 @@ Le brochage vit dans `include/board_config.h`, sélectionné par le define
 - Statut = LED RGB GPIO 48 (bleu acquisition, vert OK, rouge erreur).
 - **I2C** : SDA = GP8, SCL = GP9. Batterie : Li-ion 14500 (Breadvolt), pont 100k/100k sur GP4.
 - ESP-NOW plafonné à **11 dBm** (contrainte matérielle validée par test : pleine puissance = pas d'ACK).
-
-- **Capteurs** (commun) : AHT20 (T/H), BMP280 (pression).
-- Détail : `docs/cablage.md`.
+- **Capteurs** : AHT20 (T/H), BMP280 (pression).
+- Détail : [`docs/cablage.md`](docs/cablage.md).
 
 ---
 
@@ -143,7 +144,6 @@ pio run -e esp32-s3
 pio run -e esp32-s3 -t upload
 pio run -e esp32-s3 -t monitor
 ```
-
 
 Si le port série n'apparaît pas : tenir BOOT, tap RESET, relâcher BOOT.
 

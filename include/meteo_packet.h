@@ -10,7 +10,7 @@
 
 // ============================================================================
 // Protocole de transmission ESP-NOW - MeteoHub Packet
-// Structure partagée entre l'émetteur (ESP32-C3) et le récepteur (MeteoHub S3)
+// Structure partagée entre l'émetteur (sonde ESP32-S3) et le récepteur (MeteoHub S3)
 // ============================================================================
 
 constexpr uint8_t METEO_PACKET_MAGIC_0 = 'M';

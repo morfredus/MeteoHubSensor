@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.25.1] - 2026-09-27
+
+### Fixed
+
+- **`README.md` was a French copy of `README.fr.md`.** It is now the English
+  version; each README links to the other.
+- **Leftovers of the removed C3 target.** `LICENSE` still called the project an
+  "ESP32-C3 outdoor sensor node", and the shared `meteo_packet.h` named the sender
+  an ESP32-C3 (same fix on the MeteoHub side, the file stays identical).
+
+### Removed
+
+- **The OLED display module (`DisplayManager`).** It only served the retired C3
+  HW-675 board: `SENSOR_HAS_OLED` was never defined anymore, U8g2 was no longer in
+  `lib_deps` (the module could not even build if enabled), and every call was a
+  no-op. Its calls in `main.cpp` and the matching `board_config.h` notes are gone.
+
+### Changed
+
+- Em dashes replaced by `-` in the project's own files.
+
 ## [0.25.0] - 2026-09-27
 
 ### Changed
@@ -392,7 +413,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Transmission rewritten to unicast** (clean rebuild of the whole chain). The
   sonde now sends ESP-NOW **unicast to the hub MAC** (`ESPNOW_RECEIVER_MAC`)
   instead of broadcast. This gets the hub's 802.11 hardware ACK and MAC-layer
-  retransmission, far more reliable outdoors — and makes `onDataSent` a *real*
+  retransmission, far more reliable outdoors - and makes `onDataSent` a *real*
   delivery signal: `SUCCESS` now means the hub acknowledged the frame. In
   broadcast mode the callback always returned success, so the sonde blinked green
   ("sent") while the hub received nothing.
@@ -439,7 +460,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Deep sleep enabled** (`ENABLE_DEEP_SLEEP = true`): wake → measure → send →
   deep sleep, every `SENSOR_MEASUREMENT_INTERVAL_SECONDS` (5 min). Fits the small
-  14500 cell — continuous mode drained it in hours.
+  14500 cell - continuous mode drained it in hours.
 - **Channel kept in RTC memory** across sleeps and reused on wake, so the ~2 s
   Wi-Fi scan is not paid on every wake. It is still re-scanned periodically
   (`ESPNOW_RESCAN_EVERY_N_WAKES`, ~1 h at 5 min) to catch a hub channel change;
@@ -463,7 +484,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Measurement cadence is now `SENSOR_MEASUREMENT_INTERVAL_SECONDS` in config.h,
-  **default 300 s (5 min)** instead of 30 s — weather changes slowly, and 30 s
+  **default 300 s (5 min)** instead of 30 s - weather changes slowly, and 30 s
   over-samples. Single source of truth (drives the continuous loop and the future
   deep-sleep cycle), easy to change for tests (30 / 120 / 300 / 600). The indoor
   side (MeteoHub) uses the same cadence so IN and OUT history stay homogeneous.

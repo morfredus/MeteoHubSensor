@@ -5,9 +5,9 @@
 // Brochage MeteoHubSensor - ESP32-S3 Super Mini
 // ============================================================================
 // Cible unique (env supermini, define SENSOR_BOARD_S3). Le reste du firmware ne
-// connait que les alias PIN_* et les drapeaux SENSOR_HAS_OLED /
-// SENSOR_NEEDS_TX_LIMIT : ajouter une autre carte se ferait ici, sans toucher
-// aux modules. (La cible C3 HW-675 a ete retiree : on se concentre sur l'ESP32-S3.)
+// connait que les alias PIN_* et le drapeau SENSOR_NEEDS_TX_LIMIT : ajouter une
+// autre carte se ferait ici, sans toucher aux modules. (La cible C3 HW-675 a ete
+// retiree, et avec elle le module d'ecran OLED qui ne servait qu'a elle.)
 // ============================================================================
 
 // ---------------------------------------------------------------------------
@@ -65,9 +65,8 @@ constexpr uint8_t PIN_AUX_ADC = 10;
 constexpr uint8_t PIN_FREE_GP5 = 5;
 constexpr uint8_t PIN_FREE_GP6 = 6;
 
-// Pas d'ecran gere sur le S3 : le statut passe par la LED RGB seule. Un ecran
-// jamais allume reste dans son etat reset basse conso. Pour piloter un ecran sur
-// le S3 : definir SENSOR_HAS_OLED + SENSOR_OLED_* et OLED_I2C_ADDRESS ici.
+// Pas d'ecran : le statut passe par la LED RGB seule. Un ecran eventuellement
+// cable mais jamais initialise reste dans son etat reset basse conso.
 
 // Plafond TX ESP-NOW sur le S3 (2026-09-14). Preuve terrain (logs USB, firmware
 // 0.13.0 unicast) : a pleine puissance, le S3 emet mais le hub ne renvoie PAS

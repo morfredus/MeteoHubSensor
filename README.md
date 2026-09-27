@@ -1,26 +1,28 @@
 # MeteoHubSensor
 
-[![Version](https://img.shields.io/badge/version-0.25.0-blue.svg)](VERSION)
+[![Version](https://img.shields.io/badge/version-0.25.1-blue.svg)](VERSION)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Platform: ESP32-S3](https://img.shields.io/badge/Platform-ESP32--S3-orange.svg)](https://www.espressif.com/)
 
-Sonde météo extérieure autonome, en liaison **ESP-NOW** avec la station **MeteoHub**. Carte cible : **ESP32-S3 Super Mini** (LED RGB, sans écran).
+> 🇫🇷 Version française : [README.fr.md](README.fr.md)
+
+Standalone outdoor weather probe, linked over **ESP-NOW** to the **MeteoHub** station. Target board: **ESP32-S3 Super Mini** (RGB LED, no screen).
 
 ---
 
-## 1. Responsabilité du projet
+## 1. Responsibility
 
-**MeteoHubSensor** a une responsabilité unique : **mesurer l'environnement extérieur et transmettre ses métriques brutes par ESP-NOW**.
+**MeteoHubSensor** has a single responsibility: **measure the outdoor environment and transmit its raw metrics over ESP-NOW**.
 
-Ce nœud n'est **pas une nouvelle brique de morfSystem**. Pas de serveur web, pas d'historique local.
+This node is **not a new morfSystem component**. No web server, no local history.
 
-### Rôles :
-- **Super Mini (Outdoor)** : *"Je mesure, je clignote le statut, je transmets."*
-- **MeteoHub** : *"Je reçois, je valide, je stocke, j'affiche et j'expose."*
+### Roles:
+- **Super Mini (Outdoor)**: *"I measure, I blink the status, I transmit."*
+- **MeteoHub**: *"I receive, validate, store, display and expose."*
 
 ---
 
-## 2. Architecture ESP-NOW
+## 2. ESP-NOW architecture
 
 ```
               ┌─────────────────┐
@@ -30,111 +32,110 @@ Ce nœud n'est **pas une nouvelle brique de morfSystem**. Pas de serveur web, pa
                        │ ESP-NOW
               ┌────────▼────────┐
               │  Super Mini     │
-              │  LED RGB        │
+              │  RGB LED        │
               │  AHT20 / BMP280 │
               └────────┬────────┘
                        │
               ┌────────┴────────┐
               ▼                 ▼
-        Température         Humidité
+         Temperature        Humidity
 ```
 
-### Changer de hub : appairage par appui long sur BOOT
+### Changing hub: pairing with a long press on BOOT
 
-La sonde parle à **un seul** MeteoHub, en unicast. La MAC de ce hub est
-mémorisée dans la NVS de la sonde : pas besoin de la connaître à la compilation,
-ni de reflasher pour changer de hub.
+The probe talks to **a single** MeteoHub, in unicast. That hub's MAC is stored in
+the probe's NVS: there is no need to know it at build time, nor to reflash to
+change hub.
 
-1. Ne laisser allumé, à portée radio, **que** le MeteoHub à associer
+1. Leave **only** the MeteoHub to pair powered on within radio range
    (MeteoHub **≥ 1.46.0**).
-2. Sonde en marche, maintenir **BOOT environ 3 s**, jusqu'à ce que la LED passe
-   au **bleu fixe**, puis **relâcher** : l'appairage démarre au relâchement.
-   Un appui de plus de 10 s est ignoré (bouton considéré comme coincé). Ne pas
-   maintenir BOOT en branchant la sonde : c'est le mode de flashage de l'ESP32.
-3. La sonde balaie les canaux 1 à 13 en demandant « qui est hub ? ». Le hub
-   répond avec son identité et sa MAC ; la sonde confirme en unicast et attend
-   l'accusé de réception du hub.
-4. **3 éclairs verts** : appairée, la nouvelle MAC est en NVS, les mesures
-   repartent en unicast vers ce hub. **3 éclairs rouges** : échec, l'ancienne
-   association est **conservée telle quelle**.
+2. With the probe running, hold **BOOT for about 3 s**, until the LED turns
+   **solid blue**, then **release**: pairing starts on release. A press longer
+   than 10 s is ignored (button considered stuck). Do not hold BOOT while
+   plugging the probe in: that is the ESP32 flashing mode.
+3. The probe sweeps channels 1 to 13 asking "who is a hub?". The hub answers with
+   its identity and MAC; the probe confirms in unicast and waits for the hub's
+   acknowledgement.
+4. **3 green flashes**: paired, the new MAC is in NVS and measurements go to this
+   hub in unicast. **3 red flashes**: failure, the previous association is **kept
+   as it was**.
 
-Règles :
+Rules:
 
-- **Volontaire uniquement.** Un hub éteint ou hors de portée ne déclenche jamais
-  de changement de récepteur : la sonde garde ses mesures en attente et
-  continue de viser son hub.
-- **Un échec n'efface rien.** Tant qu'un nouveau hub n'a pas répondu ET accusé la
-  confirmation, la sonde garde l'ancienne MAC (en NVS comme en mémoire).
-- **Plusieurs hubs à portée.** Si deux hubs différents répondent pendant le
-  balayage, la sonde refuse (éclairs rouges) plutôt que de choisir au hasard.
-  Une fois l'appairage fait, les autres hubs peuvent être rallumés : la sonde
-  retrouve le canal de SON hub par le BSSID exact de son point d'accès
-  « MH-NOW », et non plus par le premier « MH-NOW » venu.
-- **Pas de doublon, pas de trou.** La confirmation porte le dernier numéro de
-  mesure accusé par l'ancien hub : le nouveau hub reprend de là et ne reçoit
-  que les mesures encore en attente.
-- **Bouton coincé = aucun effet.** Un appui permanent (boîtier qui presse le
-  bouton, humidité sur GPIO0) ne se relâche jamais : il ne lance pas
-  d'appairage, et le réveil par bouton n'est même pas armé tant que GPIO0 reste
-  bas. Les mesures continuent normalement.
-- Recherche bornée à **60 s**. Un appui court est ignoré.
-- Le hub (≥ 1.47.0) **n'archive plus que la sonde qui l'a choisi** : une sonde
-  d'établi allumée à côté ne peut plus mélanger ses mesures à celles de dehors. L'appui réveille la
-  sonde de son sommeil ; elle se rendort ensuite pour le temps restant, sans
-  décaler la cadence des mesures.
+- **Deliberate only.** A hub that is off or out of range never triggers a change
+  of receiver: the probe keeps its measurements pending and keeps aiming at its
+  hub.
+- **A failure erases nothing.** Until a new hub has answered AND acknowledged the
+  confirmation, the probe keeps the old MAC (in NVS and in memory).
+- **Several hubs in range.** If two different hubs answer during the sweep, the
+  probe refuses (red flashes) rather than pick one at random. Once paired, the
+  other hubs can be switched back on: the probe finds ITS hub's channel through
+  the exact BSSID of its "MH-NOW" access point, no longer through the first
+  "MH-NOW" it sees.
+- **No duplicate, no gap.** The confirmation carries the last measurement number
+  acknowledged by the old hub: the new hub resumes from there and only receives
+  the measurements still pending.
+- **Stuck button = no effect.** A permanent press (an enclosure pressing the
+  button, moisture on GPIO0) is never released: it starts no pairing, and the
+  button wake-up is not even armed while GPIO0 stays low. Measurements carry on
+  normally.
+- Search bounded to **60 s**. A short press is ignored.
+- The hub (≥ 1.47.0) **only archives the probe that chose it**: a bench probe
+  powered on next to it can no longer mix its readings with the outdoor ones. The
+  press wakes the probe from sleep; it then goes back to sleep for the remaining
+  time, without shifting the measurement cadence.
 
-Sans appairage enregistré (sonde neuve, flash effacée), la sonde **n'envoie
-rien** : `ESPNOW_RECEIVER_MAC` (`include/config.h`) est à zéro depuis la 0.25.0.
-Elle garde ses mesures en attente et ne scanne plus de canal tant qu'un appui
-long sur BOOT ne l'a pas appairée. Une MAC en dur aurait visé un hub précis, et
-après un échange de hubs (prod ↔ banc de test) une sonde effacée aurait envoyé
-ses mesures au mauvais hub.
+Without a stored pairing (new probe, erased flash), the probe **sends nothing**:
+`ESPNOW_RECEIVER_MAC` (`include/config.h`) is zero since 0.25.0. It keeps its
+measurements pending and no longer scans channels until a long press on BOOT has
+paired it. A hard-coded MAC would have targeted one specific hub, and after
+swapping hubs (production ↔ test bench) an erased probe would have sent its
+readings to the wrong hub.
 
-### Buffer local : aucune mesure perdue, sans vider l'accu
+### Local buffer: no measurement lost, without draining the battery
 
-Chaque mesure est écrite en Flash **avant** d'être envoyée, puis gardée jusqu'à
-ce que le hub en accuse réception. Si le hub est éteint ou hors de portée, la
-sonde renvoie ensuite ce qui manque, dans l'ordre, au plus 10 mesures par
-réveil. Rétention : 30 jours de mesures en attente.
+Each measurement is written to flash **before** it is sent, then kept until the
+hub acknowledges it. If the hub is off or out of range, the probe later resends
+what is missing, in order, at most 10 measurements per wake-up. Retention: 30
+days of pending measurements.
 
-Depuis la 0.24.0, ce buffer est un **journal en segments** : un petit fichier
-par jour de mesures (`/mhs/<seq>.seg`), écrit uniquement par ajout. Le
-filigrane d'accusé vit en NVS, et un segment entièrement accusé est supprimé.
-L'ancien buffer, un seul fichier de 276 Ko, était recopié en entier par
-LittleFS à chaque mesure : 4,5 s mesurées, radio allumée. Au premier
-démarrage en 0.24.0, les mesures encore en attente de l'ancien fichier sont
-reprises, puis il est effacé.
+Since 0.24.0 this buffer is a **segmented journal**: one small file per day of
+measurements (`/mhs/<seq>.seg`), written by appending only. The acknowledgement
+watermark lives in NVS, and a fully acknowledged segment is deleted. The former
+buffer, a single 276 KB file, was copied in full by LittleFS at every
+measurement: 4.5 s measured, radio on. On the first boot in 0.24.0, the
+measurements still pending in the old file are taken over, then it is erased.
 
 ---
 
-## 3. Matériel
+## 3. Hardware
 
-Le brochage vit dans `include/board_config.h`, sélectionné par le define
-`SENSOR_BOARD_S3` posé par l'environnement PlatformIO.
+The pinout lives in `include/board_config.h`, selected by the `SENSOR_BOARD_S3`
+define set by the PlatformIO environment.
 
 **ESP32-S3 Super Mini** (env `esp32-s3`)
-- 4 Mo flash + 2 Mo PSRAM quad (inutilisée), USB CDC natif. **Pas d'écran** (statut par LED).
-- Statut = LED RGB GPIO 48 (bleu acquisition, vert OK, rouge erreur).
-- **I2C** : SDA = GP8, SCL = GP9. Batterie : Li-ion 14500 (Breadvolt), pont 100k/100k sur GP4.
-- ESP-NOW plafonné à **11 dBm** (contrainte matérielle validée par test : pleine puissance = pas d'ACK).
-- **Capteurs** : AHT20 (T/H), BMP280 (pression).
-- Détail : `docs/cablage.md`.
+- 4 MB flash + 2 MB quad PSRAM (unused), native USB CDC. **No screen** (status on the LED).
+- Status = RGB LED on GPIO 48 (blue acquisition, green OK, red error).
+- **I2C**: SDA = GP8, SCL = GP9. Battery: 14500 Li-ion (Breadvolt), 100k/100k divider on GP4.
+- ESP-NOW capped at **11 dBm** (hardware constraint confirmed by testing: full power = no ACK).
+- **Sensors**: AHT20 (T/H), BMP280 (pressure).
+- Details (French): [`docs/cablage.md`](docs/cablage.md).
 
 ---
 
-## 4. LED RGB
+## 4. RGB LED
 
-- **Bleu** : boot et acquisition.
-- **Vert** : livraison confirmée (le hub a accusé réception, ACK unicast).
-- **Rouge** : non livré (pas d'ACK du hub).
-- **Bleu fixe** (après ~3 s d'appui sur BOOT) : appairage en cours.
-- **3 éclairs verts / rouges** : appairage réussi / échoué (association inchangée).
+- **Blue**: boot and acquisition.
+- **Green**: delivery confirmed (the hub acknowledged, unicast ACK).
+- **Red**: not delivered (no ACK from the hub).
+- **Solid blue** (after ~3 s holding BOOT): pairing in progress.
+- **3 green / red flashes**: pairing succeeded / failed (association unchanged).
 
 ---
 
-## 5. Compilation et flash
+## 5. Build and flash
 
-1. Copier `include/secrets_example.h` vers `include/secrets.h` **dans ce projet**.
+1. Copy `include/secrets_example.h` to `include/secrets.h` **in this project**.
 
 ```bash
 # ESP32-S3 Super Mini
@@ -143,11 +144,11 @@ pio run -e esp32-s3 -t upload
 pio run -e esp32-s3 -t monitor
 ```
 
-Si le port série n'apparaît pas : tenir BOOT, tap RESET, relâcher BOOT.
+If the serial port does not show up: hold BOOT, tap RESET, release BOOT.
 
 ---
 
-## 6. Auteur & Licence
+## 6. Author & License
 
-Développé par **morfredus** pour la station météo **MeteoHub**.  
-Licence : **GPL v3**.
+Developed by **morfredus** for the **MeteoHub** weather station.
+License: **GPL v3**.

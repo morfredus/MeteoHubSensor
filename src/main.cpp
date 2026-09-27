@@ -8,14 +8,12 @@
 #include "modules/sensor_manager.h"
 #include "modules/espnow_sender.h"
 #include "modules/power_manager.h"
-#include "modules/display_manager.h"
 #include "modules/sync_manager.h"
 
 // Instance globale des modules
 static SensorManager sensorManager;
 static EspNowSender espNowSender;
 static PowerManager powerManager;
-static DisplayManager displayManager; // ecran sur HW-675, no-op sur S3
 static mhs::SyncManager syncManager;   // buffer local + identite + horloge (v3)
 
 // Compteur de cycles d'exécution
@@ -215,8 +213,6 @@ void performCycle() {
         packet.temperature, packet.humidity, packet.pressure,
         packet.battery_voltage, (unsigned)espNowSender.channel(), success ? 1 : 0);
 
-    displayManager.showReading(packet, success, espNowSender.channel());
-
     if (success) {
         Serial.printf("[SYNC] Sent seq=%u (ACK MAC ch=%u)\n", seq, (unsigned)espNowSender.channel());
         powerManager.blinkStatus(0, 150, 0, 60);
@@ -279,16 +275,6 @@ void setup() {
     if (!wantPairing) powerManager.setLedColor(0, 50, 150);
 
     sensorManager.begin();
-
-    // Ecran integre (HW-675) : initialise APRES l'ouverture du bus I2C par
-    // SensorManager, puisqu'il partage GP5/GP6 avec les capteurs. Sans ecran
-    // (S3), begin() est un no-op.
-    displayManager.begin();
-#ifdef PROJECT_VERSION
-    displayManager.showSplash(PROJECT_VERSION);
-#else
-    displayManager.showSplash("");
-#endif
 
     // Buffer de securite local (LittleFS + NVS). Degrade mais non bloquant s'il
     // echoue : la sonde emettra quand meme en direct, simplement sans filet.
