@@ -4,7 +4,7 @@
 // ============================================================================
 // Brochage MeteoHubSensor - ESP32-S3 Super Mini
 // ============================================================================
-// Cible unique (env supermini, define SENSOR_BOARD_S3). Le reste du firmware ne
+// Cible unique (env esp32-s3-supermini, define SENSOR_BOARD_S3). Le reste du firmware ne
 // connait que les alias PIN_* et le drapeau SENSOR_NEEDS_TX_LIMIT : ajouter une
 // autre carte se ferait ici, sans toucher aux modules. (La cible C3 HW-675 a ete
 // retiree, et avec elle le module d'ecran OLED qui ne servait qu'a elle.)

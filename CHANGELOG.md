@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.25.3] - 2026-09-28
+
+### Changed
+
+- **Build environment renamed `esp32-s3` -> `esp32-s3-supermini`**, the same name
+  as in MeteoHub for the same board. Build with `pio run -e esp32-s3-supermini`.
+  The packaging target in `morfproject.json` follows (`esp32s3-supermini`), so the
+  release `.bin` asset name changes. Docs updated. No firmware behaviour change.
+
 ## [0.25.2] - 2026-09-28
 
 ### Fixed

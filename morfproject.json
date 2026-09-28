@@ -4,7 +4,7 @@
   "packaging": {
     "provider": "project",
     "targets": {
-      "esp32-s3": { "platform": { "os": "esp32s3" }, "build": { "tool": "platformio", "env": "esp32-s3" }, "package": { "format": "bin" } }
+      "esp32s3-supermini": { "platform": { "os": "esp32s3" }, "build": { "tool": "platformio", "env": "esp32-s3-supermini" }, "package": { "format": "bin" } }
     }
   }
 }
