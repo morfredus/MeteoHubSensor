@@ -116,12 +116,21 @@ bool SensorManager::readTemperatureHumidity(float& temp, float& hum) {
     }
 
     sensors_event_t humEvent, tempEvent;
-    if (_aht.getEvent(&humEvent, &tempEvent)) {
-        temp = tempEvent.temperature;
-        hum = humEvent.relative_humidity;
-        return true;
+    if (!_aht.getEvent(&humEvent, &tempEvent)) return false;
+
+    // Signature de panne AHT20 : une trame brute a zero (capteur noye, bus I2C
+    // perturbe) se convertit EXACTEMENT en -50 degC / 0 %, et getEvent() la
+    // declare valide. Egalite stricte, pas un seuil : aucune vraie mesure
+    // d'hiver n'est ecartee (le capteur ne descend pas sous -40 degC et une
+    // humidite exterieure n'est jamais 0,000 pile).
+    if (tempEvent.temperature == -50.0f && humEvent.relative_humidity == 0.0f) {
+        Serial.println("[SENSOR] [WARN] AHT20 a rendu une trame nulle (-50 / 0) -> ignoree");
+        return false;
     }
-    return false;
+
+    temp = tempEvent.temperature;
+    hum = humEvent.relative_humidity;
+    return true;
 }
 
 bool SensorManager::readPressure(float& pres) {

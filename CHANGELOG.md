@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.25.2] - 2026-09-28
+
+### Fixed
+
+- **AHT20 all-zero reading sent as a valid -50 degC / 0 % measurement.** A zeroed
+  raw frame (wet sensor, disturbed I2C bus) converts to exactly -50 / 0 and the
+  library reports it as valid. That exact signature is now rejected, so the packet
+  leaves with the temperature/humidity flags cleared. Strict equality, not a
+  threshold: no real winter reading is discarded (the AHT20 does not go below
+  -40 degC).
+
 ## [0.25.1] - 2026-09-27
 
 ### Fixed
