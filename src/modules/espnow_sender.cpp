@@ -245,7 +245,12 @@ bool EspNowSender::send(MeteoPacket& packet, uint8_t frameType) {
     // reemetten la MEME trame (le hub deduplique par seq).
     packet.magic[0] = METEO_PACKET_MAGIC_0;
     packet.magic[1] = METEO_PACKET_MAGIC_1;
-    packet.protocol_version = METEO_PROTOCOL_VERSION;
+    packet.protocol_version = METEO_DATA_VERSION;
+    // Version du firmware qui EMET (y compris pour une retransmission : c'est
+    // l'etat actuel de la sonde que le hub affiche).
+#ifdef PROJECT_VERSION
+    packet.fw_version = encodeFwVersion(PROJECT_VERSION);
+#endif
     packet.node_id = SENSOR_NODE_ID;
     packet.frame_type = frameType;
 

@@ -24,6 +24,16 @@ constexpr uint8_t METEO_PACKET_MAGIC_1 = 'H';
 // trou. Sonde ET hub doivent etre reflashes ensemble (version rejetee sinon).
 constexpr uint8_t METEO_PROTOCOL_VERSION = 3;
 
+// Version des trames de DONNEES seules (MeteoPacket). v4 : ajout de fw_version
+// (version du firmware de la sonde, pour l'afficher sur le hub). Les trames
+// d'appairage et de controle restent en METEO_PROTOCOL_VERSION (3) : les faire
+// evoluer ensemble aurait impose de reflasher sonde et hub au meme instant.
+// Le hub accepte [METEO_DATA_VERSION_MIN, METEO_DATA_VERSION] : on flashe le hub
+// d'abord, la sonde ensuite, sans rupture. Une trame v4 refusee par un vieux hub
+// n'est pas accusee : la sonde la garde et la renvoie apres sa mise a jour.
+constexpr uint8_t METEO_DATA_VERSION = 4;
+constexpr uint8_t METEO_DATA_VERSION_MIN = 3;
+
 // Type de trame de donnees (champ frame_type). Une retransmission porte la MEME
 // sequence et le MEME sensor_ts que l'acquisition d'origine : seule frame_type
 // change, ce qui permet au hub d'ancrer son horloge sur les trames LIVE
@@ -104,10 +114,16 @@ struct __attribute__((packed)) MeteoPacket {
     // introuvable. C'est le garde-fou anti-blocage du cas-limite « buffer plein ».
     uint32_t oldest_seq;
 
+    // Version du firmware de la sonde (v4) : (majeur << 16) | (mineur << 8) |
+    // correctif, voir encodeFwVersion. 0 = inconnue (trame v3).
+    uint32_t fw_version;
+
     uint16_t crc16;                // CRC16 de contrôle d'intégrité
 };
 
-static_assert(sizeof(MeteoPacket) == 63, "MeteoPacket must stay packed at 63 bytes");
+static_assert(sizeof(MeteoPacket) == 67, "MeteoPacket must stay packed at 67 bytes");
+// Taille d'une trame v3 (sans fw_version) : 63 octets, CRC en fin.
+constexpr size_t METEO_PACKET_V3_SIZE = 63;
 
 // ============================================================================
 // Voie inverse hub -> sonde : accuse de reception cumulatif + demande de trou
@@ -197,6 +213,51 @@ inline uint16_t calculateCrc16(const uint8_t* data, size_t length) {
         }
     }
     return crc;
+}
+
+// Version de firmware "A.B.C" -> (A << 16) | (B << 8) | C, 0 si illisible.
+// Chaque composante est bornee a 255 (0.26.0 -> 0x001A00).
+inline uint32_t encodeFwVersion(const char* s) {
+    if (s == nullptr) return 0;
+    uint32_t part[3] = {0, 0, 0};
+    int k = 0;
+    bool digit = false;
+    for (; *s && k < 3; ++s) {
+        if (*s >= '0' && *s <= '9') {
+            part[k] = part[k] * 10 + (uint32_t)(*s - '0');
+            if (part[k] > 255) return 0;
+            digit = true;
+        } else if (*s == '.' && digit) {
+            ++k; digit = false;
+        } else {
+            break;
+        }
+    }
+    if (k < 2 || (k == 2 && !digit)) return 0;
+    return (part[0] << 16) | (part[1] << 8) | part[2];
+}
+
+// Valide une trame de DONNEES recue (`len` = taille reelle) et la normalise :
+// v4 telle quelle ; v3 (63 octets, sans fw_version) replacee dans la structure
+// v4, fw_version = 0. Magic, version et CRC verifies. `p` contient les octets
+// recus, copies depuis le debut de la structure.
+inline bool normalizeMeteoPacket(MeteoPacket& p, size_t len) {
+    if (p.magic[0] != METEO_PACKET_MAGIC_0 || p.magic[1] != METEO_PACKET_MAGIC_1) return false;
+    const uint8_t* raw = reinterpret_cast<const uint8_t*>(&p);
+    if (p.protocol_version == 3) {
+        if (len != METEO_PACKET_V3_SIZE) return false;
+        const size_t body = METEO_PACKET_V3_SIZE - sizeof(uint16_t);
+        const uint16_t crc = (uint16_t)raw[body] | ((uint16_t)raw[body + 1] << 8);
+        if (calculateCrc16(raw, body) != crc) return false;
+        p.fw_version = 0;
+        p.crc16 = crc;
+        return true;
+    }
+    if (p.protocol_version >= METEO_DATA_VERSION_MIN && p.protocol_version <= METEO_DATA_VERSION) {
+        if (len != sizeof(MeteoPacket)) return false;
+        return calculateCrc16(raw, sizeof(MeteoPacket) - sizeof(uint16_t)) == p.crc16;
+    }
+    return false;
 }
 
 // Finalise une trame d'appairage (magic, version, CRC).

@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.27.0] - 2026-09-29
+
+### Added
+
+- **The probe sends its firmware version.** Every data frame (live and retransmitted)
+  carries `fw_version` from `PROJECT_VERSION` (data frame version 4, 67 bytes, shared
+  `meteo_packet.h` identical to the hub's). MeteoHub 1.55.0 shows it on its dashboard.
+  **Flash the hub first**: an older hub rejects v4 frames without acknowledging them,
+  so the probe keeps them and resends them once the hub is updated (nothing lost).
+  Pairing and control frames are unchanged (version 3).
+
 ## [0.26.0] - 2026-09-29
 
 ### Changed
