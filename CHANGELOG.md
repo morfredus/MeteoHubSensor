@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.26.0] - 2026-09-29
+
+### Changed
+
+- **Sensors are read before the radio starts.** One wake-up out of
+  `ESPNOW_RESCAN_EVERY_N_WAKES` (12, about once an hour) rescans the hub channel
+  (~2 s of radio at full power) inside `espNowSender.begin()`. The measurement taken
+  afterwards suffered the board heating and current draw: an hourly pressure spike
+  on 2026-09-29. `setup()` now reads the sensors right after `sensorManager.begin()`,
+  radio off, and hands the reading to `performCycle()`: every wake-up measures in the
+  same conditions. Battery voltage is still read under radio load (the hub's alert
+  thresholds were set on that reference). Continuous / light-sleep modes, where the
+  radio stays on, keep reading in `performCycle()`.
+
 ## [0.25.3] - 2026-09-28
 
 ### Changed

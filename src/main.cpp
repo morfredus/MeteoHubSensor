@@ -158,7 +158,10 @@ static void runDeferredSync(uint32_t liveSeq) {
     }
 }
 
-void performCycle() {
+// `preread` : mesure deja acquise AVANT le demarrage de la radio (reveil de deep
+// sleep, voir setup). nullptr : lire ici (mode continu / light sleep, radio deja
+// active en permanence).
+void performCycle(const MeteoPacket* preread = nullptr) {
     Serial.println("\n----------------------------------------");
     Serial.println("[MAIN] Debut du cycle de mesure");
 
@@ -169,7 +172,8 @@ void performCycle() {
     }
 
     MeteoPacket packet;
-    memset(&packet, 0, sizeof(MeteoPacket));
+    if (preread) packet = *preread;             // capteurs lus radio eteinte
+    else memset(&packet, 0, sizeof(MeteoPacket));
     packet.uptime_sec = millis() / 1000;
     packet.reset_reason = g_resetReason;         // diagnostic v2 (voir setup)
     packet.wake_count = (uint16_t)g_wakeCount;
@@ -177,7 +181,9 @@ void performCycle() {
     // Temoin bleu pendant l'acquisition (plus d'OLED : la LED est le statut)
     powerManager.setLedColor(0, 40, 120);
 
-    sensorManager.readAll(packet);
+    if (!preread) sensorManager.readAll(packet);
+    // Batterie lue ICI, radio active : les seuils d'alerte du hub (3,40 / 3,20 V)
+    // ont ete regles sur une tension sous charge, on ne change pas sa reference.
     powerManager.readBattery(packet);
     g_lastBatteryValid = (packet.valid_fields & FIELD_BATTERY) != 0;
     g_lastBatteryPct = packet.battery_percent;
@@ -276,6 +282,17 @@ void setup() {
 
     sensorManager.begin();
 
+    // MESURE AVANT LA RADIO. Un reveil sur ESPNOW_RESCAN_EVERY_N_WAKES rescanne le
+    // canal du hub (~2 s de radio a plein regime) dans espNowSender.begin() : lue
+    // apres, la mesure de ce reveil-la subissait la chauffe et l'appel de courant
+    // de la radio (pic de pression toutes les ~60 min observe le 29/09). Lire ici
+    // donne a CHAQUE reveil les memes conditions : capteurs au repos, radio
+    // eteinte. Lecture faite meme sur un reveil par BOOT (sans usage si aucune
+    // mesure ne suit) : quelques millisecondes d'I2C, pour une seule regle simple.
+    MeteoPacket preread;
+    memset(&preread, 0, sizeof(MeteoPacket));
+    sensorManager.readAll(preread);
+
     // Buffer de securite local (LittleFS + NVS). Degrade mais non bloquant s'il
     // echoue : la sonde emettra quand meme en direct, simplement sans filet.
     if (!syncManager.begin()) {
@@ -314,7 +331,7 @@ void setup() {
         // Reveil programme imminent (ou mode continu) : cycle normal ci-dessous.
     }
 
-    performCycle();
+    performCycle(&preread);
     lastMeasurementTime = millis();
 
     // Deep sleep = ne revient jamais (reboot au reveil). On FERME proprement le
