@@ -192,10 +192,25 @@ bool EspNowSender::begin() {
         Serial.println("[ESPNOW] Init failed");
         return false;
     }
+#if ESP_ARDUINO_VERSION_MAJOR >= 3
+    // Core Arduino 3.x / ESP-IDF 5 : les callbacks recoivent une structure
+    // (adresse dans des champs) et non plus l'adresse MAC seule. Adaptateurs fins :
+    // le traitement reste celui de onDataSent / onDataRecv.
+    esp_now_register_send_cb([](const wifi_tx_info_t* info, esp_now_send_status_t status) {
+        onDataSent(info != nullptr ? info->des_addr : nullptr, status);
+    });
+#else
     esp_now_register_send_cb(onDataSent);
+#endif
     // Voie inverse (v3) : le hub peut renvoyer un SyncControl pendant la fenetre
     // d'eveil. On enregistre le callback de reception des maintenant.
+#if ESP_ARDUINO_VERSION_MAJOR >= 3
+    esp_now_register_recv_cb([](const esp_now_recv_info_t* info, const uint8_t* data, int len) {
+        onDataRecv(info != nullptr ? info->src_addr : nullptr, data, len);
+    });
+#else
     esp_now_register_recv_cb(onDataRecv);
+#endif
 
     // Sonde non appairee : ESP-NOW demarre quand meme (l'appairage en a besoin),
     // les mesures restent simplement en attente dans le buffer local.
@@ -245,7 +260,12 @@ bool EspNowSender::send(MeteoPacket& packet, uint8_t frameType) {
     // reemetten la MEME trame (le hub deduplique par seq).
     packet.magic[0] = METEO_PACKET_MAGIC_0;
     packet.magic[1] = METEO_PACKET_MAGIC_1;
-    packet.protocol_version = METEO_PROTOCOL_VERSION;
+    packet.protocol_version = METEO_DATA_VERSION;
+    // Version du firmware qui EMET (y compris pour une retransmission : c'est
+    // l'etat actuel de la sonde que le hub affiche).
+#ifdef PROJECT_VERSION
+    packet.fw_version = encodeFwVersion(PROJECT_VERSION);
+#endif
     packet.node_id = SENSOR_NODE_ID;
     packet.frame_type = frameType;
 

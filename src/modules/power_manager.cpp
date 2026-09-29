@@ -5,11 +5,11 @@
 #include <WiFi.h>
 
 PowerManager::PowerManager() 
-    : _pixel(NUM_PIXELS, PIN_RGB_LED, NEO_GRB + NEO_KHZ800) {}
+    : _pixel(NUM_PIXELS, PIN_LED_RGB, NEO_GRB + NEO_KHZ800) {}
 
 void PowerManager::begin() {
     // LED RGB onboard (WS2812 sur GPIO 48)
-    if (PIN_RGB_LED >= 0) {
+    if (PIN_LED_RGB >= 0) {
         _pixel.begin();
         _pixel.setBrightness(30); // Luminosité douce pour ne pas éblouir ni trop consommer
         _pixel.clear();

@@ -24,7 +24,7 @@ constexpr uint8_t PIN_SENSOR_SCL = 9;
 constexpr int8_t PIN_SENSOR_POWER = -1; // -1 = alim 3V3 permanente
 
 // LED RGB onboard.
-constexpr int8_t PIN_RGB_LED = 48;
+constexpr int8_t PIN_LED_RGB = 48;
 constexpr uint8_t NUM_PIXELS = 1;
 
 // Bouton BOOT.

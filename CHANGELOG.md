@@ -5,6 +5,51 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.28.2] - 2026-10-03
+
+### Changed
+
+- **PlatformIO platform pinned to the official `espressif32@7.1.3`** (Arduino core 2.0.17).
+  Unpinned, `espressif32` resolves to a Tasmota fork whose `penv_setup.py` replaces the PlatformIO
+  core in `~/.platformio/penv` with pioarduino and swaps the Home front-end for a pioarduino one.
+  There is no official core 3.x platform: staying official means core 2.x. The source keeps
+  compiling on both cores (`ESP_ARDUINO_VERSION_MAJOR` guards).
+- Build verified on 7.1.3: `esp32-s3-supermini` flash 61.8 %. No more Windows "CreateProcess" command-line overflow
+  (the shorter `framework-arduinoespressif32` path of 7.1.x).
+- Not reflashed: the devices currently run builds made on the Tasmota platform (core 3.x).
+
+## [0.28.1] - 2026-10-03
+
+### Changed
+
+- `platformio.ini`: comment recording that the official PlatformIO platform is used and that
+  pioarduino is deliberately NOT used (flash 95 % instead of 66 %, corrupted PlatformIO cache).
+
+## [0.28.0] - 2026-10-03
+
+### Changed
+
+- **Migrated to the current PlatformIO platform (Arduino core 3.x / ESP-IDF 5).** The platform pin (`espressif32@6.12.0`, Arduino core 2.x) is removed: it made the compiler
+  command line exceed the Windows limit (`g++: error: CreateProcess: No such file or directory`),
+  independently of the code. The projects now build on the current platform (Arduino core 3.3.x /
+  ESP-IDF 5), all ESP-NOW projects together.
+- ESP-NOW send and receive callbacks adapted to the new signatures (`wifi_tx_info_t`,
+  `esp_now_recv_info_t`), compatible with core 2.x behind `ESP_ARDUINO_VERSION_MAJOR`.
+- Board constant `PIN_RGB_LED` renamed `PIN_LED_RGB`: core 3.x defines a macro of that name.
+- Build verified for `esp32-s3-supermini` (flash 52 %). Not flashed nor tested on hardware
+  yet: check pairing, ACK, deep sleep wake and battery reading on the bench first.
+
+## [0.27.0] - 2026-09-29
+
+### Added
+
+- **The probe sends its firmware version.** Every data frame (live and retransmitted)
+  carries `fw_version` from `PROJECT_VERSION` (data frame version 4, 67 bytes, shared
+  `meteo_packet.h` identical to the hub's). MeteoHub 1.55.0 shows it on its dashboard.
+  **Flash the hub first**: an older hub rejects v4 frames without acknowledging them,
+  so the probe keeps them and resends them once the hub is updated (nothing lost).
+  Pairing and control frames are unchanged (version 3).
+
 ## [0.26.0] - 2026-09-29
 
 ### Changed
