@@ -5,13 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.28.3] - 2026-10-03
+
+### Fixed
+
+- Documentation only: the 1.x entry below blamed the registry for resolving an unpinned
+  `espressif32` to a Tasmota fork. Wrong. The official registry (`platformio/espressif32`, tier
+  "official") resolves it to 7.1.3 with the official core (checked). The switch to
+  pioarduino/Tasmota happened through a PlatformIO core contaminated on 2026-10-01 (exact trigger
+  not proven; a project pointing at a pioarduino URL is the likely candidate). The pin stays, for
+  reproducibility.
+
 ## [0.28.2] - 2026-10-03
 
 ### Changed
 
 - **PlatformIO platform pinned to the official `espressif32@7.1.3`** (Arduino core 2.0.17).
-  Unpinned, `espressif32` resolves to a Tasmota fork whose `penv_setup.py` replaces the PlatformIO
-  core in `~/.platformio/penv` with pioarduino and swaps the Home front-end for a pioarduino one.
+  (Correction, see the next entry: an unpinned `espressif32` resolves to the official 7.1.3 with
+  the official core; the pioarduino switch came from a PlatformIO core already contaminated.)
   There is no official core 3.x platform: staying official means core 2.x. The source keeps
   compiling on both cores (`ESP_ARDUINO_VERSION_MAJOR` guards).
 - Build verified on 7.1.3: `esp32-s3-supermini` flash 61.8 %. No more Windows "CreateProcess" command-line overflow
