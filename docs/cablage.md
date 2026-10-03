@@ -1,7 +1,7 @@
 # Câblage et fonctionnement - MeteoHubSensor
 
 Sonde météo extérieure autonome, reliée à la station **MeteoHub** par **ESP-NOW**.
-Carte cible : **ESP32-S3 Super Mini** (`esp32-s3-supermini`) - LED RGB seule (pas d'écran,
+Carte cible : **ESP32-S3 Super Mini** (`sonde-supermini`) - LED RGB seule (pas d'écran,
 pour réduire la consommation), TX ESP-NOW plafonnée (11 dBm).
 
 > La liaison est un **unicast** vers la MAC du hub : chaque envoi reçoit un accusé
@@ -92,7 +92,7 @@ Carte                     Capteur AHT20 / BMP280
 - **Calibration fine** : si la tension rapportée par la sonde diffère de
   ton multimètre (tolérance des résistances + offset ADC), poser
   `BATTERY_VREF_CALIBRATION = tension_multimètre / tension_rapportée` (× facteur actuel) dans
-  `board_config.h`. **Posé le 2026-10-03 : 1,0515** (3,859 V mesurés pour 3,67 V rapportés).
+  `board_config.h`. **Posé le 2026-10-03 : 1,036** (moyenne de deux relevés multimètre / sonde : 3,927 V pour 3,98 V et 4,074 V pour 4,14 V ; résidu < 0,3 %). À revérifier à pleine charge stable et à mi-charge.
 - Filet de sécurité : quand l'accu se vide, le pourcentage tombe à 0 % (0 % calé à
   2,6 V, 0,2 V au-dessus de la coupure 2,4 V du module), puis la protection coupe et la
   sonde s'arrête (MeteoHub voit **OUT absent**).

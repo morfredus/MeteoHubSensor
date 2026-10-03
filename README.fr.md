@@ -1,6 +1,6 @@
 # MeteoHubSensor
 
-[![Version](https://img.shields.io/badge/version-0.29.0-blue.svg)](VERSION)
+[![Version](https://img.shields.io/badge/version-0.29.2-blue.svg)](VERSION)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Platform: ESP32-S3](https://img.shields.io/badge/Platform-ESP32--S3-orange.svg)](https://www.espressif.com/)
 
@@ -114,7 +114,7 @@ reprises, puis il est effacé.
 Le brochage vit dans `include/board_config.h`, sélectionné par le define
 `SENSOR_BOARD_S3` posé par l'environnement PlatformIO.
 
-**ESP32-S3 Super Mini** (env `esp32-s3-supermini`)
+**ESP32-S3 Super Mini** (env `sonde-supermini`)
 - 4 Mo flash + 2 Mo PSRAM quad (inutilisée), USB CDC natif. **Pas d'écran** (statut par LED).
 - Statut = LED RGB GPIO 48 (bleu acquisition, vert OK, rouge erreur).
 - **I2C** : SDA = GP8, SCL = GP9. Batterie : Li-ion 14500 (Breadvolt), pont 100k/100k sur GP4.
@@ -140,9 +140,9 @@ Le brochage vit dans `include/board_config.h`, sélectionné par le define
 
 ```bash
 # ESP32-S3 Super Mini
-pio run -e esp32-s3-supermini
-pio run -e esp32-s3-supermini -t upload
-pio run -e esp32-s3-supermini -t monitor
+pio run -e sonde-supermini
+pio run -e sonde-supermini -t upload
+pio run -e sonde-supermini -t monitor
 ```
 
 Si le port série n'apparaît pas : tenir BOOT, tap RESET, relâcher BOOT.

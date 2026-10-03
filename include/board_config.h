@@ -4,7 +4,7 @@
 // ============================================================================
 // Brochage MeteoHubSensor - ESP32-S3 Super Mini
 // ============================================================================
-// Cible unique (env esp32-s3-supermini, define SENSOR_BOARD_S3). Le reste du firmware ne
+// Cible unique (env sonde-supermini, define SENSOR_BOARD_S3). Le reste du firmware ne
 // connait que les alias PIN_* et le drapeau SENSOR_NEEDS_TX_LIMIT : ajouter une
 // autre carte se ferait ici, sans toucher aux modules. (La cible C3 HW-675 a ete
 // retiree, et avec elle le module d'ecran OLED qui ne servait qu'a elle.)
@@ -51,14 +51,16 @@ constexpr int8_t PIN_BATTERY_ADC = 4;
 constexpr float BATTERY_VOLTAGE_MIN = 2.6f;
 constexpr float BATTERY_VOLTAGE_MAX = 4.2f; // Li-ion pleine charge
 // Facteur de calibration fin propre a CE S3 + CE pont (voir config.h).
-// Mesure le 2026-10-03 (accu Li-ion 3,7 V 3000 mAh) : 3,859 V au multimetre pour 3,67 V
-// rapportes avec 1.0, soit 3,859 / 3,67 = 1,0515. L'ecart de ~5 % tient surtout a
-// l'impedance du pont 100k/100k (50 kohm vue par l'ADC) qui fait lire un peu bas ; il est
-// proportionnel a la tension, un seul facteur suffit. Pour reverifier : comparer la tension
-// rapportee (log [POWER]) a un multimetre aux bornes de l'accu, a 2 niveaux de charge, et
-// reposer facteur = Vmultimetre / Vlu x facteur_actuel. Un condensateur 100 nF entre GP4 et GND
-// rendrait la lecture plus juste et plus stable (a ajouter si l'ecart se creuse).
-constexpr float BATTERY_VREF_CALIBRATION = 1.0515f;
+// Accu Li-ion 3,7 V 3000 mAh, 2026-10-03. Releves multimetre / sonde (facteur 1,0515 pose) :
+//   3,927 V / 3,98 V rapportes  -> facteur reel 1,0377
+//   4,074 V / 4,14 V rapportes  -> facteur reel 1,0347      moyenne retenue : 1,036
+// Le premier releve (3,859 V pour 3,67 V avec l'ancien firmware, soit 1,0515) s'ecarte de
+// 1,5 % : mesure non simultanee, accu fraichement sorti du chargeur. Residu avec 1,036 :
+// -0,2 % et +0,1 % sur les deux points retenus. L'ecart tient surtout a l'impedance du pont
+// 100k/100k (50 kohm vue par l'ADC) ; il est proportionnel a la tension. A reverifier
+// a pleine charge stable (~4,2 V) et a mi-charge ; un condensateur 100 nF GP4-GND
+// rendrait la lecture plus juste et plus stable. Reposer : facteur = actuel x Vmultimetre / Vlu.
+constexpr float BATTERY_VREF_CALIBRATION = 1.036f;
 
 // --- Reserves meteo ---
 constexpr uint8_t PIN_ANEMOMETER_PULSE = 1;

@@ -1,6 +1,6 @@
 # MeteoHubSensor
 
-[![Version](https://img.shields.io/badge/version-0.29.0-blue.svg)](VERSION)
+[![Version](https://img.shields.io/badge/version-0.29.2-blue.svg)](VERSION)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Platform: ESP32-S3](https://img.shields.io/badge/Platform-ESP32--S3-orange.svg)](https://www.espressif.com/)
 
@@ -113,7 +113,7 @@ measurements still pending in the old file are taken over, then it is erased.
 The pinout lives in `include/board_config.h`, selected by the `SENSOR_BOARD_S3`
 define set by the PlatformIO environment.
 
-**ESP32-S3 Super Mini** (env `esp32-s3-supermini`)
+**ESP32-S3 Super Mini** (env `sonde-supermini`)
 - 4 MB flash + 2 MB quad PSRAM (unused), native USB CDC. **No screen** (status on the LED).
 - Status = RGB LED on GPIO 48 (blue acquisition, green OK, red error).
 - **I2C**: SDA = GP8, SCL = GP9. Battery: 14500 Li-ion (Breadvolt), 100k/100k divider on GP4.
@@ -139,9 +139,9 @@ define set by the PlatformIO environment.
 
 ```bash
 # ESP32-S3 Super Mini
-pio run -e esp32-s3-supermini
-pio run -e esp32-s3-supermini -t upload
-pio run -e esp32-s3-supermini -t monitor
+pio run -e sonde-supermini
+pio run -e sonde-supermini -t upload
+pio run -e sonde-supermini -t monitor
 ```
 
 If the serial port does not show up: hold BOOT, tap RESET, release BOOT.

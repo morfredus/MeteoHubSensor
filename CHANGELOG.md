@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.29.2] - 2026-10-03
+
+### Changed
+
+- **Build environment renamed `esp32-s3-supermini` -> `sonde-supermini`** (the hub now uses
+  `hub-supermini`): one distinct name per project, so the wrong board cannot be flashed by
+  picking the default environment. Build with `pio run -e sonde-supermini`. `morfproject.json`
+  `env` follows; the target key `esp32s3-supermini` is unchanged (release asset names stay).
+- README (en/fr), `cablage.md` and header comments updated.
+
+## [0.29.1] - 2026-10-03
+
+### Changed
+
+- `BATTERY_VREF_CALIBRATION` 1.0515 -> **1.036**, from two multimeter/probe readings on the
+  3000 mAh cell (3.927 V vs 3.98 V reported, 4.074 V vs 4.14 V reported; real factors 1.0377
+  and 1.0347). The first reading (1.0515) was taken with the old firmware right after charging
+  and is discarded. Residual with 1.036: -0.2 % / +0.1 %. Re-check at a stable full charge
+  (~4.2 V) and at mid charge. Needs a reflash of the probe.
+
 ## [0.29.0] - 2026-10-03
 
 ### Changed
