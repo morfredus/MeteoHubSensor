@@ -82,13 +82,17 @@ Carte                     Capteur AHT20 / BMP280
   ```
 
   GP4 voit ~2,0 V pour 4,0 V accu ; le firmware remultiplie par le ratio du pont
-  (`BATTERY_DIVIDER_RATIO = 2,0`) et convertit sur la plage Li-ion 2,6-4,2 V.
+  (`BATTERY_DIVIDER_RATIO = 2,0`) et convertit en pourcentage par une **courbe de charge Li-ion par paliers**
+  (`include/battery_curve.h`, testée par `pio test -e native`), pas par une droite : à 3,7 V
+  il reste ~15 %, pas 69 %.
   `PIN_BATTERY_ADC = 4` (activé le 2026-09-15).
 - Le pont draine en continu ~4,0 V / 200 kΩ ≈ **20 µA**, négligeable devant les
   réveils d'émission.
-- **Calibration fine (optionnelle)** : si la tension rapportée par la sonde diffère de
+- **Accu actuel (2026-10-03)** : Li-ion 3,7 V **3000 mAh** (remplace le 14500 de 500 mAh).
+- **Calibration fine** : si la tension rapportée par la sonde diffère de
   ton multimètre (tolérance des résistances + offset ADC), poser
-  `BATTERY_VREF_CALIBRATION = tension_multimètre / tension_rapportée` dans `config.h`.
+  `BATTERY_VREF_CALIBRATION = tension_multimètre / tension_rapportée` (× facteur actuel) dans
+  `board_config.h`. **Posé le 2026-10-03 : 1,0515** (3,859 V mesurés pour 3,67 V rapportés).
 - Filet de sécurité : quand l'accu se vide, le pourcentage tombe à 0 % (0 % calé à
   2,6 V, 0,2 V au-dessus de la coupure 2,4 V du module), puis la protection coupe et la
   sonde s'arrête (MeteoHub voit **OUT absent**).

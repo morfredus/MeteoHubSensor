@@ -1,4 +1,5 @@
 #include "power_manager.h"
+#include "battery_curve.h"
 #include <esp_sleep.h>
 #include <driver/rtc_io.h>
 #include <sys/time.h>
@@ -71,14 +72,9 @@ void PowerManager::readBattery(MeteoPacket& packet) {
     
     _lastVoltage = rawVoltage;
 
-    // Calcul du pourcentage estimé
-    if (_lastVoltage >= BATTERY_VOLTAGE_MAX) {
-        _lastPercent = 100;
-    } else if (_lastVoltage <= BATTERY_VOLTAGE_MIN) {
-        _lastPercent = 0;
-    } else {
-        _lastPercent = (uint8_t)(((_lastVoltage - BATTERY_VOLTAGE_MIN) / (BATTERY_VOLTAGE_MAX - BATTERY_VOLTAGE_MIN)) * 100.0f);
-    }
+    // Pourcentage : courbe de charge Li-ion par paliers (include/battery_curve.h), et
+    // non une droite BATTERY_VOLTAGE_MIN-MAX qui surestimait fortement vers 3,7 V.
+    _lastPercent = mhbatt::liIonPercent(_lastVoltage);
 
     // Garde de plausibilite : rejette une lecture aberrante (pont absent, pin
     // flottant) SANS masquer une pile reellement faible. On borne donc autour de

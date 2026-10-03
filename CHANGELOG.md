@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.29.0] - 2026-10-03
+
+### Changed
+
+- **Battery voltage calibrated for the new Li-ion 3.7 V 3000 mAh cell**: `BATTERY_VREF_CALIBRATION`
+  1.0 -> 1.0515 (3.859 V on the multimeter vs 3.67 V reported; the 100k/100k divider's 50 kohm
+  source impedance makes the S3 ADC read low, proportionally). One measuring point only: re-check at a
+  second charge level.
+- **State of charge from a Li-ion discharge curve** (`include/battery_curve.h`, 21 points,
+  interpolated) instead of a straight line 2.6-4.2 V, which showed 69 % at 3.7 V where ~15 % is
+  left. The generic table is not measured on this cell. `BATTERY_VOLTAGE_MIN/MAX` now only bound
+  the plausibility guard.
+
+### Added
+
+- Native unit test `test_native_battery` (bounds, reference points, monotonic curve).
+- Needs a reflash of the probe to take effect.
+
 ## [0.28.3] - 2026-10-03
 
 ### Fixed

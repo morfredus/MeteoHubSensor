@@ -44,18 +44,21 @@ constexpr uint8_t PIN_BOOT_BUTTON = 0;
 // ~4,0 V / 200 k = 20 uA, negligeable devant les reveils TX. La plage Li-ion
 // 2,6-4,2 ci-dessous convertit en pourcentage.
 constexpr int8_t PIN_BATTERY_ADC = 4;
-// 0 % a 2,6 V : le module coupe a 2,4 V (protection decharge), on garde 0,2 V de
-// marge au-dessus pour afficher 0 % juste avant la coupure. La sonde tourne donc
-// jusqu'au bout au lieu de plafonner a 0 % des 3,0 V. Attention : sous ~3,0 V la
-// courbe Li-ion s'effondre, les derniers % defilent vite (peu de capacite reelle
-// dans cette queue) ; la jauge reste honnete, elle ne rallonge pas l'autonomie.
-constexpr float BATTERY_VOLTAGE_MIN = 2.6f; // 0 %  (0,2 V au-dessus de la coupure 2,4 V)
-constexpr float BATTERY_VOLTAGE_MAX = 4.2f; // 100 % (Li-ion pleine charge)
-// Facteur de calibration fin propre a CE S3 (voir config.h). Pas encore mesure
-// sur le S3 lui-meme : 1.0 (analogReadMilliVolts applique deja l'usine, on part
-// a ~1 % pres). Pour l'affiner, flasher l'outil _calib-batterie (env s3) sur le
-// S3, lire via Serial et poser VREF = Vmultimetre / Vlu.
-constexpr float BATTERY_VREF_CALIBRATION = 1.0f;
+// Bornes de la plage de PLAUSIBILITE de la lecture (garde de power_manager.cpp, +/- 0,5 V) :
+// elles ne servent plus au pourcentage, calcule par la courbe Li-ion de battery_curve.h.
+// 2,6 V = 0,2 V au-dessus de la coupure 2,4 V du module de protection : une pile presque
+// vide doit encore etre signalee, pas rejetee. Sous ~3,0 V la courbe Li-ion s'effondre.
+constexpr float BATTERY_VOLTAGE_MIN = 2.6f;
+constexpr float BATTERY_VOLTAGE_MAX = 4.2f; // Li-ion pleine charge
+// Facteur de calibration fin propre a CE S3 + CE pont (voir config.h).
+// Mesure le 2026-10-03 (accu Li-ion 3,7 V 3000 mAh) : 3,859 V au multimetre pour 3,67 V
+// rapportes avec 1.0, soit 3,859 / 3,67 = 1,0515. L'ecart de ~5 % tient surtout a
+// l'impedance du pont 100k/100k (50 kohm vue par l'ADC) qui fait lire un peu bas ; il est
+// proportionnel a la tension, un seul facteur suffit. Pour reverifier : comparer la tension
+// rapportee (log [POWER]) a un multimetre aux bornes de l'accu, a 2 niveaux de charge, et
+// reposer facteur = Vmultimetre / Vlu x facteur_actuel. Un condensateur 100 nF entre GP4 et GND
+// rendrait la lecture plus juste et plus stable (a ajouter si l'ecart se creuse).
+constexpr float BATTERY_VREF_CALIBRATION = 1.0515f;
 
 // --- Reserves meteo ---
 constexpr uint8_t PIN_ANEMOMETER_PULSE = 1;
