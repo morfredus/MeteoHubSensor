@@ -5,6 +5,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.29.6] - 2026-10-06
+
+### Documentation
+
+- Add the photo of the wire-antenna mounting (`docs/antenne-filaire-g2.jpg`) and embed it in
+  `docs/notes.md`, so the field note no longer depends on a scratch project.
+
+## [0.29.5] - 2026-10-06
+
+### Documentation
+
+- Clarify in `docs/notes.md` that the "C3" printed on the red ceramic chip is the antenna marking,
+  shared by the ESP32-C3 and ESP32-S3 Super Mini boards, not the SoC.
+
+## [0.29.4] - 2026-10-06
+
+### Documentation
+
+- Field note on the wire-antenna test (`docs/notes.md`, section 5): old and new prod probe are
+  the same board model (ESP32-S3 Super Mini N4R2), hub reference RSSI -37 dBm over 107/107
+  frames, antenna geometry and bench results. No code change.
+
+## [0.29.3] - 2026-10-05
+
+### Added
+
+- **Full link re-association after repeated no-ACK cycles.** Field case (2026-10-05): the hub kept
+  its channel and uptime, the sensor kept measuring and buffering, yet live frames got no ACK for
+  10 to 15 minutes; only a radio re-initialisation (re-scan wake or re-pairing) cleared it. The
+  in-send re-scan found the same channel and gave up. Now a counter of consecutive failed LIVE
+  cycles (kept in RTC memory, survives deep sleep) triggers, from the 3rd failed cycle
+  (`ESPNOW_REASSOCIATE_AFTER_FAILS`), a full re-association: ESP-NOW stopped, Wi-Fi radio cycled,
+  channel re-scanned, ESP-NOW and hub peer set up again, then one more send. A single missed ACK
+  changes nothing (the hub claims the missing measurement next cycle). No extra cost in normal
+  operation; during an outage the re-scan was already done on every no-ACK.
+
+### Changed
+
+- `EspNowSender`: radio and ESP-NOW setup factored into `startRadio()` / `initEspNow()`, shared by
+  `begin()` and `reassociate()`.
+
 ## [0.29.2] - 2026-10-03
 
 ### Changed

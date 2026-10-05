@@ -12,6 +12,9 @@
 // Canal du hub memorise en RAM RTC : survit au deep sleep, reutilise au reveil
 // sans refaire un scan Wi-Fi. 0 = pas encore decouvert (premier boot).
 RTC_DATA_ATTR static uint8_t rtcChannel = 0;
+// Cycles LIVE consecutifs sans ACK (survit au deep sleep). Remis a 0 au premier ACK.
+// Declenche la re-association complete a ESPNOW_REASSOCIATE_AFTER_FAILS.
+RTC_DATA_ATTR static uint8_t rtcFailStreak = 0;
 // Compteur de reveils, pour ne rescanner que toutes les N fois (deep sleep).
 RTC_DATA_ATTR static uint32_t rtcWakeCount = 0;
 
@@ -140,20 +143,7 @@ bool EspNowSender::begin() {
     Serial.println("[ESPNOW] Init (unicast vers le hub)");
     loadAssociation();
 
-    // Wi-Fi en STA non associe : ESP-NOW n'a pas besoin d'association. On coupe
-    // le sommeil modem, sinon un ACK/une trame tombe pendant une micro-sieste.
-    WiFi.mode(WIFI_STA);
-    WiFi.disconnect();
-    WiFi.setSleep(false);
-    esp_wifi_set_ps(WIFI_PS_NONE);
-
-#if defined(SENSOR_NEEDS_TX_LIMIT)
-    // Contrainte materielle : a pleine puissance, l'antenne PCB du Super Mini
-    // n'obtient aucun ACK du hub. Plafond defini dans board_config.h/config.h.
-    WiFi.setTxPower(SENSOR_TX_POWER_LEVEL);
-    Serial.printf("[ESPNOW] TX plafonnee (antenne Super Mini), niveau=%d\n",
-                  (int)SENSOR_TX_POWER_LEVEL);
-#endif
+    startRadio();
 
     // Decouverte du canal du hub. En deep sleep on reutilise le canal memorise en
     // RTC et on ne rescanne que toutes les ESPNOW_RESCAN_EVERY_N_WAKES reveils :
@@ -188,6 +178,42 @@ bool EspNowSender::begin() {
     applyChannel(ch);
     delay(50); // laisse le canal se stabiliser
 
+    if (!initEspNow()) return false;
+
+    // Sonde non appairee : ESP-NOW demarre quand meme (l'appairage en a besoin),
+    // les mesures restent simplement en attente dans le buffer local.
+    if (_paired && !registerHubPeer()) {
+        return false;
+    }
+
+    uint8_t mac[6] = {};
+    WiFi.macAddress(mac);
+    Serial.printf("[ESPNOW] Pret ch=%d src=%02X:%02X:%02X:%02X:%02X:%02X"
+                  " -> hub=%02X:%02X:%02X:%02X:%02X:%02X\n",
+                  _channel, mac[0], mac[1], mac[2], mac[3], mac[4], mac[5],
+                  _destMac[0], _destMac[1], _destMac[2],
+                  _destMac[3], _destMac[4], _destMac[5]);
+    return true;
+}
+
+void EspNowSender::startRadio() {
+    // Wi-Fi en STA non associe : ESP-NOW n'a pas besoin d'association. On coupe
+    // le sommeil modem, sinon un ACK/une trame tombe pendant une micro-sieste.
+    WiFi.mode(WIFI_STA);
+    WiFi.disconnect();
+    WiFi.setSleep(false);
+    esp_wifi_set_ps(WIFI_PS_NONE);
+
+#if defined(SENSOR_NEEDS_TX_LIMIT)
+    // Contrainte materielle : a pleine puissance, l'antenne PCB du Super Mini
+    // n'obtient aucun ACK du hub. Plafond defini dans board_config.h/config.h.
+    WiFi.setTxPower(SENSOR_TX_POWER_LEVEL);
+    Serial.printf("[ESPNOW] TX plafonnee (antenne Super Mini), niveau=%d\n",
+                  (int)SENSOR_TX_POWER_LEVEL);
+#endif
+}
+
+bool EspNowSender::initEspNow() {
     if (esp_now_init() != ESP_OK) {
         Serial.println("[ESPNOW] Init failed");
         return false;
@@ -211,20 +237,23 @@ bool EspNowSender::begin() {
 #else
     esp_now_register_recv_cb(onDataRecv);
 #endif
+    return true;
+}
 
-    // Sonde non appairee : ESP-NOW demarre quand meme (l'appairage en a besoin),
-    // les mesures restent simplement en attente dans le buffer local.
-    if (_paired && !registerHubPeer()) {
-        return false;
-    }
-
-    uint8_t mac[6] = {};
-    WiFi.macAddress(mac);
-    Serial.printf("[ESPNOW] Pret ch=%d src=%02X:%02X:%02X:%02X:%02X:%02X"
-                  " -> hub=%02X:%02X:%02X:%02X:%02X:%02X\n",
-                  _channel, mac[0], mac[1], mac[2], mac[3], mac[4], mac[5],
-                  _destMac[0], _destMac[1], _destMac[2],
-                  _destMac[3], _destMac[4], _destMac[5]);
+bool EspNowSender::reassociate() {
+    // Remet la pile radio a zero comme un demarrage a froid, sans redemarrer la
+    // puce : c'est ce qui levait le silence observe, pas un simple re-scan.
+    Serial.println("[ESPNOW] Re-association complete (serie de no-ACK)");
+    esp_now_deinit();
+    WiFi.mode(WIFI_OFF);
+    delay(100);
+    startRadio();
+    const uint8_t scanned = scanHubChannel();
+    if (scanned != 0) rtcChannel = scanned;   // scan confirme : on le cache
+    applyChannel(scanned != 0 ? scanned : _channel);
+    delay(50);
+    if (!initEspNow() || !registerHubPeer()) return false;
+    Serial.printf("[ESPNOW] Re-association faite, canal=%d\n", (unsigned)_channel);
     return true;
 }
 
@@ -272,9 +301,31 @@ bool EspNowSender::send(MeteoPacket& packet, uint8_t frameType) {
     const size_t dataLenForCrc = sizeof(MeteoPacket) - sizeof(uint16_t);
     packet.crc16 = calculateCrc16(reinterpret_cast<const uint8_t*>(&packet), dataLenForCrc);
 
+    const bool live = (frameType == FRAME_LIVE);
+    const bool ok = sendWithRecovery(packet, live);
+    // Le compteur ne suit que les envois LIVE : un cycle = un live. Une
+    // retransmission ratee ne dit rien de plus que le live qui la precede.
+    if (live) {
+        if (ok) rtcFailStreak = 0;
+        else if (rtcFailStreak < 255) rtcFailStreak++;
+    }
+    return ok;
+}
+
+bool EspNowSender::sendWithRecovery(MeteoPacket& packet, bool live) {
     // 1er jet : plusieurs essais sur le canal courant.
     if (trySendUnicast(packet, ATTEMPTS_PER_CHANNEL)) {
         return true;
+    }
+
+    // Serie de cycles sans ACK (ce live inclus) : le re-scan seul ne suffit pas,
+    // on reconstruit toute la liaison radio, puis on retente une fois.
+    if (live && (uint8_t)(rtcFailStreak + 1) >= ESPNOW_REASSOCIATE_AFTER_FAILS) {
+        if (reassociate() && trySendUnicast(packet, ATTEMPTS_PER_CHANNEL)) {
+            return true;
+        }
+        Serial.println("[ESPNOW] Toujours pas d'ACK apres re-association");
+        return false;
     }
 
     // Aucun ACK : le hub a peut-etre migre de canal. On rescanne et on retente.

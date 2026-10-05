@@ -57,3 +57,38 @@ Le protocole utilise un champ `valid_fields` (masque binaire 16 bits). Cela perm
 
 - Si seule la sonde AHT20 est branchée : seuls les bits `FIELD_TEMPERATURE` et `FIELD_HUMIDITY` sont actifs.
 - Lorsqu'un anémomètre est ajouté ultérieurement : le bit `FIELD_WIND_SPEED` est activé, et MeteoHub commence automatiquement à enregistrer et afficher le vent sans casser la compatibilité des anciennes trames.
+
+---
+
+## 5. Retour terrain : sonde de prod remplacée par une carte avec antenne filaire (2026-10-06)
+
+**Info importante : matériel.** La sonde de prod est une **ESP32-S3 Super Mini N4R2** (4 Mo flash,
+PSRAM 2 Mo quad). L'ancienne sonde (MAC 3C:0F:02:E2:C7:D4, vue du hub `E2:C7:D4`) et la nouvelle
+(AC:27:6E:CC:B2:DC, vue du hub `CC:B2:DC`) sont **le même modèle de carte** : la comparaison ne
+mélange pas deux puces. Le C3 (HW-675) n'existe que sur le banc, jamais en prod. Ne pas déduire
+le modèle d'une MAC (le préfixe ne distingue pas S3 et C3).
+
+**Attention au mot « C3 » : l'inscription « C3 » sur la puce céramique rouge de la carte est le
+marquage de l'antenne céramique, commune aux Super Mini ESP32-C3 et ESP32-S3. Ce n'est pas le
+SoC : une carte S3 porte bien ce « C3 » sur son antenne.**
+
+- Nouvelle sonde : carte avec antenne filaire soudée sur la puce céramique (fil d'argent de 35 mm
+  au total, dont 1 mm de boucle supplémentaire qui passe d'un côté à l'autre de la puce ; fil
+  vertical). Photo du montage : `docs/antenne-filaire-g2.jpg` (mesures faites avec le banc d'essai Wi-Fi). Géométrie très
+  sensible : 1 mm de boucle a valu ~9 dB sur le banc.
+- Banc Wi-Fi (même carte, même endroit) : RSSI moyen -53,2 dBm sans antenne, -42,2 avec la 1re
+  géométrie (34 mm), -33,4 avec la 2e (35 mm), 0 % de perte dans tous les cas.
+- Appairage du 2026-10-06 à 00:37 : 5 demandes en ~1 s, réponse du hub canal 11, sonde associée ;
+  1re trame vivante à 00:42, `seq=1` sans mesures valides (ignorée par le hub), `seq=2` et `3`
+  valides, rattrapage complet (`want=0/0`). Réveil `up=2s`, comme l'ancienne sonde.
+- **Référence à comparer** : dernière ligne ESP-NOW du hub avec l'ancienne sonde : `rx=107 ok=107
+  bad=0 rssi=-37` (canal 11). Comparer avec la ligne `src=...CC:B2:DC` suivante.
+- Impression de Fred (non chiffrée) : association Wi-Fi plus rapide qu'avec la carte nue.
+- TX ESP-NOW toujours plafonnée à 11 dBm par le firmware (`SENSOR_NEEDS_TX_LIMIT`) : à pleine
+  puissance le hub n'acquittait pas avec l'antenne PCB d'origine. Non retesté avec l'antenne
+  filaire ; sur le banc, une des deux cartes ne s'associait pas à 19,5 dBm (avec ou sans fil),
+  l'autre oui : le comportement à pleine puissance dépend de la carte individuelle.
+- À suivre : RSSI/ACK vus par le hub, courbe de batterie du hub (>= 1.59.0), tenue du fil à la
+  pluie et au vent.
+
+![Antenne filaire G2](antenne-filaire-g2.jpg)

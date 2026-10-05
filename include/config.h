@@ -99,6 +99,15 @@ constexpr uint32_t ESPNOW_RESCAN_EVERY_N_WAKES = 12;
 // chasser un canal (une silence radio due à la pile n'est pas un souci de canal).
 constexpr uint8_t ESPNOW_RESCAN_SKIP_BELOW_PCT = 10;
 
+// Auto-guerison de la liaison : un seul no-ACK n'est pas grave (le hub reclame le
+// manquant au cycle suivant). Apres ce nombre de CYCLES LIVE consecutifs sans ACK,
+// la sonde fait une re-association complete (radio Wi-Fi coupee/relancee, ESP-NOW
+// re-initialise, scan du canal, peer re-enregistre) au lieu du simple re-scan.
+// Observe le 05/10 : 10 a 15 min de silence que seule une reinitialisation levait.
+// Cout : uniquement pendant une panne (le re-scan etait deja fait a chaque no-ACK) ;
+// en regime normal, aucun surcout.
+constexpr uint8_t ESPNOW_REASSOCIATE_AFTER_FAILS = 3;
+
 // MAC STA du hub PAR DEFAUT, utilisee seulement tant qu'aucun appairage n'est
 // enregistre en NVS. VOLONTAIREMENT A ZERO (0.25.0) : apres un effacement de la
 // flash, la sonde n'envoie RIEN tant qu'elle n'a pas ete appairee (appui long sur

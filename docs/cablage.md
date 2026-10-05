@@ -8,6 +8,7 @@ pour réduire la consommation), TX ESP-NOW plafonnée (11 dBm).
 > de réception matériel (ACK). La carte plafonne sa puissance d'émission (l'antenne
 > PCB du Super Mini est mal adaptée : à pleine puissance, le hub n'acquitte pas).
 > Le niveau se règle dans `include/config.h`.
+> Antenne filaire essayée en prod depuis le 2026-10-06 : voir `docs/notes.md`, section 5.
 
 Le brochage vit dans `include/board_config.h` (sélectionné par `SENSOR_BOARD_S3`) et
 les réglages dans `include/config.h`.

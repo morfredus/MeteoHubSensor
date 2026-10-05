@@ -92,6 +92,17 @@ private:
     static volatile bool _ctrlReceived;
     static SyncControl _lastCtrl;
 
+    // Coupe puis relance la couche radio (STA, sommeil modem, puissance TX). Commun
+    // a begin() et a reassociate().
+    void startRadio();
+    // Enregistre les callbacks et initialise ESP-NOW. false si l'init echoue.
+    bool initEspNow();
+    // Envoi unicast avec les paliers de guerison (re-scan, puis re-association).
+    bool sendWithRecovery(MeteoPacket& packet, bool live);
+    // Re-association complete apres une serie de no-ACK : ESP-NOW arrete, radio
+    // Wi-Fi coupee/relancee, scan du canal, ESP-NOW + peer remis en place.
+    bool reassociate();
+
     // Scanne les reseaux et renvoie le canal du SoftAP du hub, ou 0 si absent.
     uint8_t scanHubChannel();
     // Charge l'association depuis la NVS (repli : ESPNOW_RECEIVER_MAC).
