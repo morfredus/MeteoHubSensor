@@ -30,8 +30,9 @@ constexpr uint8_t NUM_PIXELS = 1;
 // Bouton BOOT.
 constexpr uint8_t PIN_BOOT_BUTTON = 0;
 
-// Alimentation : module regulateur 3,3 V + accu Li-ion 3,7 V (3000 mAh depuis le
-// 2026-10-03). Il a remplace le module Breadvolt (boost, protection decharge
+// Alimentation : module regulateur Youmi 3,3 V (entree annoncee 4,5-7 V) + accu Li-ion
+// 3,7 V (3000 mAh depuis le 2026-10-03), charge dans un chargeur de bureau (pas de
+// charge USB) ; deux accus a permuter. Il a remplace le module Breadvolt (boost, protection decharge
 // 2,4 V / charge 4,28 V) qui decrochait en deep sleep. Le 3,3 V regule est CONSTANT :
 // le mesurer ne dirait rien de l'accu. On tape donc la CELLULE, AVANT le
 // regulateur, au + de l'accu (multimetre ~4,0 V en charge).

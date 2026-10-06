@@ -65,20 +65,33 @@ Carte                     Capteur AHT20 / BMP280
 ## 3. Alimentation batterie
 
 **Module régulateur 3,3 V + accu Li-ion** (cellule 3,7 V, 3000 mAh depuis le 2026-10-03).
-Un petit module à régulateur de tension (boîtier SOT-223, une LED sur la sortie, bornes
-IN + GND et OUT + GND) abaisse la tension de l'accu en un **3,3 V régulé** pour la carte. Le
+Un petit module **Youmi « 3.3 V DC/DC abaisseur »** (boîtier SOT-223, une LED sur la sortie,
+bornes IN + GND et OUT + GND en 2 broches, 26 x 12 x 12 mm) abaisse la tension de l'accu en un
+**3,3 V** pour la carte. Annoncé par le vendeur : entrée **4,5 à 7 V CC**, sortie 3,3 V CC,
+800 mA. Le
 même module équipe la v1 (prod) et la v2 (banc), voir la section 5.
 
 ![Module régulateur 3,3 V](module-regulateur-3v3.jpg)
+
+Câblage du module, identique sur la v1 et la v2 : l'**accu** est branché sur **VIN et GND** du
+régulateur ; le module distribue le **3,3 V** (VOUT) et la **masse** (GND) à la carte.
 
 Il remplace le module **Breadvolt** (boost AP2004H) des premières versions, qui semblait
 décrocher à la charge très faible du deep sleep (voir l'essai light sleep dans
 `include/config.h`). Le Breadvolt n'est plus monté sur la carte de prod.
 
-> **À confirmer** : le Breadvolt gérait lui-même l'accu (protection décharge 2,4 V, charge
-> 4,28 V, LEDs CHG/PWR). Noter ici comment l'accu est désormais chargé et protégé, ainsi que la
-> référence du régulateur et sa tension de déchet (dropout), qui fixe la tension d'accu minimale
-> pour tenir 3,3 V.
+**Charge de l'accu.** Le Breadvolt gérait lui-même l'accu (protection décharge 2,4 V, charge
+4,28 V, LEDs CHG/PWR). Ce n'est plus le cas : le module régulateur ne fait ni charge ni
+protection. L'accu est chargé **hors de la sonde, dans un chargeur de bureau** ; il n'y a **pas de
+charge par USB** dans cette version. L'usage visé est de disposer de **deux accus** et de
+remplacer l'accu usé par l'accu chargé quand c'est nécessaire.
+
+> **Point de vigilance (à mesurer)** : la plage d'entrée annoncée du module (4,5 à 7 V) est
+> **au-dessus** de celle d'un accu Li-ion (2,6 à 4,2 V). Hors plage, la sortie n'est plus un 3,3 V
+> régulé : elle suit l'accu, diminuée de la tension de déchet (dropout) du régulateur. Le S3
+> décroche alors bien avant que l'accu soit vide (brownout vers 2,4 à 3,0 V de rail). Mesurer
+> VOUT en fonction de la tension d'accu, sur le banc, pour connaître l'accu minimal utilisable et
+> le comparer aux seuils d'alerte de MeteoHub (3,40 V puis 3,20 V).
 
 - Le 3,3 V régulé est **constant** : le mesurer ne dirait rien de l'accu. On tape donc
   la **cellule**, **avant** le régulateur, au **+ accu** (multimètre ~4,0 V en charge).
@@ -107,8 +120,9 @@ décrocher à la charge très faible du deep sleep (voir l'essai light sleep dan
   `BATTERY_VREF_CALIBRATION = tension_multimètre / tension_rapportée` (× facteur actuel) dans
   `board_config.h`. **Posé le 2026-10-03 : 1,036** (moyenne de deux relevés multimètre / sonde : 3,927 V pour 3,98 V et 4,074 V pour 4,14 V ; résidu < 0,3 %). À revérifier à pleine charge stable et à mi-charge.
 - Filet de sécurité : quand l'accu se vide, le pourcentage tombe à 0 % (0 % calé à
-  2,6 V, 0,2 V au-dessus de la coupure 2,4 V du Breadvolt d'origine, **à revoir** avec le
-  régulateur), puis la sonde s'arrête (MeteoHub voit **OUT absent**).
+  2,6 V, **seuil confirmé**, 0,2 V au-dessus de l'ancienne coupure 2,4 V du Breadvolt), puis la
+  sonde s'arrête (MeteoHub voit **OUT absent**). Voir le point de vigilance ci-dessus : le rail 3,3 V
+  peut décrocher avant que l'accu atteigne ce seuil.
 
 ---
 
@@ -160,9 +174,9 @@ un condensateur électrolytique et une céramique près de l'alimentation, et **
 ![Carte v1, côté alimentation](carte-v1-alim.jpg)
 
 - Platine noire **uPesy**, grand format, dans un boîtier transparent.
-- Le **module régulateur** se branche sur **4 supports Dupont 2 broches** de la carte : il se
-  retire sans dessouder. Il a remplacé le Breadvolt qui
-  occupait ces mêmes supports.
+- Les **4 supports Dupont 2 broches** de la carte accueillaient le **Breadvolt**, retiré depuis.
+- Le **module régulateur** n'est pas sur ces supports : sa **sortie** se branche sur le **JST voisin**
+  de ces supports, sur le **rail d'alimentation** de la carte ; son entrée (VIN, GND) reçoit l'accu.
 - Le S3 Super Mini porte l'**antenne filaire maison** (voir `docs/notes.md`, section 5).
 - Les deux résistances de 100 kΩ et un fil orange vers la broche GP4 forment le pont de mesure.
 
@@ -186,12 +200,19 @@ un condensateur électrolytique et une céramique près de l'alimentation, et **
 - État : la v2 fonctionne parfaitement sur le banc (2026-10-07). Le **S3 avec antenne filaire
   de la v1 viendra prendre place sur la v2**.
 
+### v3 : envisagée
+
+Une v3 de la carte est envisagée avec un **petit panneau solaire** et un **chargeur solaire** couplé
+à une **batterie protégée**. Elle supprimerait le remplacement manuel des accus et la question de la
+protection de décharge. Rien n'est défini à ce stade (références, câblage, place du régulateur).
+La question de la plage d'entrée du régulateur (voir la section 3) se reposera avec ce chargeur.
+
 ### Différences
 
 | Sujet | v1 (uPesy, prod) | v2 (Electrocookie, banc) |
 | :--- | :--- | :--- |
 | Platine | Grande, noire, boîtier transparent | Compacte, bleue, quatre entretoises |
-| Module régulateur | Sur 4 supports Dupont 2 broches | Soudé sur la carte |
+| Module régulateur | Sortie sur le JST voisin des 4 supports Dupont (ex-Breadvolt), sur le rail d'alimentation | Soudé sur la carte |
 | Prises JST | 3 (accu, I2C, alim capteur) | 3 (BAT, 8, - +) |
 | ESP32-S3 | Sur barrettes, antenne filaire | Sur barrettes, sans antenne filaire (à changer) |
 | Mesure batterie | Pont 100 k / 100 k vers GP4 | Identique |

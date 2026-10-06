@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.29.15] - 2026-10-07
+
+- Note the envisaged v3 board in `docs/cablage.md`: small solar panel and solar charger coupled to a
+  protected battery, to remove the manual cell swap. Nothing defined yet. Documentation only.
+
+## [0.29.14] - 2026-10-07
+
+- Document the power chain precisely in `docs/cablage.md`: the regulator is a Youmi "3.3 V DC/DC
+  step-down" module (advertised input 4.5-7 V, 3.3 V out, 800 mA); the cell is charged outside the
+  sensor in a desk charger (no USB charging in this version), with two cells swapped when needed;
+  the 0 % threshold at 2.6 V is confirmed. Add a measurement warning: the advertised input range is
+  above a Li-ion cell's range, so the 3.3 V rail may sag before the cell is empty. `notes.md` and the
+  `board_config.h` comment aligned. Documentation and comments only, no firmware change.
+
+## [0.29.13] - 2026-10-07
+
+- Align the last stale wording: the `config.h` comment no longer names the old 14500 cell (the
+  battery is now a 3000 mAh Li-ion). Remaining Breadvolt mentions are historical or flagged
+  "to confirm" in `docs/cablage.md`. Comment only, no firmware change.
+
+## [0.29.12] - 2026-10-07
+
+- Document the regulator wiring in `docs/cablage.md`: the cell is connected to VIN and GND of the
+  regulator module, which supplies 3.3 V (VOUT) and ground (GND) to the board; same on v1 and v2.
+  Documentation only, no firmware change.
+
+## [0.29.11] - 2026-10-07
+
+- Fix the v1 board description in `docs/cablage.md`: the four 2-pin Dupont sockets hosted the
+  Breadvolt (now removed); the 3.3 V regulator module is not plugged on them, its output goes to the
+  JST next to those sockets, on the power rail. Documentation only, no firmware change.
+
 ## [0.29.10] - 2026-10-07
 
 - Add `enclosure/`: first version of a mini Stevenson screen for the sensor (OpenSCAD model

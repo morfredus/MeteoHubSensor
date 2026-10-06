@@ -11,7 +11,7 @@ constexpr uint8_t SENSOR_NODE_ID = 1; // ID unique du nœud (pour distinguer plu
 // --- Mode d'alimentation et Fréquence de mesure ---
 // Si TRUE : mesure, émission ESP-NOW immédiate puis passage en deep sleep
 // Si FALSE : boucle active millis() permanente (idéal pour debug ou alimentation secteur)
-// TRUE = mode autonome sur batterie : le mode continu vide le 14500 en quelques
+// TRUE = mode autonome sur batterie : le mode continu vide l'accu en quelques
 // heures. La chaîne unicast gère le réveil (attente de l'ACK avant sommeil, canal
 // mémorisé en RAM RTC). Passer à FALSE seulement pour un debug sur USB.
 constexpr bool ENABLE_DEEP_SLEEP = true;
