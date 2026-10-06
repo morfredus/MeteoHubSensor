@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.29.8] - 2026-10-06
+
+- Refine the wire-antenna notes in `docs/notes.md`: describe the wire as added around the ceramic
+  antenna (not soldered onto the chip), clarify that 35 mm is not exactly a quarter wave, state that
+  the bench shows a better RSSI but not yet a measurable reliability gain (loss was already 0 %),
+  make the subjective Wi-Fi impression impersonal, and keep the story of how the idea came about.
+  Documentation only, no firmware change.
+
+## [0.29.7] - 2026-10-06
+
+- Document the wire-antenna build (20 AWG solid wire, 35 mm, 15 mm vertical, loop around both sides
+  of the ceramic antenna) and its sources (espboards.dev note, Hackaday article) in `docs/notes.md`.
+  Documentation only, no firmware change.
+
 ## [0.29.6] - 2026-10-06
 
 ### Documentation

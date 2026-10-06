@@ -72,18 +72,21 @@ le modèle d'une MAC (le préfixe ne distingue pas S3 et C3).
 marquage de l'antenne céramique, commune aux Super Mini ESP32-C3 et ESP32-S3. Ce n'est pas le
 SoC : une carte S3 porte bien ce « C3 » sur son antenne.**
 
-- Nouvelle sonde : carte avec antenne filaire soudée sur la puce céramique (fil d'argent de 35 mm
-  au total, dont 1 mm de boucle supplémentaire qui passe d'un côté à l'autre de la puce ; fil
-  vertical). Photo du montage : `docs/antenne-filaire-g2.jpg` (mesures faites avec le banc d'essai Wi-Fi). Géométrie très
+- Nouvelle sonde : carte avec une antenne filaire ajoutée autour de l'antenne céramique. Fil rigide 20 AWG
+  (0,5 mm), 35 mm au total : 15 mm en vertical, le reste forme la boucle autour des deux côtés de
+  l'antenne céramique. Photo du montage : `docs/antenne-filaire-g2.jpg` (mesures faites avec le banc d'essai Wi-Fi). Géométrie très
   sensible : 1 mm de boucle a valu ~9 dB sur le banc.
 - Banc Wi-Fi (même carte, même endroit) : RSSI moyen -53,2 dBm sans antenne, -42,2 avec la 1re
-  géométrie (34 mm), -33,4 avec la 2e (35 mm), 0 % de perte dans tous les cas.
+  géométrie (34 mm), -33,4 avec la 2e (35 mm), 0 % de perte dans tous les cas. Ces mesures
+  démontrent une amélioration importante du RSSI, mais pas encore une augmentation mesurable de la
+  fiabilité de la liaison : le taux de perte était déjà de 0 % sans antenne dans ces conditions
+  de test.
 - Appairage du 2026-10-06 à 00:37 : 5 demandes en ~1 s, réponse du hub canal 11, sonde associée ;
   1re trame vivante à 00:42, `seq=1` sans mesures valides (ignorée par le hub), `seq=2` et `3`
   valides, rattrapage complet (`want=0/0`). Réveil `up=2s`, comme l'ancienne sonde.
 - **Référence à comparer** : dernière ligne ESP-NOW du hub avec l'ancienne sonde : `rx=107 ok=107
   bad=0 rssi=-37` (canal 11). Comparer avec la ligne `src=...CC:B2:DC` suivante.
-- Impression de Fred (non chiffrée) : association Wi-Fi plus rapide qu'avec la carte nue.
+- Impression (non chiffrée, observation subjective à confirmer par une mesure) : association Wi-Fi plus rapide qu'avec la carte nue.
 - TX ESP-NOW toujours plafonnée à 11 dBm par le firmware (`SENSOR_NEEDS_TX_LIMIT`) : à pleine
   puissance le hub n'acquittait pas avec l'antenne PCB d'origine. Non retesté avec l'antenne
   filaire ; sur le banc, une des deux cartes ne s'associait pas à 19,5 dBm (avec ou sans fil),
@@ -92,3 +95,17 @@ SoC : une carte S3 porte bien ce « C3 » sur son antenne.**
   pluie et au vent.
 
 ![Antenne filaire G2](antenne-filaire-g2.jpg)
+
+**Sources de l'idée.** Fiche de la carte sur espboards.dev (encart « Good to know » : sur certaines
+S3 Super Mini, l'antenne céramique est montée à l'envers, la piste d'alimentation ne touche alors
+pas l'élément ; le point d'alimentation est du côté de la barre blanche) et l'article Hackaday
+[Simple antenna makes for better ESP32-C3 WiFi](https://hackaday.com/2025/04/07/simple-antenna-makes-for-better-esp32-c3-wifi/)
+(2025-04-07), qui décrit un fil quart d'onde de 31 mm. L'idée est cohérente avec une antenne quart d'onde à
+2,4 GHz, soit environ 31 mm dans l'air. Le montage réellement retenu fait 35 mm de fil, mais sa
+géométrie autour de l'antenne céramique fait partie intégrante du montage. Piste à vérifier si une carte
+s'associe mal : l'orientation de l'antenne avant d'accuser la puce.
+
+**Comment on en est arrivé là.** Aucune antenne n'était prévue. L'information est venue d'une
+lecture sur espboards.dev, puis de l'article Hackaday : « quart d'onde, 2,4 GHz, environ 31 mm »
+a rappelé les antennes de la CB. Un bout de fil 20 AWG a suivi, puis un banc d'essai Wi-Fi pour
+vérifier que l'idée tenait.
