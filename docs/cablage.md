@@ -64,9 +64,21 @@ Carte                     Capteur AHT20 / BMP280
 
 ## 3. Alimentation batterie
 
-**Module Breadvolt + accu Li-ion 14500** (3,7 V, 500 mAh). Le module sort un
-**3,3 V régulé** vers la carte et **gère lui-même l'accu** (protection décharge
-2,4 V, charge 4,28 V, LEDs CHG/PWR).
+**Module régulateur 3,3 V + accu Li-ion** (cellule 3,7 V, 3000 mAh depuis le 2026-10-03).
+Un petit module à régulateur de tension (boîtier SOT-223, une LED sur la sortie, bornes
+IN + GND et OUT + GND) abaisse la tension de l'accu en un **3,3 V régulé** pour la carte. Le
+même module équipe la v1 (prod) et la v2 (banc), voir la section 5.
+
+![Module régulateur 3,3 V](module-regulateur-3v3.jpg)
+
+Il remplace le module **Breadvolt** (boost AP2004H) des premières versions, qui semblait
+décrocher à la charge très faible du deep sleep (voir l'essai light sleep dans
+`include/config.h`). Le Breadvolt n'est plus monté sur la carte de prod.
+
+> **À confirmer** : le Breadvolt gérait lui-même l'accu (protection décharge 2,4 V, charge
+> 4,28 V, LEDs CHG/PWR). Noter ici comment l'accu est désormais chargé et protégé, ainsi que la
+> référence du régulateur et sa tension de déchet (dropout), qui fixe la tension d'accu minimale
+> pour tenir 3,3 V.
 
 - Le 3,3 V régulé est **constant** : le mesurer ne dirait rien de l'accu. On tape donc
   la **cellule**, **avant** le régulateur, au **+ accu** (multimètre ~4,0 V en charge).
@@ -95,8 +107,8 @@ Carte                     Capteur AHT20 / BMP280
   `BATTERY_VREF_CALIBRATION = tension_multimètre / tension_rapportée` (× facteur actuel) dans
   `board_config.h`. **Posé le 2026-10-03 : 1,036** (moyenne de deux relevés multimètre / sonde : 3,927 V pour 3,98 V et 4,074 V pour 4,14 V ; résidu < 0,3 %). À revérifier à pleine charge stable et à mi-charge.
 - Filet de sécurité : quand l'accu se vide, le pourcentage tombe à 0 % (0 % calé à
-  2,6 V, 0,2 V au-dessus de la coupure 2,4 V du module), puis la protection coupe et la
-  sonde s'arrête (MeteoHub voit **OUT absent**).
+  2,6 V, 0,2 V au-dessus de la coupure 2,4 V du Breadvolt d'origine, **à revoir** avec le
+  régulateur), puis la sonde s'arrête (MeteoHub voit **OUT absent**).
 
 ---
 
@@ -131,3 +143,55 @@ Précisions importantes :
 
 Le pilotage est dans `src/modules/power_manager.cpp` (`setLedColor`, `blinkStatus`,
 `turnOffLed`), déclenché depuis `src/main.cpp`.
+
+---
+
+## 5. Cartes v1 et v2
+
+Deux platines à bandes portent le même montage : un ESP32-S3 Super Mini sur barrettes
+femelles, le module régulateur 3,3 V, le pont de mesure de batterie (100 kΩ / 100 kΩ vers GP4),
+un condensateur électrolytique et une céramique près de l'alimentation, et **trois prises JST**
+(accu, signaux I2C, alimentation du capteur).
+
+### v1 : platine uPesy, sonde de production (boîtier extérieur)
+
+![Carte v1, vue de dessus](carte-v1-dessus.jpg)
+![Carte v1, profil](carte-v1-profil.jpg)
+![Carte v1, côté alimentation](carte-v1-alim.jpg)
+
+- Platine noire **uPesy**, grand format, dans un boîtier transparent.
+- Le **module régulateur** se branche sur **4 supports Dupont 2 broches** de la carte : il se
+  retire sans dessouder. Il a remplacé le Breadvolt qui
+  occupait ces mêmes supports.
+- Le S3 Super Mini porte l'**antenne filaire maison** (voir `docs/notes.md`, section 5).
+- Les deux résistances de 100 kΩ et un fil orange vers la broche GP4 forment le pont de mesure.
+
+### v2 : platine Electrocookie, banc
+
+![Carte v2 nue](carte-v2-nue.jpg)
+![Carte v2, connecteurs](carte-v2-connecteurs.jpg)
+![Carte v2 sur le banc](carte-v2-banc.jpg)
+![Carte v2, face soudures](carte-v2-soudures.jpg)
+
+- Platine bleue **Electrocookie**, compacte, sur **quatre entretoises** (elle tient debout sur
+  le banc et se fixe dans un boîtier).
+- **Même nombre de JST que la v1**, repérés au feutre : **BAT** (accu), **8** (SDA GP8 et
+  SCL GP9) et **- +** (masse et alimentation du capteur). Le câble Dupont à quatre broches du
+  capteur se branche sur les deux derniers.
+- Le **module régulateur** est soudé directement sur la carte, ses côtés marqués « IN + - » et
+  « OUT + - » au feutre. C'est la différence de montage avec la v1.
+- Le S3 Super Mini est sur barrettes femelles, comme sur la v1.
+- Sur le banc, le S3 n'a **pas** l'antenne filaire. Le multimètre se pique sur la prise BAT.
+- Les liaisons sous la carte sont faites au fil isolé et par ponts de soudure sur les bandes.
+- État : la v2 fonctionne parfaitement sur le banc (2026-10-07). Le **S3 avec antenne filaire
+  de la v1 viendra prendre place sur la v2**.
+
+### Différences
+
+| Sujet | v1 (uPesy, prod) | v2 (Electrocookie, banc) |
+| :--- | :--- | :--- |
+| Platine | Grande, noire, boîtier transparent | Compacte, bleue, quatre entretoises |
+| Module régulateur | Sur 4 supports Dupont 2 broches | Soudé sur la carte |
+| Prises JST | 3 (accu, I2C, alim capteur) | 3 (BAT, 8, - +) |
+| ESP32-S3 | Sur barrettes, antenne filaire | Sur barrettes, sans antenne filaire (à changer) |
+| Mesure batterie | Pont 100 k / 100 k vers GP4 | Identique |

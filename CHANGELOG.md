@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.29.10] - 2026-10-07
+
+- Add `enclosure/`: first version of a mini Stevenson screen for the sensor (OpenSCAD model
+  `stevenson-shelter-v1.scad`, 3D-printable, louvres tilted 40 degrees on four faces) and the
+  traditional reference plan it is adapted from. Files renamed to kebab-case, em dashes removed
+  from the model header. Not printed or tested yet. No firmware change.
+
+## [0.29.9] - 2026-10-07
+
+- Document the v1 (production, uPesy) and v2 (bench, Electrocookie) boards in a new section 5 of
+  `docs/cablage.md`, with photos: same three JST on both, 3.3 V regulator module plugged on four
+  2-pin Dupont sockets on v1 and soldered on v2, wire antenna on the v1 S3 only for now (it will
+  move to v2).
+- Correct the power documentation: the Breadvolt module is no longer on the production board, it
+  was replaced by a 3.3 V regulator module (same on v1 and v2). README, `docs/notes.md` and the
+  `board_config.h` comments are aligned; the missing charge/protection and dropout details are
+  flagged "to confirm" in `docs/cablage.md`.
+  Documentation and comments only, no firmware change.
+
 ## [0.29.8] - 2026-10-06
 
 - Refine the wire-antenna notes in `docs/notes.md`: describe the wire as added around the ceramic

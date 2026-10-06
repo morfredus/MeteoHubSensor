@@ -29,7 +29,7 @@ L'objectif principal de ce projet est de déporter l'acquisition météo dans le
 
 ### Autonomie théorique :
 - La cadence réelle est de **5 minutes** (`SENSOR_MEASUREMENT_INTERVAL_SECONDS`, configurable) : bien plus économe qu'une mesure par minute, l'essentiel du temps étant passé en deep sleep.
-- Le nœud de prod actuel (S3 Super Mini + module Breadvolt + accu Li-ion **14500 ~500 mAh**) tient plusieurs jours ; l'autonomie exacte reste à mesurer sur la carte réelle (le S3 dort moins efficacement que le C3 à cause du LDO et du PHY USB).
+- Le nœud de prod actuel (S3 Super Mini + module régulateur 3,3 V + accu Li-ion ; 500 mAh au départ, **3000 mAh** depuis le 2026-10-03) tient plusieurs jours ; l'autonomie exacte reste à mesurer sur la carte réelle (le S3 dort moins efficacement que le C3 à cause du LDO et du PHY USB).
 - Avec une cellule plus grosse (14500/18650) ou un petit panneau solaire + module de charge, le système peut viser une autonomie longue durée. Chiffres à confirmer par la mesure terrain, pas par le calcul seul.
 
 ---

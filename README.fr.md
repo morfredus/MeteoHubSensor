@@ -1,6 +1,6 @@
 # MeteoHubSensor
 
-[![Version](https://img.shields.io/badge/version-0.29.8-blue.svg)](VERSION)
+[![Version](https://img.shields.io/badge/version-0.29.10-blue.svg)](VERSION)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Platform: ESP32-S3](https://img.shields.io/badge/Platform-ESP32--S3-orange.svg)](https://www.espressif.com/)
 
@@ -117,7 +117,7 @@ Le brochage vit dans `include/board_config.h`, sélectionné par le define
 **ESP32-S3 Super Mini** (env `sonde-supermini`)
 - 4 Mo flash + 2 Mo PSRAM quad (inutilisée), USB CDC natif. **Pas d'écran** (statut par LED).
 - Statut = LED RGB GPIO 48 (bleu acquisition, vert OK, rouge erreur).
-- **I2C** : SDA = GP8, SCL = GP9. Batterie : Li-ion 14500 (Breadvolt), pont 100k/100k sur GP4.
+- **I2C** : SDA = GP8, SCL = GP9. Batterie : Li-ion, module régulateur 3,3 V, pont 100k/100k sur GP4.
 - ESP-NOW plafonné à **11 dBm** (contrainte matérielle validée par test : pleine puissance = pas d'ACK).
 - **Capteurs** : AHT20 (T/H), BMP280 (pression).
 - Détail : [`docs/cablage.md`](docs/cablage.md).

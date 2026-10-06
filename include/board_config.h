@@ -30,9 +30,9 @@ constexpr uint8_t NUM_PIXELS = 1;
 // Bouton BOOT.
 constexpr uint8_t PIN_BOOT_BUTTON = 0;
 
-// Alimentation : module Breadvolt + accu Li-ion 14500 (3,7 V, 500 mAh). Le
-// module fournit un 3,3 V REGULE a la carte et gere lui-meme l'accu (protection
-// decharge 2,4 V / charge 4,28 V, LEDs CHG/PWR). Le 3,3 V regule est CONSTANT :
+// Alimentation : module regulateur 3,3 V + accu Li-ion 3,7 V (3000 mAh depuis le
+// 2026-10-03). Il a remplace le module Breadvolt (boost, protection decharge
+// 2,4 V / charge 4,28 V) qui decrochait en deep sleep. Le 3,3 V regule est CONSTANT :
 // le mesurer ne dirait rien de l'accu. On tape donc la CELLULE, AVANT le
 // regulateur, au + de l'accu (multimetre ~4,0 V en charge).
 //
@@ -46,7 +46,7 @@ constexpr uint8_t PIN_BOOT_BUTTON = 0;
 constexpr int8_t PIN_BATTERY_ADC = 4;
 // Bornes de la plage de PLAUSIBILITE de la lecture (garde de power_manager.cpp, +/- 0,5 V) :
 // elles ne servent plus au pourcentage, calcule par la courbe Li-ion de battery_curve.h.
-// 2,6 V = 0,2 V au-dessus de la coupure 2,4 V du module de protection : une pile presque
+// 2,6 V = 0,2 V au-dessus de la coupure 2,4 V de l'ancien Breadvolt : une pile presque
 // vide doit encore etre signalee, pas rejetee. Sous ~3,0 V la courbe Li-ion s'effondre.
 constexpr float BATTERY_VOLTAGE_MIN = 2.6f;
 constexpr float BATTERY_VOLTAGE_MAX = 4.2f; // Li-ion pleine charge
