@@ -28,11 +28,12 @@ USB natif sur GPIO 19/20. BOOT sur GPIO 0. Straps 45/46 (GP46 input-only).
 | **GP48** | 48 | LED RGB **WS2812** onboard (pas GP46) |
 | **GP0** | 0 | Bouton **BOOT** |
 | **GP4** | 4 | ADC batterie (`PIN_BATTERY_ADC = 4`) : pont 100k/100k depuis le **+ accu** (avant le régulateur 3,3 V) |
-| **GP1** | 1 | Anémomètre (réserve) |
+| **GP1** | 1 | DHT22 DATA (humidité prioritaire, repli AHT20) |
 | **GP2** | 2 | Girouette ADC (réserve) |
 | **GP7** | 7 | Pluviomètre (réserve) |
 | **GP10** | 10 | ADC auxiliaire (réserve) |
-| **GP5 / GP6** | 5 / 6 | Libres |
+| **GP5** | 5 | Anémomètre (réserve) |
+| **GP6** | 6 | Libre |
 
 - **Pas d'écran** : le statut passe par la LED RGB et le log USB CDC.
 - **TX ESP-NOW plafonnée à 11 dBm** : à pleine puissance, le hub n'acquitte aucune
@@ -197,14 +198,22 @@ un condensateur électrolytique et une céramique près de l'alimentation, et **
 - Le S3 Super Mini est sur barrettes femelles, comme sur la v1.
 - Sur le banc, le S3 n'a **pas** l'antenne filaire. Le multimètre se pique sur la prise BAT.
 - Les liaisons sous la carte sont faites au fil isolé et par ponts de soudure sur les bandes.
-- État : la v2 fonctionne parfaitement sur le banc (2026-10-07). Le **S3 avec antenne filaire
-  de la v1 viendra prendre place sur la v2**.
+- État (2026-10-07) : la v2 mesure et enregistre correctement, mais **aucune trame n'arrive au hub**, 
+  avec un S3 équipé de l'antenne filaire comme avec un S3 sans antenne. Hypothèse (non démontrée) : 
+  perturbation radioélectrique due aux liaisons sous la carte. Sortir le S3 de la carte n'y change rien, et la zone d'antenne ne peut pas être dégagée
+  sans perdre l'intérêt de la v2 (réduire la taille). Même à côté du hub, aucune communication : **la v2 est un échec
+  pour son objectif**. La v1 modifiée pour le DHT22 reste la carte de prod et fonctionne dès le premier démarrage.
+  Voir `notes.md`, section 7.
 
 ### v3 : envisagée
 
 Une v3 de la carte est envisagée avec un **petit panneau solaire** et un **chargeur solaire** couplé
 à une **batterie protégée**. Elle supprimerait le remplacement manuel des accus et la question de la
 protection de décharge. Rien n'est défini à ce stade (références, câblage, place du régulateur).
+
+Piste d'implantation tirée de l'échec de la v2 (intuition de Fred, **non testée**) : sur la v2, l'antenne du S3 se
+retrouve au milieu de la carte. Implanter le S3 dans l'autre sens pour que l'antenne soit **en bordure de carte**,
+dégagée des fils et des plans de cuivre.
 La question de la plage d'entrée du régulateur (voir la section 3) se reposera avec ce chargeur.
 
 ### Différences

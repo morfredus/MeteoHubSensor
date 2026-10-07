@@ -35,6 +35,8 @@ bool SensorManager::begin() {
     _ahtFound = initAht();
     _bmpFound = initBmp();
 
+    _dht.begin();
+
     // Configuration des broches pour futures extensions (si configurées)
     if (PIN_ANEMOMETER_PULSE >= 0) {
         pinMode(PIN_ANEMOMETER_PULSE, INPUT_PULLUP);
@@ -133,6 +135,17 @@ bool SensorManager::readTemperatureHumidity(float& temp, float& hum) {
     return true;
 }
 
+// DHT22 : NaN = capteur absent ou trame invalide (checksum). Pas de re-detection a part :
+// chaque cycle retente, le repli AHT20 se fait dans readAll().
+bool SensorManager::readDht(float& temp, float& hum) {
+    float h = _dht.readHumidity();
+    float t = _dht.readTemperature();
+    if (isnan(h) || h <= 0.0f || h > 100.0f) return false; // DHT22 : 0 % = trame nulle
+    hum = h;
+    temp = t; // NaN possible : l'appelant le teste
+    return true;
+}
+
 bool SensorManager::readPressure(float& pres) {
     if (!_bmpFound) {
         _bmpFound = initBmp();
@@ -170,15 +183,22 @@ void SensorManager::readAll(MeteoPacket& packet) {
     packet.rain_rate = 0.0f;
     packet.rain_accumulated = 0.0f;
 
-    // 1. Température et Humidité (AHT20)
-    float t = 0, h = 0;
-    if (readTemperatureHumidity(t, h)) {
-        packet.temperature = t;
-        packet.humidity = h;
-        packet.valid_fields |= (FIELD_TEMPERATURE | FIELD_HUMIDITY);
-        Serial.printf("[SENSOR] Temp: %.2f *C, Hum: %.2f %%\n", t, h);
+    // 1. Température (AHT20, repli DHT22) et humidité (DHT22 prioritaire, repli AHT20)
+    float t = 0, h = 0, dt = NAN, dh = 0;
+    bool aht = readTemperatureHumidity(t, h);
+    bool dht = readDht(dt, dh);
+    float ah = h; // humidite AHT20 conservee pour le comparatif
+    bool both = aht && dht;
+    if (dht) h = dh;
+    if (!aht && dht && !isnan(dt)) { t = dt; aht = true; } // temperature DHT22 de secours seulement
+    if (aht) packet.temperature = t, packet.valid_fields |= FIELD_TEMPERATURE;
+    if (aht || dht) packet.humidity = h, packet.valid_fields |= FIELD_HUMIDITY;
+    if (both) Serial.printf("[SENSOR] Hum AHT20=%.1f DHT22=%.1f (DHT22 temp=%.1f) ecart(DHT-AHT)=%+.1f %%\n", ah, dh, dt, dh - ah);
+    if (aht || dht) {
+        Serial.printf("[SENSOR] Temp: %.2f *C, Hum: %.2f %% (source hum: %s)\n", t, h,
+                      dht ? "DHT22" : "AHT20");
     } else {
-        Serial.println("[SENSOR] [WARN] T/H absents (AHT20 muet) -> 0.0 dans le paquet");
+        Serial.println("[SENSOR] [WARN] T/H absents (AHT20 et DHT22 muets) -> 0.0 dans le paquet");
     }
 
     // 2. Pression atmosphérique (BMP280)

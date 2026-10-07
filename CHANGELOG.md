@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.30.2] - 2026-10-08
+
+- Document why the DHT22 has priority for humidity: in the real installation it is better isolated than
+  the AHT20/BMP280 module, gives a more realistic reading and does not stick at 100 %. Note the v3 layout
+  idea (S3 reversed so the antenna sits at the board edge, untested). Documentation only, no firmware
+  change.
+
+## [0.30.1] - 2026-10-07
+
+- Document the field results: 0.30.0 runs in production on the v1 board (humidity from the DHT22 is
+  transparent for the hub), and the v2 board sends no frame to the hub with or without the wire antenna
+  (hypothesis: radio interference from the wiring under the board; removing the S3 from the board
+  does not help, the antenna area cannot be cleared without defeating the purpose of the v2, a smaller
+  board, and it fails even next to the hub, so the v2 is dropped). `docs/notes.md` section 7 and
+  `docs/cablage.md` updated. Documentation only, no firmware change.
+
+## [0.30.0] - 2026-10-07
+
+- Add a DHT22 humidity sensor on GPIO1 (DATA, 3V3, GND). Humidity comes from the DHT22 first; if it
+  is absent or returns an invalid frame, it falls back to the AHT20 of the BMP280+AHT20 module. The
+  temperature still comes from the AHT20 (DHT22 temperature only if the AHT20 is silent).
+- Move the anemometer reserve pin from GPIO1 to GPIO5 (`PIN_ANEMOMETER_PULSE`); `PIN_FREE_GP5` removed.
+- New dependency: `adafruit/DHT sensor library`. Validated on the bench (`dht22-aht-compare`): temperatures within 0.2 degC, humidity DHT22 about 2 points below AHT20.
+
 ## [0.29.15] - 2026-10-07
 
 - Note the envisaged v3 board in `docs/cablage.md`: small solar panel and solar charger coupled to a

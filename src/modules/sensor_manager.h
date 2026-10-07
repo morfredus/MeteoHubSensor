@@ -4,6 +4,7 @@
 #include "board_config.h"
 #include <Adafruit_AHTX0.h>
 #include <Adafruit_BMP280.h>
+#include <DHT.h>
 
 class SensorManager {
 public:
@@ -26,6 +27,7 @@ public:
 private:
     Adafruit_AHTX0 _aht;
     Adafruit_BMP280 _bmp;
+    DHT _dht{PIN_DHT22, DHT22};
     
     bool _ahtFound = false;
     bool _bmpFound = false;
@@ -42,6 +44,7 @@ private:
     
     // Lectures individuelles
     bool readTemperatureHumidity(float& temp, float& hum);
+    bool readDht(float& temp, float& hum);
     bool readPressure(float& pres);
     
     // Extensions futures

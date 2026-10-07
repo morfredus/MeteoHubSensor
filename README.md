@@ -1,6 +1,6 @@
 # MeteoHubSensor
 
-[![Version](https://img.shields.io/badge/version-0.29.15-blue.svg)](VERSION)
+[![Version](https://img.shields.io/badge/version-0.30.2-blue.svg)](VERSION)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Platform: ESP32-S3](https://img.shields.io/badge/Platform-ESP32--S3-orange.svg)](https://www.espressif.com/)
 
@@ -118,7 +118,7 @@ define set by the PlatformIO environment.
 - Status = RGB LED on GPIO 48 (blue acquisition, green OK, red error).
 - **I2C**: SDA = GP8, SCL = GP9. Battery: Li-ion, 3.3 V regulator module, 100k/100k divider on GP4.
 - ESP-NOW capped at **11 dBm** (hardware constraint confirmed by testing: full power = no ACK).
-- **Sensors**: AHT20 (T/H), BMP280 (pressure).
+- **Sensors**: DHT22 on GP1 (humidity, priority; falls back to the AHT20 if absent), AHT20 (T/H), BMP280 (pressure). Anemometer reserve on GP5.
 - Details (French): [`docs/cablage.md`](docs/cablage.md).
 
 ---

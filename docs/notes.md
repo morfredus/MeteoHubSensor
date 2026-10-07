@@ -109,3 +109,42 @@ s'associe mal : l'orientation de l'antenne avant d'accuser la puce.
 lecture sur espboards.dev, puis de l'article Hackaday : « quart d'onde, 2,4 GHz, environ 31 mm »
 a rappelé les antennes de la CB. Un bout de fil 20 AWG a suivi, puis un banc d'essai Wi-Fi pour
 vérifier que l'idée tenait.
+
+## 6. DHT22 : humidité prioritaire, repli AHT20 (0.30.0)
+
+- **Pourquoi le DHT22 en priorité** : dans l'installation réelle, le DHT22 est mieux isolé que le module
+  AHT20/BMP280. Il donne un relevé hygrométrique plus réaliste et ne se bloque pas à 100 % (l'AHT20, lui,
+  sature). Le critère est donc le comportement sur le terrain, pas la précision de la fiche technique ni l'écart du
+  banc (voir le point suivant).
+- **Principe** : humidité = DHT22 (GP1) si la lecture est valide, sinon AHT20. Température = AHT20 (DHT22 en secours
+  seulement). Pas de détection à part : chaque cycle retente, un DHT22 absent échoue en quelques ms.
+- **Banc** (projet `40-test/dht22-aht-compare`, 813 mesures sur 42 min, 2026-10-07) : températures BMP280 - AHT20 =
+  +0,06 °C (σ 0,02), DHT22 - AHT20 = -0,17 °C (σ 0,18) ; humidité DHT22 - AHT20 = -2,2 points (de -1,1 à -4,0,
+  corrélation 0,92, écart en réduction au fil de la mesure) ; pression 1012,2 à 1013,0 hPa. Sans hygromètre de
+  référence, on ne sait pas lequel est le plus juste ; offset d'affichage possible dans l'UI du banc.
+- **Piège** : le type doit être DHT22. Avec DHT11 codé, la valeur lue ressemble à la température.
+- **Conso estimée** (non mesurée) : environ 15 µA de repos (capteur alimenté en permanence), soit +4 % sur un cycle
+  de 300 s ; lecture négligeable (quelques ms à 1,5 mA). Couper l'alimentation coûterait plus (1 à 2 s d'éveil).
+  À confirmer au multimètre, DHT22 branché puis débranché.
+
+## 7. Essai de la carte v2 en conditions réelles : aucune trame reçue (2026-10-07)
+
+- **Contexte** : 0.30.0 en prod sur la v1 (DHT22 prioritaire pour l'humidité, repli AHT20), communication ok ;
+  l'origine de l'humidité (DHT22) est transparente côté hub. Essai ensuite de la carte v2 (Electrocookie).
+- **Constat** : avec la v2, **aucune trame n'arrive sur le hub**. Deux essais : un ESP32-S3 Super Mini équipé de
+  l'antenne filaire, puis un autre sans antenne. Même résultat. La v2 mesurait et enregistrait pourtant bien (buffer
+  de synchronisation).
+- **Hypothèse (non démontrée)** : perturbations radioélectriques dues aux liaisons faites sous la carte (fil isolé,
+  ponts de soudure sur les bandes), proches de l'antenne ou de la puce.
+- **Pistes écartées** : sortir le S3 de la carte ne résout pas le problème. Dégager la zone d'antenne est impossible
+  sans abandonner l'objectif de la v2 (réduire la taille). Même posée à côté du hub, la carte ne communiquait pas.
+  La cause exacte reste donc inconnue.
+- **Conclusion** : la v2 est un échec pour son objectif (carte plus compacte) ; la v1 reste la carte de production.
+- **Retour** : carte v1 remise en place, modifiée pour accueillir le DHT22 ; fonctionnement ok dès le premier
+  démarrage.
+- **Rattrapage** : la sonde est revenue après 35 min de silence. Le hub a reçu le live seq=562 puis 6 retransmissions
+  (seq 557 à 561), toutes archivées sans trou, puis un cycle normal (seq=563, réveil DEEPSLEEP). La synchronisation
+  avec accusé cumulatif joue donc son rôle sur une coupure de 35 min.
+- **Démarrage à froid** : la 1re mesure (reset POWERON, up=8s, t=20,0 °C) est jugée non conforme, archivée avec la
+  marque `cold_boot` et exclue de l'affichage ; la carte venait d'être alimentée, donc encore chaude. Les
+  retransmissions gardent `reset=POWERON` puisque ces mesures datent du démarrage.

@@ -63,12 +63,15 @@ constexpr float BATTERY_VOLTAGE_MAX = 4.2f; // Li-ion pleine charge
 // rendrait la lecture plus juste et plus stable. Reposer : facteur = actuel x Vmultimetre / Vlu.
 constexpr float BATTERY_VREF_CALIBRATION = 1.036f;
 
+// --- DHT22 (humidite prioritaire, repli AHT20 si absent) ---
+// Fil DATA -> GP1, 3V3, GND (module 3 broches : resistance de rappel deja presente ; DHT22 nu : 10 k vers 3V3).
+constexpr uint8_t PIN_DHT22 = 1;
+
 // --- Reserves meteo ---
-constexpr uint8_t PIN_ANEMOMETER_PULSE = 1;
+constexpr uint8_t PIN_ANEMOMETER_PULSE = 5; // deplace de GP1 (0.30.0) : GP1 sert au DHT22
 constexpr uint8_t PIN_WIND_VANE_ADC = 2;
 constexpr uint8_t PIN_RAIN_GAUGE_PULSE = 7;
 constexpr uint8_t PIN_AUX_ADC = 10;
-constexpr uint8_t PIN_FREE_GP5 = 5;
 constexpr uint8_t PIN_FREE_GP6 = 6;
 
 // Pas d'ecran : le statut passe par la LED RGB seule. Un ecran eventuellement
