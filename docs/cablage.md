@@ -23,12 +23,12 @@ USB natif sur GPIO 19/20. BOOT sur GPIO 0. Straps 45/46 (GP46 input-only).
 | :--- | :--- | :--- |
 | **3V3** | -- | Alim capteurs I2C |
 | **GND** | -- | Masse |
-| **GP8** | 8 | I2C **SDA** (AHT20 / BMP280) |
+| **GP8** | 8 | I2C **SDA** (BMP280 ; AHT20 non lu) |
 | **GP9** | 9 | I2C **SCL** |
 | **GP48** | 48 | LED RGB **WS2812** onboard (pas GP46) |
 | **GP0** | 0 | Bouton **BOOT** |
 | **GP4** | 4 | ADC batterie (`PIN_BATTERY_ADC = 4`) : pont 100k/100k depuis le **+ accu** (avant le régulateur 3,3 V) |
-| **GP1** | 1 | DHT22 DATA (humidité prioritaire, repli AHT20) |
+| **GP1** | 1 | DHT22 DATA (référence température et humidité) |
 | **GP2** | 2 | Girouette ADC (réserve) |
 | **GP7** | 7 | Pluviomètre (réserve) |
 | **GP10** | 10 | ADC auxiliaire (réserve) |
@@ -48,7 +48,7 @@ USB natif sur GPIO 19/20. BOOT sur GPIO 0. Straps 45/46 (GP46 input-only).
 ## 2. Capteurs I2C
 
 ```
-Carte                     Capteur AHT20 / BMP280
+Carte                     Module BMP280 / AHT20
 ┌──────────┐              ┌─────────────────────┐
 │      3V3 ├─────────────►│ VCC (3.3V)          │
 │      GND ├─────────────►│ GND                 │

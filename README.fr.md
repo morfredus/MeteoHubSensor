@@ -1,6 +1,6 @@
 # MeteoHubSensor
 
-[![Version](https://img.shields.io/badge/version-0.30.2-blue.svg)](VERSION)
+[![Version](https://img.shields.io/badge/version-0.31.0-blue.svg)](VERSION)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Platform: ESP32-S3](https://img.shields.io/badge/Platform-ESP32--S3-orange.svg)](https://www.espressif.com/)
 
@@ -119,7 +119,7 @@ Le brochage vit dans `include/board_config.h`, sélectionné par le define
 - Statut = LED RGB GPIO 48 (bleu acquisition, vert OK, rouge erreur).
 - **I2C** : SDA = GP8, SCL = GP9. Batterie : Li-ion, module régulateur 3,3 V, pont 100k/100k sur GP4.
 - ESP-NOW plafonné à **11 dBm** (contrainte matérielle validée par test : pleine puissance = pas d'ACK).
-- **Capteurs** : DHT22 sur GP1 (humidité, prioritaire ; repli sur l'AHT20 s'il est absent), AHT20 (T/H), BMP280 (pression). Réserve anémomètre sur GP5.
+- **Capteurs** : DHT22 sur GP1 (référence température et humidité, sans repli), BMP280 (pression seule ; l'AHT20 du module n'est plus lu). Réserve anémomètre sur GP5.
 - Détail : [`docs/cablage.md`](docs/cablage.md).
 
 ---

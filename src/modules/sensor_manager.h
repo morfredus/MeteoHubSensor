@@ -2,7 +2,6 @@
 #include <Arduino.h>
 #include "meteo_packet.h"
 #include "board_config.h"
-#include <Adafruit_AHTX0.h>
 #include <Adafruit_BMP280.h>
 #include <DHT.h>
 
@@ -17,7 +16,6 @@ public:
     void readAll(MeteoPacket& packet);
     
     // Accesseurs d'état
-    bool hasAht() const { return _ahtFound; }
     bool hasBmp() const { return _bmpFound; }
 
     // Handlers d'interruptions pour futures extensions (anémomètre, pluie)
@@ -25,11 +23,9 @@ public:
     static void onRainPulse();
 
 private:
-    Adafruit_AHTX0 _aht;
     Adafruit_BMP280 _bmp;
     DHT _dht{PIN_DHT22, DHT22};
     
-    bool _ahtFound = false;
     bool _bmpFound = false;
     uint8_t _bmpAddr = 0x76;
 
@@ -39,11 +35,9 @@ private:
     
     // Détection / Récupération I2C
     bool initI2C();
-    bool initAht();
     bool initBmp();
     
     // Lectures individuelles
-    bool readTemperatureHumidity(float& temp, float& hum);
     bool readDht(float& temp, float& hum);
     bool readPressure(float& pres);
     

@@ -110,14 +110,25 @@ lecture sur espboards.dev, puis de l'article Hackaday : « quart d'onde, 2,4 GHz
 a rappelé les antennes de la CB. Un bout de fil 20 AWG a suivi, puis un banc d'essai Wi-Fi pour
 vérifier que l'idée tenait.
 
-## 6. DHT22 : humidité prioritaire, repli AHT20 (0.30.0)
+## 6. DHT22 : référence température et humidité (0.30.0, étendu en 0.31.0)
 
 - **Pourquoi le DHT22 en priorité** : dans l'installation réelle, le DHT22 est mieux isolé que le module
   AHT20/BMP280. Il donne un relevé hygrométrique plus réaliste et ne se bloque pas à 100 % (l'AHT20, lui,
   sature). Le critère est donc le comportement sur le terrain, pas la précision de la fiche technique ni l'écart du
   banc (voir le point suivant).
-- **Principe** : humidité = DHT22 (GP1) si la lecture est valide, sinon AHT20. Température = AHT20 (DHT22 en secours
-  seulement). Pas de détection à part : chaque cycle retente, un DHT22 absent échoue en quelques ms.
+- **Principe (0.31.0)** : température et humidité viennent du DHT22 (GP1) seul. Le module BMP280+AHT20 ne sert plus
+  qu'à la pression atmosphérique ; l'AHT20 n'est plus lu (bibliothèque retirée). Plus de repli : si le DHT22 est
+  muet ou renvoie une trame invalide, température et humidité restent absentes du paquet (bits de validité à 0)
+  plutôt que d'être remplacées par une valeur jugée moins fiable. Avant 0.31.0 : humidité DHT22 avec repli AHT20,
+  température AHT20. Pas de détection à part : chaque cycle retente, un DHT22 absent échoue en quelques ms.
+- **Pourquoi le DHT22 devient aussi la référence de température** : mêmes constats que pour l'humidité. Le relevé
+  est plus stable et plus réaliste que celui de l'AHT20 du module, et un capteur unique pour les deux grandeurs
+  évite un couple température/humidité venant de deux endroits physiques différents (l'humidité relative dépend
+  directement de la température au point de mesure).
+- **Calibration de l'humidité (2026-10-08)** : la sonde a été placée dans une atmosphère de solution saline saturée
+  (NaCl), qui impose naturellement environ 75 % d'humidité relative. La sonde a rendu 75,0 à 75,1 % pendant 2 heures,
+  stable et sans dérive : elle est considérée comme bien calibrée, aucun correctif nécessaire. Les constantes
+  `DHT22_HUM_OFFSET` et `DHT22_TEMP_OFFSET` (`board_config.h`, à 0) restent disponibles pour une future recalibration.
 - **Banc** (projet `40-test/dht22-aht-compare`, 813 mesures sur 42 min, 2026-10-07) : températures BMP280 - AHT20 =
   +0,06 °C (σ 0,02), DHT22 - AHT20 = -0,17 °C (σ 0,18) ; humidité DHT22 - AHT20 = -2,2 points (de -1,1 à -4,0,
   corrélation 0,92, écart en réduction au fil de la mesure) ; pression 1012,2 à 1013,0 hPa. Sans hygromètre de

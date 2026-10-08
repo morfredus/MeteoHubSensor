@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.31.0] - 2026-10-08
+
+- The DHT22 is now the reference for both temperature and humidity. The BMP280+AHT20 module is only
+  used for atmospheric pressure: the AHT20 is no longer read (`Adafruit AHTX0` dependency removed, `hasAht()`
+  dropped) and there is no fallback any more. If the DHT22 is silent or returns an invalid frame, temperature
+  and humidity are left out of the packet (validity bits at 0).
+- Reason: the DHT22 reading is better, more stable and more realistic than the AHT20 of the module. Its
+  humidity was calibrated against a saturated salt (NaCl) solution, which naturally gives 75 % RH: the probe
+  returned 75.0 to 75.1 % for 2 hours, so it is considered stable and well calibrated.
+- Add `DHT22_HUM_OFFSET` and `DHT22_TEMP_OFFSET` (both 0) in `board_config.h` for a future recalibration.
+- Docs: `docs/notes.md` section 6, `docs/cablage.md`, both READMEs.
+
 ## [0.30.2] - 2026-10-08
 
 - Document why the DHT22 has priority for humidity: in the real installation it is better isolated than

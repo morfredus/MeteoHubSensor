@@ -17,7 +17,7 @@
 // LED RGB onboard : GPIO 48 (GPIO 46 = input-only, ignore malgre le pinout).
 constexpr char BOARD_NAME[] = "ESP32-S3 Super Mini";
 
-// --- Capteurs AHT20 (0x38) et BMP280 (0x77) ---
+// --- Module BMP280 (0x77) + AHT20 (0x38) : seule la pression du BMP280 est utilisee ---
 // Cablage : fil SDA du module -> GP8, fil SCL du module -> GP9, 3V3, GND.
 constexpr uint8_t PIN_SENSOR_SDA = 8;
 constexpr uint8_t PIN_SENSOR_SCL = 9;
@@ -63,9 +63,12 @@ constexpr float BATTERY_VOLTAGE_MAX = 4.2f; // Li-ion pleine charge
 // rendrait la lecture plus juste et plus stable. Reposer : facteur = actuel x Vmultimetre / Vlu.
 constexpr float BATTERY_VREF_CALIBRATION = 1.036f;
 
-// --- DHT22 (humidite prioritaire, repli AHT20 si absent) ---
+// --- DHT22 : reference temperature ET humidite (calibre en sel sature a 75 %, voir docs/notes.md) ---
 // Fil DATA -> GP1, 3V3, GND (module 3 broches : resistance de rappel deja presente ; DHT22 nu : 10 k vers 3V3).
 constexpr uint8_t PIN_DHT22 = 1;
+// Correctifs de calibration (ajoutes a la lecture). Sel sature NaCl : 75,0 a 75,1 % pendant 2 h -> 0.
+constexpr float DHT22_HUM_OFFSET = 0.0f;
+constexpr float DHT22_TEMP_OFFSET = 0.0f;
 
 // --- Reserves meteo ---
 constexpr uint8_t PIN_ANEMOMETER_PULSE = 5; // deplace de GP1 (0.30.0) : GP1 sert au DHT22

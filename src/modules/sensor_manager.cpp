@@ -32,7 +32,6 @@ bool SensorManager::begin() {
     }
 
     // Détection des capteurs I2C
-    _ahtFound = initAht();
     _bmpFound = initBmp();
 
     _dht.begin();
@@ -52,11 +51,10 @@ bool SensorManager::begin() {
         pinMode(PIN_WIND_VANE_ADC, INPUT);
     }
 
-    Serial.printf("[SENSOR] Bilan detection : AHT20=%s, BMP280=%s\n", 
-                  _ahtFound ? "OK" : "ABSENT", 
+    Serial.printf("[SENSOR] Bilan detection : BMP280=%s (DHT22 teste a chaque mesure)\n",
                   _bmpFound ? "OK" : "ABSENT");
 
-    return (_ahtFound || _bmpFound);
+    return true; // le DHT22 n'est pas detectable a part : chaque cycle retente
 }
 
 bool SensorManager::initI2C() {
@@ -66,15 +64,6 @@ bool SensorManager::initI2C() {
     delay(20);
     Serial.printf("[SENSOR] I2C  SDA=GP%u  SCL=GP%u\n", PIN_SENSOR_SDA, PIN_SENSOR_SCL);
     return true;
-}
-
-bool SensorManager::initAht() {
-    if (_aht.begin(&Wire)) {
-        Serial.println("[SENSOR] Capteur AHT20/AHT10 detecte");
-        return true;
-    }
-    Serial.println("[SENSOR] [WARN] Capteur AHT20 non detecte");
-    return false;
 }
 
 bool SensorManager::initBmp() {
@@ -110,39 +99,14 @@ bmp_ok:
     return true;
 }
 
-bool SensorManager::readTemperatureHumidity(float& temp, float& hum) {
-    if (!_ahtFound) {
-        // Tentative de re-detection a chaud
-        _ahtFound = initAht();
-        if (!_ahtFound) return false;
-    }
-
-    sensors_event_t humEvent, tempEvent;
-    if (!_aht.getEvent(&humEvent, &tempEvent)) return false;
-
-    // Signature de panne AHT20 : une trame brute a zero (capteur noye, bus I2C
-    // perturbe) se convertit EXACTEMENT en -50 degC / 0 %, et getEvent() la
-    // declare valide. Egalite stricte, pas un seuil : aucune vraie mesure
-    // d'hiver n'est ecartee (le capteur ne descend pas sous -40 degC et une
-    // humidite exterieure n'est jamais 0,000 pile).
-    if (tempEvent.temperature == -50.0f && humEvent.relative_humidity == 0.0f) {
-        Serial.println("[SENSOR] [WARN] AHT20 a rendu une trame nulle (-50 / 0) -> ignoree");
-        return false;
-    }
-
-    temp = tempEvent.temperature;
-    hum = humEvent.relative_humidity;
-    return true;
-}
-
-// DHT22 : NaN = capteur absent ou trame invalide (checksum). Pas de re-detection a part :
-// chaque cycle retente, le repli AHT20 se fait dans readAll().
+// DHT22 = reference temperature ET humidite (voir docs/notes.md, section 6). NaN = capteur absent
+// ou trame invalide (checksum) : rien n'est publie, il n'y a plus de repli (l'AHT20 n'est plus lu).
 bool SensorManager::readDht(float& temp, float& hum) {
     float h = _dht.readHumidity();
     float t = _dht.readTemperature();
-    if (isnan(h) || h <= 0.0f || h > 100.0f) return false; // DHT22 : 0 % = trame nulle
-    hum = h;
-    temp = t; // NaN possible : l'appelant le teste
+    if (isnan(h) || isnan(t) || h <= 0.0f || h > 100.0f) return false; // DHT22 : 0 % = trame nulle
+    hum = constrain(h + DHT22_HUM_OFFSET, 0.0f, 100.0f);
+    temp = t + DHT22_TEMP_OFFSET;
     return true;
 }
 
@@ -183,22 +147,15 @@ void SensorManager::readAll(MeteoPacket& packet) {
     packet.rain_rate = 0.0f;
     packet.rain_accumulated = 0.0f;
 
-    // 1. Température (AHT20, repli DHT22) et humidité (DHT22 prioritaire, repli AHT20)
-    float t = 0, h = 0, dt = NAN, dh = 0;
-    bool aht = readTemperatureHumidity(t, h);
-    bool dht = readDht(dt, dh);
-    float ah = h; // humidite AHT20 conservee pour le comparatif
-    bool both = aht && dht;
-    if (dht) h = dh;
-    if (!aht && dht && !isnan(dt)) { t = dt; aht = true; } // temperature DHT22 de secours seulement
-    if (aht) packet.temperature = t, packet.valid_fields |= FIELD_TEMPERATURE;
-    if (aht || dht) packet.humidity = h, packet.valid_fields |= FIELD_HUMIDITY;
-    if (both) Serial.printf("[SENSOR] Hum AHT20=%.1f DHT22=%.1f (DHT22 temp=%.1f) ecart(DHT-AHT)=%+.1f %%\n", ah, dh, dt, dh - ah);
-    if (aht || dht) {
-        Serial.printf("[SENSOR] Temp: %.2f *C, Hum: %.2f %% (source hum: %s)\n", t, h,
-                      dht ? "DHT22" : "AHT20");
+    // 1. Température et humidité : DHT22 seul (l'AHT20 du module BMP280 n'est plus utilisé)
+    float t = 0, h = 0;
+    if (readDht(t, h)) {
+        packet.temperature = t;
+        packet.humidity = h;
+        packet.valid_fields |= FIELD_TEMPERATURE | FIELD_HUMIDITY;
+        Serial.printf("[SENSOR] Temp: %.2f *C, Hum: %.2f %% (DHT22)\n", t, h);
     } else {
-        Serial.println("[SENSOR] [WARN] T/H absents (AHT20 et DHT22 muets) -> 0.0 dans le paquet");
+        Serial.println("[SENSOR] [WARN] T/H absents (DHT22 muet) -> 0.0 dans le paquet");
     }
 
     // 2. Pression atmosphérique (BMP280)
