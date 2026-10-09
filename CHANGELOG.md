@@ -5,6 +5,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.32.4] - 2026-10-09
+
+- `hardware/pcb-v1/`: add explicit GND tracks on the front layer (0.4 mm, tree from the ESP32-S3 GND pad) on top of the
+  ground pours, so the ground path is visible. Four pads enclosed by signal tracks (J3, J4, J5, J6) get a short track
+  to a ground via. Same net as the pours, so nothing changes for fabrication.
+- DRC clean (0 error, 0 unconnected, schematic parity OK), ERC clean.
+
+## [0.32.3] - 2026-10-09
+
+- `hardware/pcb-v1/`: the board is now centered on the A4 drawing sheet (outline from 115.5 / 80 to 181.5 / 130 mm).
+  Layout and connections are unchanged; DRC and ERC still clean.
+
+## [0.32.2] - 2026-10-09
+
+- `hardware/pcb-v1/`: ground (GND) is now poured on both layers (it was back layer only, so the top side showed
+  no ground copper), with one stitching via near J2. The antenna keep-out still clears both layers.
+- Add simplified 3D models for the ESP32-S3 sockets and module and for the 3.3 V regulator module, so both appear
+  in the 3D viewer.
+- ERC clean, DRC clean (schematic parity OK) with `kicad-cli` 10.0.7.
+
+## [0.32.1] - 2026-10-09
+
+- `hardware/pcb-v1/`: the ESP32-S3 socket pads and schematic pins now carry the labels printed on the module
+  (TX, RX, 1..7 on the left; 5V, GND, 3V3, 13..8 on the right) instead of 1..18, so pad 8 is GPIO8 (SDA) and
+  pad 9 is GPIO9 (SCL). Pin names show the function in this project. Same electrical connections as 0.32.0.
+- Add J6 (wind vane, JST-XH: 3V3, signal, GND) on GP2, with a short back-layer hop to cross the DHT22 track.
+- ERC and DRC (with schematic parity) still clean with `kicad-cli` 10.0.7.
+
+## [0.32.0] - 2026-10-09
+
+- Add `hardware/pcb-v1/`: KiCad 10 project (schematic, routed 2-layer PCB 66 x 50 mm, project symbol and
+  footprint library) for the v1 board. ESP32-S3 Super Mini on two female 1x9 sockets (swappable without
+  desoldering), 3.3 V regulator module, 100 k / 100 k battery divider on GP4 with a 100 nF filter, 100 nF + 220 uF
+  at the module supply pins, JST-XH connectors for battery, BMP280 (GP8/GP9), DHT22 (GP1), anemometer (GP5) and
+  rain gauge (GP7), pinout unchanged from `board_config.h`.
+- The module is placed USB side inward so the ceramic antenna sits on the board edge, with a copper keep-out
+  (tracks, vias, ground pour, both layers) under and behind it.
+- ERC clean, DRC clean (0 error, 0 unconnected, schematic parity OK) with `kicad-cli` 10.0.7. Socket row spacing,
+  regulator pin spacing and connector polarity are flagged in the README as to be measured before fabrication.
+- Docs: `hardware/pcb-v1/README.md`, `docs/cablage.md` section 5.
+
 ## [0.31.0] - 2026-10-08
 
 - The DHT22 is now the reference for both temperature and humidity. The BMP280+AHT20 module is only

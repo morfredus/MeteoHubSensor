@@ -181,6 +181,9 @@ un condensateur électrolytique et une céramique près de l'alimentation, et **
 - Le S3 Super Mini porte l'**antenne filaire maison** (voir `docs/notes.md`, section 5).
 - Les deux résistances de 100 kΩ et un fil orange vers la broche GP4 forment le pont de mesure.
 
+**Carte gravée.** Le dessin KiCad de la v1 (mêmes fonctions, S3 sur supports, antenne en bord de carte) est dans
+`hardware/pcb-v1/` ; voir son `README.md` pour les cotes à vérifier avant fabrication.
+
 ### v2 : platine Electrocookie, banc
 
 ![Carte v2 nue](carte-v2-nue.jpg)

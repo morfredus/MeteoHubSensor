@@ -68,7 +68,6 @@ tmp/
 temp/
 .arduino/
 arduino/
-hardware/
 CMakeUserPresets.json
 
 # Fichier généré par CMake pour clangd/IntelliSense
