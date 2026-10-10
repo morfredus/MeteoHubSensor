@@ -22,6 +22,8 @@ volatile bool EspNowSender::_sendComplete = false;
 volatile bool EspNowSender::_lastDeliverySuccess = false;
 volatile bool EspNowSender::_ctrlReceived = false;
 SyncControl EspNowSender::_lastCtrl{};
+volatile bool EspNowSender::_offerReceived = false;
+OtaOffer EspNowSender::_lastOffer{};
 
 namespace {
 // Delai d'attente de l'ACK apres un esp_now_send unicast. L'ACK 802.11 revient
@@ -94,6 +96,13 @@ void EspNowSender::onDataRecv(const uint8_t *mac_addr, const uint8_t *data, int 
             portEXIT_CRITICAL(&s_pairMux);
             return;
         }
+    }
+    // Offre OTA du hub (magic 'M','O') : mise de cote pour waitOtaOffer().
+    OtaOffer offer;
+    if (isValidOtaOffer(data, len, &offer)) {
+        _lastOffer = offer;
+        _offerReceived = true;
+        return;
     }
     // Voie inverse : on ne s'interesse qu'au SyncControl du hub (magic 'M','C').
     // Trame trop courte / mauvais magic / mauvaise version / CRC KO -> ignoree.
@@ -444,6 +453,20 @@ void EspNowSender::resetSyncControl() {
     // Arme la capture d'un SyncControl : a appeler juste avant l'envoi live, pour
     // que toute reponse du hub a partir de cet instant soit retenue.
     _ctrlReceived = false;
+    _offerReceived = false;
+}
+
+bool EspNowSender::waitOtaOffer(OtaOffer& out, uint32_t windowMs) {
+    const uint32_t t0 = millis();
+    while ((millis() - t0) < windowMs) {
+        if (_offerReceived) {
+            out = _lastOffer;
+            _offerReceived = false;
+            return true;
+        }
+        delay(2);
+    }
+    return false;
 }
 
 // ----------------------------------------------------------------------------

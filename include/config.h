@@ -73,7 +73,7 @@ constexpr uint32_t SENSOR_SYNC_RX_WINDOW_MS = 300;
 // SSID/mot de passe de l'AP du hub (identiques a ESPNOW_SOFTAP_* cote station).
 // La sonde s'associe ici : plus de scan Livebox ni de lock canal promiscuous.
 constexpr char ESPNOW_HUB_AP_SSID[] = "MH-NOW";
-constexpr char ESPNOW_HUB_AP_PASS[] = "espnowap";
+constexpr char ESPNOW_HUB_AP_PASS[] = "mhnowesp";   // = ESPNOW_SOFTAP_PASS du hub (config.h cote hub)
 
 // Repli uniquement si le scan du SSID (secrets.h) n'a pas donne le canal AP.
 constexpr uint8_t ESPNOW_WIFI_CHANNEL_FALLBACK = 1;
@@ -115,6 +115,13 @@ constexpr uint8_t ESPNOW_REASSOCIATE_AFTER_FAILS = 3;
 // visait un hub precis : apres un echange de hubs (prod <-> banc de test), une
 // sonde effacee aurait envoye ses mesures au mauvais hub sans le dire.
 constexpr uint8_t ESPNOW_RECEIVER_MAC[6] = {0, 0, 0, 0, 0, 0};
+
+// --- Mise a jour OTA par le hub ---
+// Le hub propose un firmware (OtaOffer) ; la sonde se connecte alors a son SoftAP « MH-NOW »
+// et telecharge le binaire en HTTP. Delai max pour s'associer au SoftAP (ms).
+constexpr uint32_t OTA_WIFI_TIMEOUT_MS = 10000;
+// Delai max d'attente de l'offre apres un SyncControl portant SYNC_FLAG_OTA_OFFER (ms).
+constexpr uint32_t OTA_OFFER_WAIT_MS = 200;
 
 // --- Appairage (appui long sur BOOT) ---
 // Appui long = « je veux changer de hub ». Action VOLONTAIRE uniquement : une

@@ -58,6 +58,13 @@ public:
     // avant l'envoi live pour ne pas rater une reponse tres rapide du hub.
     void resetSyncControl();
 
+    // Attend jusqu'a `windowMs` l'OtaOffer annoncee par SYNC_FLAG_OTA_OFFER. Renvoie true si
+    // recue (dans `out`). Rend la main a la fin de la fenetre : jamais bloquant.
+    bool waitOtaOffer(OtaOffer& out, uint32_t windowMs);
+
+    // BSSID du SoftAP du hub appaire (pour s'y associer en OTA), nullptr si inconnu.
+    const uint8_t* hubApMac() const { return _haveAp ? _apMac : nullptr; }
+
     // Rescanne le SoftAP du hub (« MH-NOW ») et bascule sur son canal s'il a
     // change. Appele periodiquement en mode continu. Renvoie true si change.
     bool refreshChannel();
@@ -91,6 +98,9 @@ private:
     // callback de reception (contexte ESP-NOW) et lus dans receiveSyncControl.
     static volatile bool _ctrlReceived;
     static SyncControl _lastCtrl;
+    // Offre OTA du hub : meme principe (callback -> drapeau -> lecture en tache principale).
+    static volatile bool _offerReceived;
+    static OtaOffer _lastOffer;
 
     // Coupe puis relance la couche radio (STA, sommeil modem, puissance TX). Commun
     // a begin() et a reassociate().

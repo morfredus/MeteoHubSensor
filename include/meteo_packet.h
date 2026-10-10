@@ -157,6 +157,34 @@ struct __attribute__((packed)) SyncControl {
 
 static_assert(sizeof(SyncControl) == 20, "SyncControl must stay packed at 20 bytes");
 
+// Bit de poids fort de want_count : « une OtaOffer suit ». want_count reste un petit
+// nombre (une poignee de mesures), le bit 15 est donc libre ; une sonde sans OTA ignore
+// want_* de toute facon. Evite de faire attendre CHAQUE reveil une offre qui ne vient pas.
+constexpr uint16_t SYNC_FLAG_OTA_OFFER = 0x8000;
+
+// ============================================================================
+// Offre de mise a jour OTA hub -> sonde
+// ============================================================================
+// Emise par le hub (unicast, ~15 ms apres le SyncControl qui porte SYNC_FLAG_OTA_OFFER)
+// quand il detient un firmware de sonde different de celui qu'elle declare (fw_version).
+// ESP-NOW ne transporte PAS le binaire (250 o par trame) : l'offre dit seulement QUOI
+// (version, taille, md5) ; la sonde se connecte alors au SoftAP du hub (« MH-NOW ») et
+// telecharge /sensor-fw.bin en HTTP. Magic 'M','O' (MeteoOta).
+constexpr uint8_t METEO_OTA_MAGIC_0 = 'M';
+constexpr uint8_t METEO_OTA_MAGIC_1 = 'O';
+
+struct __attribute__((packed)) OtaOffer {
+    uint8_t magic[2];              // 'M', 'O'
+    uint8_t protocol_version;      // METEO_PROTOCOL_VERSION
+    uint8_t node_id;               // sonde visee
+    uint32_t fw_version;           // version proposee, encodeFwVersion()
+    uint32_t size;                 // taille du binaire (octets)
+    char md5[33];                  // MD5 du binaire, hexadecimal minuscule, NUL final
+    uint16_t crc16;                // CRC16 de controle d'integrite
+};
+
+static_assert(sizeof(OtaOffer) == 47, "OtaOffer must stay packed at 47 bytes");
+
 // ============================================================================
 // Appairage sonde <-> hub (volontaire, declenche par un appui long sur BOOT)
 // ============================================================================
@@ -279,5 +307,26 @@ inline bool isValidPairFrame(const uint8_t* data, int len, MeteoPairFrame* out) 
     if (calculateCrc16(reinterpret_cast<const uint8_t*>(&f),
                        sizeof(MeteoPairFrame) - sizeof(uint16_t)) != f.crc16) return false;
     if (out) *out = f;
+    return true;
+}
+
+// Finalise une offre OTA (magic, version, CRC).
+inline void sealOtaOffer(OtaOffer& o) {
+    o.magic[0] = METEO_OTA_MAGIC_0;
+    o.magic[1] = METEO_OTA_MAGIC_1;
+    o.protocol_version = METEO_PROTOCOL_VERSION;
+    o.md5[sizeof(o.md5) - 1] = ' ';
+    o.crc16 = calculateCrc16(reinterpret_cast<const uint8_t*>(&o), sizeof(OtaOffer) - sizeof(uint16_t));
+}
+
+// Verifie la forme d'une offre OTA recue (taille, magic, version, CRC).
+inline bool isValidOtaOffer(const uint8_t* data, int len, OtaOffer* out) {
+    if (data == nullptr || len != (int)sizeof(OtaOffer)) return false;
+    OtaOffer o;
+    for (size_t i = 0; i < sizeof(o); i++) reinterpret_cast<uint8_t*>(&o)[i] = data[i];
+    if (o.magic[0] != METEO_OTA_MAGIC_0 || o.magic[1] != METEO_OTA_MAGIC_1) return false;
+    if (o.protocol_version != METEO_PROTOCOL_VERSION) return false;
+    if (calculateCrc16(reinterpret_cast<const uint8_t*>(&o), sizeof(OtaOffer) - sizeof(uint16_t)) != o.crc16) return false;
+    if (out) *out = o;
     return true;
 }

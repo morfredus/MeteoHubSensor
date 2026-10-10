@@ -9,6 +9,8 @@
 #include "modules/espnow_sender.h"
 #include "modules/power_manager.h"
 #include "modules/sync_manager.h"
+#include "modules/ota_updater.h"
+#include "ota/ota_logic.h"
 
 // Instance globale des modules
 static SensorManager sensorManager;
@@ -24,6 +26,51 @@ static uint32_t lastChannelCheck = 0;
 // pile est presque vide : ne pas gaspiller le peu qui reste en scans Wi-Fi).
 static bool g_lastBatteryValid = false;
 static uint8_t g_lastBatteryPct = 100;
+static float g_lastBatteryV = 0.0f;
+
+// --- Mise a jour OTA proposee par le hub ------------------------------------
+// L'offre est captee pendant la synchro (SYNC_FLAG_OTA_OFFER), traitee en fin de cycle.
+// Version tentee + nombre d'essais en RTC : survivent au deep sleep (voir mhota::decide).
+static OtaOffer g_otaOffer;
+static bool g_otaOfferPending = false;
+RTC_DATA_ATTR static uint32_t g_otaLastTarget = 0;
+RTC_DATA_ATTR static uint8_t g_otaTries = 0;
+
+// Le SyncControl annonce qu'une offre suit : on l'attend brievement (jamais sinon, pour ne
+// rien ajouter a un reveil ordinaire).
+static void noteOtaFlag(const SyncControl& ctrl) {
+    if (!(ctrl.want_count & SYNC_FLAG_OTA_OFFER) || g_otaOfferPending) return;
+    g_otaOfferPending = espNowSender.waitOtaOffer(g_otaOffer, OTA_OFFER_WAIT_MS);
+}
+
+static void runOtaIfOffered() {
+    if (!g_otaOfferPending) return;
+    g_otaOfferPending = false;
+    const mhota::Verdict v = mhota::decide(g_otaOffer, encodeFwVersion(PROJECT_VERSION),
+                                           g_lastBatteryValid, g_lastBatteryV,
+                                           g_otaLastTarget, g_otaTries);
+    if (v != mhota::Verdict::ACCEPT) {
+        Serial.printf("[OTA] Offre ignoree (verdict=%d)\n", (int)v);
+        return;
+    }
+    if (g_otaOffer.fw_version != g_otaLastTarget) {
+        g_otaLastTarget = g_otaOffer.fw_version;
+        g_otaTries = 0;
+    }
+    g_otaTries++;
+    Serial.printf("[OTA] Mise a jour vers 0x%06X (%u o), essai %u/%u\n",
+                  (unsigned)g_otaOffer.fw_version, (unsigned)g_otaOffer.size,
+                  (unsigned)g_otaTries, (unsigned)mhota::MAX_TRIES_PER_TARGET);
+    powerManager.setLedColor(150, 0, 150);
+    if (otaFromHub(g_otaOffer, espNowSender.channel(), espNowSender.hubApMac())) {
+        Serial.println("[OTA] Image ecrite et verifiee : redemarrage");
+        delay(200);
+        ESP.restart();
+    }
+    Serial.println("[OTA] Echec : firmware actuel conserve, nouvel essai au prochain reveil");
+    powerManager.blinkStatus(150, 0, 0, 60);
+    powerManager.turnOffLed();
+}
 
 // --- Appairage par appui long sur BOOT --------------------------------------
 // true tant que BOOT est enfonce (bouton actif a l'etat bas).
@@ -122,6 +169,7 @@ static void runDeferredSync(uint32_t liveSeq) {
     // 1) Ecoute (best-effort) de l'accuse cumulatif + heure du hub.
     SyncControl ctrl;
     if (espNowSender.receiveSyncControl(ctrl, SENSOR_SYNC_RX_WINDOW_MS)) {
+        noteOtaFlag(ctrl);
         syncManager.applyHubEpoch(ctrl.hub_epoch);
         if (syncManager.applyAck(ctrl.ack_seq)) {
             Serial.printf("[SYNC] ACK cumulatif seq<=%u (reste %u en attente)\n",
@@ -150,6 +198,7 @@ static void runDeferredSync(uint32_t liveSeq) {
     // 3) Derniere ecoute courte : recolter l'accuse cumulatif mis a jour par le hub
     //    apres ce lot et marquer synced ce qui vient d'etre confirme.
     if (espNowSender.receiveSyncControl(ctrl, SENSOR_SYNC_RX_WINDOW_MS)) {
+        noteOtaFlag(ctrl);
         syncManager.applyHubEpoch(ctrl.hub_epoch);
         if (syncManager.applyAck(ctrl.ack_seq)) {
             Serial.printf("[SYNC] ACK cumulatif seq<=%u apres retransmission (reste %u)\n",
@@ -187,6 +236,7 @@ void performCycle(const MeteoPacket* preread = nullptr) {
     powerManager.readBattery(packet);
     g_lastBatteryValid = (packet.valid_fields & FIELD_BATTERY) != 0;
     g_lastBatteryPct = packet.battery_percent;
+    g_lastBatteryV = packet.battery_voltage;
 
     // STOCKAGE AVANT ENVOI : la mesure entre dans le buffer local (avec seq +
     // sensor_ts) avant toute tentative radio. Une mesure acquise n'est donc jamais
@@ -231,6 +281,10 @@ void performCycle(const MeteoPacket* preread = nullptr) {
         powerManager.blinkStatus(150, 0, 0, 60);
         // Hub injoignable : rien a synchroniser maintenant, tout reste PENDING.
     }
+
+    // Offre OTA captee pendant la synchro : traitee EN DERNIER, une fois la mesure
+    // stockee, envoyee et accusee. Un echec d'OTA ne coute donc aucune donnee.
+    runOtaIfOffered();
 
     Serial.println("----------------------------------------\n");
 }

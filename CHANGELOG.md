@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.33.0] - 2026-10-10
+
+### Added
+
+- **OTA update driven by the hub.** When the hub holds a sensor firmware whose version differs from the one the probe
+  reports, its `SyncControl` reply carries `SYNC_FLAG_OTA_OFFER` (bit 15 of `want_count`, ignored by older firmware)
+  and an `OtaOffer` frame follows (version, size, MD5). At the end of the cycle, once the measurement is stored, sent
+  and acknowledged, the probe joins the hub SoftAP `MH-NOW` (no home Wi-Fi credentials involved), downloads
+  `/sensor-fw.bin` over HTTP and flashes the idle OTA slot. The MD5 is verified by `Update.end()`; on any failure the
+  running image is kept. Nothing changes on a normal wake-up: the wait for an offer only happens when the flag is set.
+- Safeguards (`include/ota/ota_logic.h`, host-tested): no update below 3.5 V when the battery is measured, at most 5
+  attempts per offered version (kept in RTC memory), image size capped to the app partition.
+- `docs/ota-par-le-hub.md`: how it works, first USB flash, limits.
+
+### Fixed
+
+- `ESPNOW_HUB_AP_PASS` now matches the hub SoftAP password (it held a stale value, unused until now).
+
+### Notes
+
+- The first OTA-capable build must still be flashed over USB. No automatic rollback (the core ships without app
+  rollback): a firmware that boots but cannot talk to the hub needs a USB reflash.
+- The offer is not authenticated (same trust level as the unencrypted ESP-NOW link).
+
 ## [0.32.14] - 2026-10-09
 
 - `hardware/pcb-v1/`: generate the fabrication files (Gerber for both copper layers, masks, silkscreen and outline,
