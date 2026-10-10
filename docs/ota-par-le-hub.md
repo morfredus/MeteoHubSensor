@@ -34,5 +34,6 @@ La premiere version capable d'OTA se flashe en USB. Le hub refuse un binaire san
 - Pas de retour arriere automatique : un firmware qui demarre mais ne parle plus au hub exige un reflash USB.
 - L'offre n'est pas authentifiee (meme niveau de confiance que la liaison ESP-NOW, non chiffree).
 - Le hub a besoin de sa carte SD pour stocker le binaire (sa LittleFS est trop petite).
-- Pour arreter de proposer un firmware, le retirer depuis la page Systeme.
+- Le hub efface le binaire de lui-meme des que la sonde declare la version stockee. Pour annuler une offre en
+  attente, le retirer depuis la page Systeme.
 - Non teste sur materiel au moment de l'ecriture : compilation et tests hote seulement.
