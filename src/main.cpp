@@ -31,6 +31,13 @@ static float g_lastBatteryV = 0.0f;
 // --- Mise a jour OTA proposee par le hub ------------------------------------
 // L'offre est captee pendant la synchro (SYNC_FLAG_OTA_OFFER), traitee en fin de cycle.
 // Version tentee + nombre d'essais en RTC : survivent au deep sleep (voir mhota::decide).
+// Balise lue par le HUB dans le binaire televerse : c'est ainsi qu'il connait la version, sans
+// saisie. Elle est LUE au demarrage (banniere) : sans reference,
+// l'editeur de liens (gc-sections) l'eliminerait malgre `used`. NE PAS ecrire « MHSFW= » ailleurs.
+static const char kFwTag[] __attribute__((used)) = "MHSFW=" PROJECT_VERSION;
+// Pointeur volatile : le compilateur ne peut pas replier kFwTag + 6 en constante et jeter la balise.
+static const char* volatile g_fwTag = kFwTag;
+
 static OtaOffer g_otaOffer;
 static bool g_otaOfferPending = false;
 RTC_DATA_ATTR static uint32_t g_otaLastTarget = 0;
@@ -328,7 +335,7 @@ void setup() {
     Serial.println("   MeteoHubSensor - Sonde Exterieure    ");
     Serial.printf("   %s\n", BOARD_NAME);
 #ifdef PROJECT_VERSION
-    Serial.printf("   version %s\n", PROJECT_VERSION);
+    Serial.printf("   version %s\n", g_fwTag + 6);   // lit la balise : garantit sa presence dans le binaire
 #endif
     Serial.println("========================================");
 
