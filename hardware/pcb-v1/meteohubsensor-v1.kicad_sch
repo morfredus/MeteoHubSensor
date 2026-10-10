@@ -2066,39 +2066,39 @@
 	)
 	(no_connect
 		(at 208.28 104.14)
-		(uuid "5ac7dfce-fbc1-42c8-836f-0e9893297800")
+		(uuid "6c88d1b8-3f45-59b8-bb37-0d7f8607e3ad")
 	)
 	(no_connect
 		(at 208.28 106.68)
-		(uuid "4b8966da-b83e-43ad-91e7-bbdbb7b35e86")
+		(uuid "7498696d-8d5c-57c7-9cd4-232a67b764b0")
 	)
 	(no_connect
 		(at 208.28 114.3)
-		(uuid "9fcae4e3-3bc7-443f-b5a2-060183be0461")
+		(uuid "80880d10-c157-51b5-93a8-eda1fc5a691c")
 	)
 	(no_connect
 		(at 208.28 121.92)
-		(uuid "43a81ec4-76bc-4c94-89f3-735746d0f971")
+		(uuid "0e5c7f71-c97e-51b6-96da-a6f9c63fee1b")
 	)
 	(no_connect
 		(at 248.92 104.14)
-		(uuid "46dc5354-cc9d-4b9c-9b08-c1b249f38ca5")
+		(uuid "a38672d0-20f1-52de-877c-01cdf331b33c")
 	)
 	(no_connect
 		(at 248.92 111.76)
-		(uuid "fc378df8-3a25-4673-ab49-7c202f07e5e8")
+		(uuid "6a898270-0ac2-5395-9d67-22578b4c1f97")
 	)
 	(no_connect
 		(at 248.92 114.3)
-		(uuid "5cd64c56-9927-43c8-b419-5c8a9419fb25")
+		(uuid "907d2c40-ef12-5aa8-a8e2-ea34a3cfd251")
 	)
 	(no_connect
 		(at 248.92 116.84)
-		(uuid "220881a5-7ad0-4757-83fe-01d637327c62")
+		(uuid "cd5d06e1-550e-5c55-b719-edeca81fdd40")
 	)
 	(no_connect
 		(at 248.92 119.38)
-		(uuid "f366d35e-e5f1-494a-8fc0-db7d1506be6d")
+		(uuid "2ef10941-9703-53c6-9216-21fd665d84ec")
 	)
 	(wire
 		(pts
@@ -2109,7 +2109,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "9ee46119-b322-4bd0-b0f3-7a72dd77aee3")
+		(uuid "c74c68c1-9cc0-560b-b800-9a445999ab61")
 	)
 	(wire
 		(pts
@@ -2120,7 +2120,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "b4f60c13-ba46-4aad-95a7-fc898030f6dd")
+		(uuid "2c30e80a-e6d3-56a7-b107-d77ca4ee12ef")
 	)
 	(wire
 		(pts
@@ -2131,7 +2131,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "2543a0a7-a2c2-4496-99c2-a75fd7e47313")
+		(uuid "a85a6f07-ae62-58f5-9909-cb55b201bdea")
 	)
 	(wire
 		(pts
@@ -2142,7 +2142,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "7ef69726-d85d-4ab2-8e02-5c888cb5d07d")
+		(uuid "24527b73-ba6d-5348-b82b-fdd2be5b2b6b")
 	)
 	(wire
 		(pts
@@ -2153,7 +2153,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "623c0977-9b45-4fc1-966e-846cbcc89709")
+		(uuid "faa7c0b3-7b38-5d59-ab13-d3c00e5a9da4")
 	)
 	(wire
 		(pts
@@ -2164,7 +2164,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "cf9927cd-3639-4fba-8239-989ed39c36ce")
+		(uuid "41632562-1424-51fd-a906-0f74896d382e")
 	)
 	(wire
 		(pts
@@ -2175,7 +2175,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "a61dad93-b4d2-4fab-8a4c-d7c07a7f72d0")
+		(uuid "80fd8a3e-b4a6-5dbd-9fc3-02ab69f0c911")
 	)
 	(wire
 		(pts
@@ -2186,7 +2186,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "42db969f-0e1d-4843-af2e-cacd2bff1286")
+		(uuid "e64fac5c-dff4-53ab-b165-e96d68932f08")
 	)
 	(wire
 		(pts
@@ -2197,7 +2197,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "0c7c2f06-747c-40f5-bfaa-54e0f7c9a1d4")
+		(uuid "6624de25-951f-5a7f-b8f6-6220735e4a83")
 	)
 	(wire
 		(pts
@@ -2208,7 +2208,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "310d99c7-ed08-4a7c-b49b-8a56a99bb432")
+		(uuid "1597c4c4-c153-5793-960a-effa7ca6e6cb")
 	)
 	(wire
 		(pts
@@ -2219,7 +2219,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "3e3c0504-ff18-4389-834b-fd5a42cd9c25")
+		(uuid "9886e83c-1c2c-579d-ba98-255e246d49e9")
 	)
 	(wire
 		(pts
@@ -2230,7 +2230,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "c00974ef-e1a6-40a0-b2b3-06a229282c3d")
+		(uuid "e13ee83f-8a57-5d86-8d5b-bf5f98ed1249")
 	)
 	(wire
 		(pts
@@ -2241,7 +2241,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "0c5ca79d-d58d-435b-98fd-e582e33a1010")
+		(uuid "0c7a8fca-bc28-59b5-b50b-28675fd9bff7")
 	)
 	(wire
 		(pts
@@ -2252,7 +2252,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "2de26bd3-909a-483e-b557-036f2842897b")
+		(uuid "f7990763-dc40-502e-9f8f-7e15a5135000")
 	)
 	(wire
 		(pts
@@ -2263,7 +2263,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "9d64e4fa-acd5-4faf-906b-5f3051c255a8")
+		(uuid "f00c7e34-985e-5572-af0c-93e6f763db3e")
 	)
 	(wire
 		(pts
@@ -2274,7 +2274,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "51cb8c2a-550d-4cc4-aec0-c7c2bb8bd741")
+		(uuid "4fcbb612-31d9-5e69-85e4-a9612f51d8c2")
 	)
 	(wire
 		(pts
@@ -2285,7 +2285,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "5ca76a58-2564-4a29-a947-9605a48e716d")
+		(uuid "a8478287-2c70-52f0-8cca-2358a2e6253f")
 	)
 	(wire
 		(pts
@@ -2296,7 +2296,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "b919fb2a-d227-4845-8ed4-2a2c6f3c786e")
+		(uuid "ac7f1fea-0073-5231-8bdd-0bd81fe02a53")
 	)
 	(wire
 		(pts
@@ -2307,7 +2307,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "5f5617e5-202c-4281-88a3-f470c4dc5eb8")
+		(uuid "b5b38772-116f-5f19-b40b-ababb07ccb1f")
 	)
 	(wire
 		(pts
@@ -2318,7 +2318,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "d82cd0dd-ee62-475c-a340-0f6264e58e6f")
+		(uuid "374a2efa-55cf-518e-bd14-9db026990436")
 	)
 	(wire
 		(pts
@@ -2329,7 +2329,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "def86ed9-73aa-4eaa-b37c-ca4931afdcc8")
+		(uuid "dbef6c14-8d6c-502d-954a-6c2f3f0cdfa0")
 	)
 	(wire
 		(pts
@@ -2340,7 +2340,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "0390e6f4-d286-413c-8743-99bf77c8ed93")
+		(uuid "09c79ba8-ab72-5590-9793-25c4c8933f1a")
 	)
 	(wire
 		(pts
@@ -2351,7 +2351,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "f62ce244-27c0-4c69-84b7-d426028a224c")
+		(uuid "c9abe692-622e-5048-a155-744e844fc6fa")
 	)
 	(wire
 		(pts
@@ -2362,7 +2362,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "d5d309a2-3af0-4e6e-b743-0a9a34676161")
+		(uuid "39588ca8-4bf0-5dd7-9b52-061c76666d1d")
 	)
 	(wire
 		(pts
@@ -2373,7 +2373,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "6c377d89-d3f7-4ded-8b7c-0b5fd57f833e")
+		(uuid "2e73aad4-2ddf-567e-bf0c-49c5c07ce7f8")
 	)
 	(wire
 		(pts
@@ -2384,7 +2384,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "5ac68d80-55d2-4879-bd97-add84fe6700a")
+		(uuid "2e9d2468-9d73-56fb-83ec-8793c2a172c5")
 	)
 	(wire
 		(pts
@@ -2395,7 +2395,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "c3d692e3-bbe5-4aa5-9ceb-bc83faf53be5")
+		(uuid "21d7bb10-1b4d-5277-9f8a-993a461bbe44")
 	)
 	(wire
 		(pts
@@ -2406,7 +2406,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "bf55a02b-c88a-4e4a-918f-28c719f0b679")
+		(uuid "3670f3c3-eb93-57e9-ba36-7b4edf71892c")
 	)
 	(wire
 		(pts
@@ -2417,7 +2417,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "e763c7e9-fcd5-4554-ba7c-0ef9139a3926")
+		(uuid "e2f89d37-4156-5f75-ae78-afbba03c3d34")
 	)
 	(wire
 		(pts
@@ -2428,7 +2428,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "c543e831-eb8e-4c23-b7a9-645425fa3fbe")
+		(uuid "20948aba-c1c0-51bc-9def-69d7a10110dc")
 	)
 	(wire
 		(pts
@@ -2439,7 +2439,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "c2c8ec69-98d4-4900-ad23-9033fc3ba0a9")
+		(uuid "a0c9286c-e859-531b-8bc6-b54234365bfd")
 	)
 	(wire
 		(pts
@@ -2450,7 +2450,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "295377a3-781c-443b-862b-05db4f68352b")
+		(uuid "e68bea6d-e77c-56d3-ac78-23ec745c9d49")
 	)
 	(wire
 		(pts
@@ -2461,7 +2461,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "666b72f8-714f-4482-a533-ada7333d3a32")
+		(uuid "7474f359-a35f-54b4-85ca-bdfb0c9bdf6f")
 	)
 	(wire
 		(pts
@@ -2472,7 +2472,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "4e1c287b-5196-4490-8f51-a9b34fc2014c")
+		(uuid "eac7233c-e18a-53a9-a4a2-a4177a60ef17")
 	)
 	(wire
 		(pts
@@ -2483,7 +2483,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "53321ff0-05e0-4a63-9c20-e6ac863aef95")
+		(uuid "ec2b7d19-3d94-5173-8723-bc9616e36418")
 	)
 	(wire
 		(pts
@@ -2494,7 +2494,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "43097a39-376c-4d42-995e-ccf8c90edca3")
+		(uuid "40e58da2-c2ec-5229-9e8b-1d4980bb7732")
 	)
 	(wire
 		(pts
@@ -2505,7 +2505,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "859f1942-34a2-42ec-b8e9-9a2157eb6c85")
+		(uuid "2d1ac519-aac4-56c8-8821-6c013ac41ce7")
 	)
 	(wire
 		(pts
@@ -2516,7 +2516,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "956ac407-6524-4370-91f1-0495a5e162b9")
+		(uuid "da22d6e6-bbcd-5182-b57c-0363bf51f9f5")
 	)
 	(wire
 		(pts
@@ -2527,7 +2527,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "322cb0e4-4baa-42a3-b4e9-a7b85f9d9a78")
+		(uuid "7d58855a-ffeb-54b7-ab0a-ca52ab3ee537")
 	)
 	(wire
 		(pts
@@ -2538,7 +2538,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "69af6591-a5b0-4b70-82f0-032086c5cf99")
+		(uuid "1e8f9d44-8933-5c21-95dd-93cde9260c4c")
 	)
 	(wire
 		(pts
@@ -2549,7 +2549,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "76deadd7-025b-4dc6-acf7-40e4ff91a825")
+		(uuid "b9a58a34-c0e9-5844-9e71-7f34d4561456")
 	)
 	(wire
 		(pts
@@ -2560,7 +2560,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "de7fd5be-1dfe-4b18-b43c-c41e107721b0")
+		(uuid "16cdeca5-bf19-5ec1-b35f-ab2da740b649")
 	)
 	(wire
 		(pts
@@ -2571,7 +2571,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "787f1abb-8c08-4f8f-8ffc-cda185f6992e")
+		(uuid "7e35509c-5ed5-5472-a03f-3a701cd5f500")
 	)
 	(wire
 		(pts
@@ -2582,7 +2582,7 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "b7f014cc-ff00-4d02-a416-91e9d1bad63f")
+		(uuid "dc697108-f40a-5315-94a1-264b99edf0e0")
 	)
 	(wire
 		(pts
@@ -2593,19 +2593,19 @@
 			(width 0)
 			(type solid)
 		)
-		(uuid "bcf0b671-e621-43fb-b1e7-10288582cb79")
+		(uuid "185ae12f-c922-593a-a40b-c73a7b5a3f6c")
 	)
 	(junction
 		(at 116.84 54.61)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "0ae1ca9c-7d3d-4d27-8164-192a60bd8d05")
+		(uuid "e02055fb-4834-5d01-a38d-c4163b7753c1")
 	)
 	(junction
 		(at 35.56 58.42)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "c47fcf3e-08ee-45c0-8930-27f0cfd08333")
+		(uuid "33043a30-1b55-57cc-bfb0-f32c7f5e17fd")
 	)
 	(label "DHT22_DATA"
 		(at 203.2 109.22 180)
@@ -2615,7 +2615,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "4ea41231-1b18-4c4e-9d1c-594430dc3bdf")
+		(uuid "93fcd53f-038c-5849-8dd5-4a90aa4a9294")
 	)
 	(label "WIND_VANE_ADC"
 		(at 203.2 111.76 180)
@@ -2625,7 +2625,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "12df1b75-6758-44c4-9ac8-f812f10b74e2")
+		(uuid "d9487a42-f396-5113-895b-157a0fa8918d")
 	)
 	(label "VBAT_ADC"
 		(at 203.2 116.84 180)
@@ -2635,7 +2635,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "cbe69884-5691-40e4-8fda-504880cd23f4")
+		(uuid "e67f238a-013d-580a-9b00-ea4ff06acd91")
 	)
 	(label "ANEMO_PULSE"
 		(at 203.2 119.38 180)
@@ -2645,7 +2645,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "23955380-56c0-4dd5-9849-01de53b6212c")
+		(uuid "3f38ad9e-1198-50fe-8f30-b83618f824f1")
 	)
 	(label "RAIN_PULSE"
 		(at 203.2 124.46 180)
@@ -2655,7 +2655,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "a55cf111-c000-433d-9c49-bcb0dababbe6")
+		(uuid "47f9c7b5-dc8f-5a1d-ab7b-61ae416548eb")
 	)
 	(label "I2C_SCL"
 		(at 254.0 121.92 0)
@@ -2665,7 +2665,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "ac1670ca-85a2-4155-aa0b-1fa0cee8dba5")
+		(uuid "764b1caf-31c8-5033-b5b8-7a78c4f17943")
 	)
 	(label "I2C_SDA"
 		(at 254.0 124.46 0)
@@ -2675,7 +2675,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "27ac7152-9281-47d5-bf40-9aa4ab278215")
+		(uuid "90df5c65-5864-5821-8150-7dfb04f8ac86")
 	)
 	(label "VBAT"
 		(at 86.36 54.61 180)
@@ -2685,7 +2685,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "9b7b8a74-9b89-4192-9ffa-ce284b33f3ce")
+		(uuid "a68a0058-34ee-5141-97a5-9c6c32ee06a8")
 	)
 	(label "VBAT"
 		(at 35.56 55.88 180)
@@ -2695,9 +2695,19 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "dc2437bd-e8e1-4df3-b423-fc724f608eea")
+		(uuid "928ce7a4-a14f-5f35-ad07-e1f549e239d9")
 	)
 	(label "I2C_SCL"
+		(at 320.04 55.88 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "f8b8dfba-8c00-558d-8b42-6a709f55c417")
+	)
+	(label "I2C_SDA"
 		(at 320.04 58.42 180)
 		(effects
 			(font
@@ -2705,17 +2715,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "4da0fb8c-7adc-4ca3-afc0-732b561f616b")
-	)
-	(label "I2C_SDA"
-		(at 320.04 60.96 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "a2d366e8-99f8-4dac-be19-c1128199d0bd")
+		(uuid "2fb5ea56-b03f-5b36-b5b6-98cceca40b45")
 	)
 	(label "DHT22_DATA"
 		(at 35.56 170.18 180)
@@ -2725,7 +2725,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "98a29bd4-eb66-4d75-a1ba-7d41ed3a4464")
+		(uuid "8f631afb-72ea-5dce-8aef-637bb1702a1a")
 	)
 	(label "ANEMO_PULSE"
 		(at 91.44 170.18 180)
@@ -2735,7 +2735,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "a5d9c701-74c5-4a95-9e80-8cc3cd697e55")
+		(uuid "e04b6677-f106-5c70-9bfc-1e56d61bac7c")
 	)
 	(label "WIND_VANE_ADC"
 		(at 236.22 170.18 180)
@@ -2745,7 +2745,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "4ee18867-27db-4a23-9f71-76dd073950f7")
+		(uuid "784e47ba-560f-5e2e-99c7-6057eb6d8c14")
 	)
 	(label "RAIN_PULSE"
 		(at 147.32 170.18 180)
@@ -2755,7 +2755,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "0cde0ab4-8ff7-4d7d-bbde-e7b02d01a848")
+		(uuid "81322ae9-81a5-5c1f-a80f-f37ea6a6c4dc")
 	)
 	(label "VBAT"
 		(at 45.72 105.41 90)
@@ -2765,7 +2765,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "89f5365a-0112-42e6-92ac-611ba9c90a21")
+		(uuid "fde8c37b-f2c7-5070-9e3d-80db6ae0c905")
 	)
 	(label "VBAT_ADC"
 		(at 45.72 123.19 270)
@@ -2775,7 +2775,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "4bcf0005-d9d0-43e2-8707-bfe4c7d3522f")
+		(uuid "aa0710a7-ce20-5c59-9951-530014bed393")
 	)
 	(label "VBAT_ADC"
 		(at 45.72 128.27 90)
@@ -2785,7 +2785,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "04a9288f-a3df-4a40-bedd-c7326174844f")
+		(uuid "a18ae621-c5f4-5277-92b4-12f2c221cdd1")
 	)
 	(label "DHT22_DATA"
 		(at 213.36 179.07 270)
@@ -2795,7 +2795,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "74c4970f-1e4f-42f3-9cf4-e7bc76d2bb6f")
+		(uuid "faa2bfc4-643f-5934-a3bc-cae6adfd831f")
 	)
 	(label "VBAT_ADC"
 		(at 76.2 133.35 270)
@@ -2805,7 +2805,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "970d98f5-158a-4d1c-bb9f-80940809a657")
+		(uuid "e97fca76-ef37-51bf-92b5-2550fc3d555c")
 	)
 	(text "MeteoHubSensor v1 - sonde meteo ESP-NOW. Alimentation : accu Li-ion -> module 3V3 -> broche 3V3 du S3."
 		(exclude_from_sim no)
@@ -2816,7 +2816,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "1d60a2fb-ca5d-4532-8ec5-6c06d84fc717")
+		(uuid "bf6eaaed-28fa-540b-9fed-dcd287cf7096")
 	)
 	(text "Pont R1/R2 100k sur le + accu AVANT le regulateur : GP4 lit VBAT/2. C3 filtre le noeud ADC."
 		(exclude_from_sim no)
@@ -2827,7 +2827,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "46b56a52-8674-42b8-8c1f-300b703a8ec4")
+		(uuid "0f8383fe-f63c-51fb-90b2-c6228cc03fc5")
 	)
 	(text "C1 100nF + C2 220uF au plus pres des broches 3V3/GND du S3. R3 10k : rappel DHT22 nu (omettre si module 3 broches)."
 		(exclude_from_sim no)
@@ -2838,7 +2838,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "54698f7f-1735-41a0-b728-48bad841a4a1")
+		(uuid "a6e73988-d23f-5844-a259-6343cf584da3")
 	)
 	(text "Repere des broches du S3 = repere imprime sur le module (TX, RX, 1..7 a gauche ; 5V, GND, 3V3, 13..8 a droite). GPIO3, 6, 10..13, TX, RX, 5V : libres."
 		(exclude_from_sim no)
@@ -2849,7 +2849,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "d515e798-0ad5-4389-8234-c4480e8fed45")
+		(uuid "d426b604-cb23-5149-8056-5056df42b181")
 	)
 	(symbol
 		(lib_id "morfsensor:ESP32-S3_SuperMini")
@@ -2861,7 +2861,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "7db0cf5a-d57b-48b3-a4e6-275a5c15cfed")
+		(uuid "e32fce08-cb9c-5d55-ab14-9dc992892ca0")
 		(property "Reference" "U1"
 			(at 228.6 100.33 0)
 			(effects
@@ -2897,58 +2897,58 @@
 			)
 		)
 		(pin "TX"
-			(uuid "8c6fc05b-4c2c-49ec-a1e8-8f7d444ac2a2")
+			(uuid "a215d3ca-7e7e-5576-803a-8f111545296b")
 		)
 		(pin "RX"
-			(uuid "7800b090-bbc7-4852-8b54-f3978d0d621a")
+			(uuid "3333eb15-dc8e-5482-bf3a-eec8a37899d6")
 		)
 		(pin "1"
-			(uuid "2beb1505-c055-40c6-818e-8094515e202d")
+			(uuid "b9bba83b-9738-5d77-997a-414e90183d93")
 		)
 		(pin "2"
-			(uuid "e79858aa-9cc3-42bb-be8a-912f565df374")
+			(uuid "41a524f7-1c92-5a75-b2b0-91aaf39d44f2")
 		)
 		(pin "3"
-			(uuid "a8c23004-4557-40c5-b564-cd59c6aec0af")
+			(uuid "a68c14e0-9097-5797-aa4b-123381f8ea83")
 		)
 		(pin "4"
-			(uuid "bba3dbce-cd5c-434c-820f-1f6c95762fa9")
+			(uuid "ad794043-dc76-5f54-bbe9-83276a5f980d")
 		)
 		(pin "5"
-			(uuid "af16491d-24db-45dd-91e8-a3a3793ace01")
+			(uuid "81b3759b-d051-52c9-9088-6f698fca2d1a")
 		)
 		(pin "6"
-			(uuid "fa5687f0-ce61-4edd-bbab-46bbed408ff4")
+			(uuid "8d4ceb10-afd5-5b9b-b31f-38dc5a75b7d0")
 		)
 		(pin "7"
-			(uuid "a12d5be3-6d70-4c75-a794-a3278a66b5bc")
+			(uuid "5b64e3ef-6bd4-558e-8ded-36cd2c231b17")
 		)
 		(pin "5V"
-			(uuid "87e1e360-ec9c-4907-b0aa-41de71227743")
+			(uuid "cd9adca4-c820-53a0-a402-58cfa83fccfd")
 		)
 		(pin "GND"
-			(uuid "af909aa9-bcb6-4938-97fc-2b87fb5975ac")
+			(uuid "a61ee571-1ee9-5877-b2d1-054d2e44aac3")
 		)
 		(pin "3V3"
-			(uuid "c9ded35b-28fc-4c3d-872c-7f1ef705a599")
+			(uuid "f6d29bb2-9579-5639-a2aa-147f93b98836")
 		)
 		(pin "13"
-			(uuid "de02068f-ccf7-46b9-830c-fc6ca510dff2")
+			(uuid "3d4b4cdb-642d-520a-9972-629f5e47b639")
 		)
 		(pin "12"
-			(uuid "feddadac-397f-4ef0-b0f5-fd6893c7a029")
+			(uuid "5658295e-4562-58d2-8573-79343c2d7702")
 		)
 		(pin "11"
-			(uuid "3232bb9d-4f52-4c87-8f16-4911e52808b6")
+			(uuid "cf9d8b9b-ec8b-5424-9413-dd0f664a8ab2")
 		)
 		(pin "10"
-			(uuid "5f9929c3-d36b-4658-a4e3-7837b37f4104")
+			(uuid "03e781c4-37da-57e6-b56a-abbe154a2a70")
 		)
 		(pin "9"
-			(uuid "0fb72484-1732-45b6-9116-49ce639ad2ce")
+			(uuid "45e852f1-3695-5ad8-b2c7-0cf9d8d3ee6e")
 		)
 		(pin "8"
-			(uuid "9dff805d-c011-4ecc-adfd-6d797c7fc70a")
+			(uuid "4a30c9dc-4284-5816-8ad3-81ac03b30737")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -2969,7 +2969,7 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "b3b7361c-1058-46ad-8107-0944d6c740f9")
+		(uuid "a7129cd8-6ab7-5842-aa84-cc6a6319f9d0")
 		(property "Reference" "#PWR01"
 			(at 264.16 106.67999999999999 0)
 			(hide yes)
@@ -3006,7 +3006,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "6a4a944a-4aaa-4e8b-ad14-c2ab01a9d671")
+			(uuid "65815fd0-d56f-5d23-bb70-aa140a624692")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -3027,7 +3027,7 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "12397c22-2130-4003-9ba9-7eaf36861dd3")
+		(uuid "d4c96c6d-52f1-5491-ab8c-cec03a3f43a9")
 		(property "Reference" "#PWR02"
 			(at 256.54 109.22 0)
 			(hide yes)
@@ -3064,7 +3064,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "475a75c1-30e2-46f2-945e-de90e67c5a54")
+			(uuid "7c950b9a-1b64-58fb-a500-71dd1a4d191c")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -3085,7 +3085,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "e46ffa02-3030-44e5-b96b-8cc2c4be638b")
+		(uuid "0d060121-1402-55d9-88d7-2fa4130eb0e6")
 		(property "Reference" "U2"
 			(at 101.6 50.800000000000004 0)
 			(effects
@@ -3121,16 +3121,16 @@
 			)
 		)
 		(pin "1"
-			(uuid "536dc4e1-27c2-4b60-b59b-e1082d68cb8e")
+			(uuid "1fcf9645-604c-5817-b022-f89daecfe1e7")
 		)
 		(pin "2"
-			(uuid "81795845-831e-49a5-96a4-8611fce86f83")
+			(uuid "a6b26aa2-223f-5ca4-ae22-8215bdc7071b")
 		)
 		(pin "3"
-			(uuid "da2713e7-92b4-42a0-b432-e043296f5a09")
+			(uuid "7441346c-d5d4-5e3a-9a8f-3b4d98cd338e")
 		)
 		(pin "4"
-			(uuid "dbffd4f5-8399-403f-af26-e684d4ca82c6")
+			(uuid "0222a5a4-6adf-54e3-ae85-ff1a9490b108")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -3151,7 +3151,7 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "05235658-40ee-41fe-a708-1c142f4f0459")
+		(uuid "eda0f9b6-f1ee-5817-a3b6-6614e0db1b68")
 		(property "Reference" "#PWR03"
 			(at 88.9 57.150000000000006 0)
 			(hide yes)
@@ -3188,7 +3188,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "b5cf8438-0ed5-4c7c-b602-f80e43656b94")
+			(uuid "f6a505c7-6dcb-5448-a266-f14f51b017ec")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -3209,7 +3209,7 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "ed4f55d4-83b8-4395-9f7e-28614c82c36d")
+		(uuid "ed550c3f-c0b9-5f65-ae13-c22385a8e3ad")
 		(property "Reference" "#PWR04"
 			(at 119.38 54.61 0)
 			(hide yes)
@@ -3246,7 +3246,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "348b21c1-0b40-43a2-abbf-3db7e53fab14")
+			(uuid "591afc79-4a82-5919-8a53-bdcf0fea464c")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -3267,7 +3267,7 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "6c26a675-de1a-47c4-8adb-fdce719b6ed7")
+		(uuid "306b51e6-6e1f-546a-9a65-3c4083c48657")
 		(property "Reference" "#FLG05"
 			(at 127.0 54.61 0)
 			(hide yes)
@@ -3304,7 +3304,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "358cf333-59c4-4098-ac98-87438328c40a")
+			(uuid "62ea86e5-455d-5576-8112-05a2afe6c1f7")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -3325,7 +3325,7 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "e5137004-c81e-4d04-8b23-53b2c83633a2")
+		(uuid "3b19058c-1209-5928-91f0-629f4b5564e3")
 		(property "Reference" "#PWR06"
 			(at 119.38 57.150000000000006 0)
 			(hide yes)
@@ -3362,7 +3362,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "fce4c0f4-e7db-48d8-b02c-db4e1f8dbda7")
+			(uuid "2325773f-bc00-5925-af75-957221db5d43")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -3383,7 +3383,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "f544af0f-8e19-4d1d-9e52-2fd763e36366")
+		(uuid "30db5c3c-8944-5bab-8a21-b1d61b62ba73")
 		(property "Reference" "J1"
 			(at 45.72 53.34 0)
 			(effects
@@ -3419,10 +3419,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "94775906-1d77-4167-91d7-ff4828dc3ae4")
+			(uuid "49cb1db3-b44f-5e77-a2f0-98425212ee49")
 		)
 		(pin "2"
-			(uuid "e149ef29-97b6-48ac-8edb-ed4be8fd5ffb")
+			(uuid "edef7e8e-b160-5b3c-aa48-fa650752cad6")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -3443,7 +3443,7 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "f4cc8a62-f446-4d5e-a564-ef2df2d303c3")
+		(uuid "0631203f-1c4e-527e-8c5a-9e901d110387")
 		(property "Reference" "#PWR07"
 			(at 38.1 58.42 0)
 			(hide yes)
@@ -3480,7 +3480,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "7a6ba2de-efe3-4127-9204-2d650c274a2f")
+			(uuid "d60aaafc-6f47-5d3c-b6c5-4fd583bbd50b")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -3501,7 +3501,7 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "cf05d442-6d56-4b6e-8434-a0d5991679bb")
+		(uuid "fdebebef-a840-5107-9fb6-c30b671856e3")
 		(property "Reference" "#FLG08"
 			(at 30.48 58.42 0)
 			(hide yes)
@@ -3538,7 +3538,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "c438d9c9-5b8a-4bcc-b731-25167060cb0c")
+			(uuid "f89bd95c-9e0a-5cc3-afeb-7d741a32e7c1")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -3559,7 +3559,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "e403a3d9-62ba-45a8-b279-dac652eb47fa")
+		(uuid "c94673ae-86d3-55f8-9861-1fd3e36233e4")
 		(property "Reference" "J2"
 			(at 330.2 50.800000000000004 0)
 			(effects
@@ -3595,16 +3595,16 @@
 			)
 		)
 		(pin "1"
-			(uuid "897657ce-8669-46ff-9bb3-36b5ba5766ad")
+			(uuid "11de6787-24f4-56bd-a298-05ab3da28662")
 		)
 		(pin "2"
-			(uuid "34158a2f-18ef-4bd3-b6e9-420670d64f9e")
+			(uuid "b58283b4-4865-5bd8-a6ac-b385be49b0ad")
 		)
 		(pin "3"
-			(uuid "4b6d2cba-f280-402f-a45b-8215d591f523")
+			(uuid "2b1c3cfd-52dc-5839-805a-9cd577e7aa31")
 		)
 		(pin "4"
-			(uuid "15556b99-daea-4f42-bc44-7e3f6e894ccf")
+			(uuid "1eed0006-1725-5e7c-afb8-f9a3d45d5c34")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -3625,7 +3625,7 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "d931a064-9ef5-42b5-9f55-6100becb658f")
+		(uuid "3f28226c-0721-5f3b-8188-bed2d83a7504")
 		(property "Reference" "#PWR09"
 			(at 322.58000000000004 53.34 0)
 			(hide yes)
@@ -3662,7 +3662,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "31419307-ca6f-4e00-9bf4-f1ab0e8e51c9")
+			(uuid "ed46c10a-3bc7-5ac6-b859-ac08f590f1c8")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -3675,7 +3675,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 320.04 55.88 0)
+		(at 320.04 60.96 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3683,9 +3683,9 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "d600c974-a6ab-4d9c-8522-ccff302bc6f8")
+		(uuid "73396801-6f46-563d-b2ed-f29f167760aa")
 		(property "Reference" "#PWR10"
-			(at 322.58000000000004 55.88 0)
+			(at 322.58000000000004 60.96 0)
 			(hide yes)
 			(effects
 				(font
@@ -3694,7 +3694,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 322.58000000000004 53.88 0)
+			(at 322.58000000000004 58.96 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3702,7 +3702,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 320.04 55.88 0)
+			(at 320.04 60.96 0)
 			(hide yes)
 			(effects
 				(font
@@ -3711,7 +3711,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 320.04 55.88 0)
+			(at 320.04 60.96 0)
 			(hide yes)
 			(effects
 				(font
@@ -3720,7 +3720,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "42593779-767b-40aa-8ab7-86f143ebd826")
+			(uuid "e8eac100-82f3-5fbc-8293-6680932a3a40")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -3741,7 +3741,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "9b39cd4f-2876-4dea-892f-acba4dce23db")
+		(uuid "a8c97d49-4d3c-5060-975a-6ee0ca1b8f88")
 		(property "Reference" "J3"
 			(at 45.72 165.1 0)
 			(effects
@@ -3777,13 +3777,13 @@
 			)
 		)
 		(pin "1"
-			(uuid "ce300d0d-d47e-4c92-9e5c-57511f6e1617")
+			(uuid "0a095300-2223-5897-8ae6-9b6812239246")
 		)
 		(pin "2"
-			(uuid "7c507e80-4969-4f14-a55b-9658ce9e0875")
+			(uuid "8b286f3a-4162-5e9e-9fdc-ead2e0c2d43f")
 		)
 		(pin "3"
-			(uuid "46d94d92-80f6-4aa6-98cd-09a88ebce82d")
+			(uuid "b2b0aa74-0f16-5cc0-98c3-65db50640aab")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -3804,7 +3804,7 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "1c30c652-d335-488d-b517-885b6f5694c4")
+		(uuid "e1d09c70-3d79-5364-b43e-4ddc7722e9f3")
 		(property "Reference" "#PWR11"
 			(at 38.1 167.64000000000001 0)
 			(hide yes)
@@ -3841,7 +3841,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "612576e8-c38f-4b08-8943-545ad62e3948")
+			(uuid "241fa871-b020-5e19-8f28-d9e1ffdc2630")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -3862,7 +3862,7 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "58a3f9b5-6a0f-405f-96c7-2be94a29a341")
+		(uuid "4489eae5-eff8-558f-999e-4f70e58fc059")
 		(property "Reference" "#PWR12"
 			(at 38.1 172.72 0)
 			(hide yes)
@@ -3899,7 +3899,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "fe89b642-470f-4896-b26f-2b576d01b0fe")
+			(uuid "41ef70b5-1494-5259-815a-e8e650e5ecbb")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -3920,7 +3920,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "4ef0a1fe-85c6-44de-ad5e-7130da20dbf2")
+		(uuid "94f2b2df-171c-5556-8335-ec7470f19a9a")
 		(property "Reference" "J4"
 			(at 101.6 165.1 0)
 			(effects
@@ -3956,13 +3956,13 @@
 			)
 		)
 		(pin "1"
-			(uuid "552890fe-a16f-4f9c-8f52-033dc3b62390")
+			(uuid "14589770-f2fb-53d5-978a-8fc02aadae7d")
 		)
 		(pin "2"
-			(uuid "96f7e0f4-5fca-4e66-89b6-dd5ec84f2257")
+			(uuid "0b7cdbd3-2a97-565e-a737-1bc85c7b6011")
 		)
 		(pin "3"
-			(uuid "aaec78df-7373-48ea-bb8c-652175177a50")
+			(uuid "25ff036c-9c4f-571a-8482-e01bf5a1b507")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -3983,7 +3983,7 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "2a404d2a-5a1d-48a1-949a-07ea584f7e1a")
+		(uuid "56397890-1e63-5843-ad7b-8c3031af9c19")
 		(property "Reference" "#PWR13"
 			(at 93.98 167.64000000000001 0)
 			(hide yes)
@@ -4020,7 +4020,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "72d37a6a-d8f7-4067-9eb6-22dd6e05d48f")
+			(uuid "838f93a4-fa78-5577-ad0d-a6a38e84c526")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -4041,7 +4041,7 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "d8f5de9a-ebd8-4be2-b9e1-7632695f3f29")
+		(uuid "03dab11e-6ab7-5a1a-94cf-f114c8f8085a")
 		(property "Reference" "#PWR14"
 			(at 93.98 172.72 0)
 			(hide yes)
@@ -4078,7 +4078,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "7fab05be-8087-4dcf-8d0d-3f11fe2e3f73")
+			(uuid "894b540b-3c6d-595b-9a5d-331b404ff39d")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -4099,7 +4099,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "ab8a2137-d8f7-4a55-98ad-8eb2e1f92051")
+		(uuid "0bcfb6a9-45dd-5cc3-b198-452629196e7e")
 		(property "Reference" "J6"
 			(at 246.38 165.1 0)
 			(effects
@@ -4135,13 +4135,13 @@
 			)
 		)
 		(pin "1"
-			(uuid "c688aa42-4b30-4e83-9321-1635cdbac1bd")
+			(uuid "eb6638b8-58a8-5099-a4b9-13df0b5eb0d5")
 		)
 		(pin "2"
-			(uuid "929275d7-3da4-44c6-9b49-e6c00bdf9846")
+			(uuid "3c57e662-1d05-5e4c-96fa-502cc1a2ff85")
 		)
 		(pin "3"
-			(uuid "72ef2599-5ad5-487e-9f3d-28cd650c1f54")
+			(uuid "efdf6e03-2d70-5ad4-9487-32401cca8c1a")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -4162,7 +4162,7 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "1d5a1bbc-9056-42c6-97f2-a731ad9685ad")
+		(uuid "53026361-2ef7-5409-9906-9222ea38c881")
 		(property "Reference" "#PWR15"
 			(at 238.75999999999996 167.64000000000001 0)
 			(hide yes)
@@ -4199,7 +4199,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "7c5e37a7-fc1c-4b1d-9cdd-42624dd3c7cd")
+			(uuid "a7bdaa59-89a9-5449-a800-2ae8ee13a332")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -4220,7 +4220,7 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "70b49cb7-9520-4130-8158-41848b950b4c")
+		(uuid "5ffa001a-d878-5f9f-91c4-1e53ede4413a")
 		(property "Reference" "#PWR16"
 			(at 238.75999999999996 172.72 0)
 			(hide yes)
@@ -4257,7 +4257,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "9db009cd-e530-4d7d-bc1a-596038a79d55")
+			(uuid "25e425f2-4a91-5f19-a95f-1d833bbf9387")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -4278,7 +4278,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "306725c3-fece-4f71-ae67-d341222ca29f")
+		(uuid "ac26a523-3288-5e7b-a04d-3ecbd07471f1")
 		(property "Reference" "J5"
 			(at 157.48 165.1 0)
 			(effects
@@ -4314,13 +4314,13 @@
 			)
 		)
 		(pin "1"
-			(uuid "9cb677e8-417a-4aca-9999-a88a5f7e378c")
+			(uuid "3af9fa44-71ad-5672-812f-cc663187d823")
 		)
 		(pin "2"
-			(uuid "cb8d9859-2049-44d0-a3da-9cd400845303")
+			(uuid "43ef031e-4847-5e28-bf43-f54875b712ae")
 		)
 		(pin "3"
-			(uuid "1e4a7ab1-ea1f-47cd-9d43-b4c3b8eec683")
+			(uuid "f9d0c41d-1a34-5873-806c-6150f9d1a442")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -4341,7 +4341,7 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "25a64b26-2a68-429c-8267-c6384e5f92fe")
+		(uuid "89ea01d7-54ea-5a04-be58-683e6afbc2b0")
 		(property "Reference" "#PWR17"
 			(at 149.85999999999996 167.64000000000001 0)
 			(hide yes)
@@ -4378,7 +4378,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "9eaedf69-739b-46fe-8291-0031854b985a")
+			(uuid "27bdc650-6c5f-5e63-9bda-6d097c9716a1")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -4399,7 +4399,7 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "bade9966-be48-4db2-8f90-7cb7b5cb94a6")
+		(uuid "e16c3540-c03f-5ef8-a79e-c876d602de5a")
 		(property "Reference" "#PWR18"
 			(at 149.85999999999996 172.72 0)
 			(hide yes)
@@ -4436,7 +4436,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "85444c86-6ed9-4399-bdb3-925c5bc98118")
+			(uuid "334664e5-bdec-59c2-841b-cd0a580d7ea4")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -4457,7 +4457,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "a18bcf35-d4ce-4056-b599-c4455d280f18")
+		(uuid "205098ac-2bb9-52df-9ea9-ee35a8e6ba66")
 		(property "Reference" "R1"
 			(at 47.751999999999995 114.3 0)
 			(effects
@@ -4493,10 +4493,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "42711a5c-8223-4ed9-834a-6a7f4c1b2da1")
+			(uuid "f3a0c6e8-dfa2-5c34-a583-1c3a2a152f5c")
 		)
 		(pin "2"
-			(uuid "b54059f0-7ef7-4043-b77b-62db53865924")
+			(uuid "6abb32d2-3565-53fe-86ff-48cfead367eb")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -4517,7 +4517,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "a0ce96e8-a684-49fa-9cf5-6cbc7daa4ffb")
+		(uuid "7ce4dc10-a4e5-57ca-92cd-891478911297")
 		(property "Reference" "R2"
 			(at 47.751999999999995 137.16 0)
 			(effects
@@ -4553,10 +4553,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "540ea25e-1a73-4f20-a455-d4d196f5b59f")
+			(uuid "7a04f35e-02d8-59ad-b1d0-73e345c1d35d")
 		)
 		(pin "2"
-			(uuid "f0316d19-11d0-49e7-8404-601cda08d652")
+			(uuid "7c64188c-8879-5d9b-9f70-98e780167916")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -4577,7 +4577,7 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "7868ed5e-5163-4df1-a4ab-40fd1a71b331")
+		(uuid "eab12f8d-6081-5333-8226-6f2c5f7a97d7")
 		(property "Reference" "#PWR19"
 			(at 48.26 146.05 0)
 			(hide yes)
@@ -4614,7 +4614,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "f7df65c2-cd1c-453e-b891-69b3699023da")
+			(uuid "f139b464-7251-505c-8028-d28e5d50de13")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -4635,7 +4635,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "b7a75d88-9d2a-468e-bbea-5b06af985921")
+		(uuid "7f88b3cc-1235-5347-b36e-bdb3d0f5ea31")
 		(property "Reference" "R3"
 			(at 215.39200000000002 170.18 0)
 			(effects
@@ -4671,10 +4671,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "04365e31-7f7d-4acf-8fff-f410ccaa37b2")
+			(uuid "3fbaeb47-1f46-5b89-a921-9aeff87b6b3c")
 		)
 		(pin "2"
-			(uuid "44ecd19e-4682-4ebd-84ff-36e2a05a09a7")
+			(uuid "840a0563-4ccf-56b7-875c-a76ec5717d42")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -4695,7 +4695,7 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "eb6ab7e3-565e-4503-b1ce-30f7ec74f8c1")
+		(uuid "fca7f580-b3d3-5b55-aa45-f1edbf287f25")
 		(property "Reference" "#PWR20"
 			(at 215.9 161.29 0)
 			(hide yes)
@@ -4732,7 +4732,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "f5c0f74b-d2d9-4a15-9859-78aa775d0400")
+			(uuid "fe1fc26f-8981-57d1-9811-8cda4380e872")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -4753,7 +4753,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "6e179f03-3a65-478e-bedc-0964c5788ba2")
+		(uuid "33847dc0-65fd-5832-a210-62813e8d445e")
 		(property "Reference" "C1"
 			(at 280.03499999999997 167.64000000000001 0)
 			(effects
@@ -4789,10 +4789,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "ff16fd6f-b1b5-42e6-8340-016073f843db")
+			(uuid "4a9c1fa6-23c3-5e01-a2b1-cdf7aedd8fd5")
 		)
 		(pin "2"
-			(uuid "b2e1b6e6-3882-42f0-8374-0b4722d88ec7")
+			(uuid "0ea7d6e2-9fbc-50ac-a062-0772231b224f")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -4813,7 +4813,7 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "44e34d8d-cf2e-40ba-b7b9-f62f459b52e6")
+		(uuid "c4ad4a2d-9582-543b-b10c-3d17db9c05e7")
 		(property "Reference" "#PWR21"
 			(at 281.94 161.29 0)
 			(hide yes)
@@ -4850,7 +4850,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "42768d08-6e8e-40d6-8124-ec91ca849a92")
+			(uuid "bb670938-5d3d-5640-b9cc-7d4359395fe6")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -4871,7 +4871,7 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "77a333f3-74c3-4c4e-be33-d0309c2ffd49")
+		(uuid "a437038b-c93a-53b3-91c8-3fdcca3d651f")
 		(property "Reference" "#PWR22"
 			(at 281.94 179.07000000000002 0)
 			(hide yes)
@@ -4908,7 +4908,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "0a3bb925-f3bb-49e5-8872-b56b029c90f8")
+			(uuid "87036f81-7840-5df4-94f1-b6f3b2333bde")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -4929,7 +4929,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "a44603d6-22c4-493e-a2e7-cbf58744a4ec")
+		(uuid "2a20c0f2-4d02-5f52-bb4b-ad31b1bf6560")
 		(property "Reference" "C2"
 			(at 305.435 167.64000000000001 0)
 			(effects
@@ -4965,10 +4965,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "04b05851-3069-4a5b-939e-ccee23a72b6d")
+			(uuid "17895c22-2e02-5db7-bb79-6ac54ef5ed34")
 		)
 		(pin "2"
-			(uuid "cc4fd5d0-ac4f-4efd-80b2-44d3c67d9fed")
+			(uuid "f6f68fa4-0d95-5c68-b652-28ec03f52f42")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -4989,7 +4989,7 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "63c00802-5ecf-479b-ab76-d03f9c85c328")
+		(uuid "2ad574ce-6a5c-5dec-8136-f0792ad2d010")
 		(property "Reference" "#PWR23"
 			(at 307.34000000000003 161.29 0)
 			(hide yes)
@@ -5026,7 +5026,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "9aa6d51b-f515-44d9-ba3d-b7657b35bfcf")
+			(uuid "cd6b455a-1e50-50bc-80c2-398aec63c94f")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -5047,7 +5047,7 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "24d16da5-850b-4f52-8031-f4a3c806f478")
+		(uuid "4e96ef48-83b6-5c81-a07c-31952acfe329")
 		(property "Reference" "#PWR24"
 			(at 307.34000000000003 179.07000000000002 0)
 			(hide yes)
@@ -5084,7 +5084,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "fd5d0b2c-29ec-45a9-a55c-2b50ddeef829")
+			(uuid "cc663117-a3fb-5db3-bad2-c49f3a3b6636")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -5105,7 +5105,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "7138e466-ddce-490f-8519-066061211317")
+		(uuid "c4e8b327-fd13-5c42-befe-3bcaa28b04c9")
 		(property "Reference" "C3"
 			(at 76.83500000000001 121.91999999999999 0)
 			(effects
@@ -5141,10 +5141,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "1b6cc334-83e1-499b-ae56-06b77cf5ce4e")
+			(uuid "7dc66f5a-b16e-5d8f-84c0-4b346be3dcba")
 		)
 		(pin "2"
-			(uuid "96c62a32-8390-490e-b0de-b5bfd925307b")
+			(uuid "11f0e4be-6268-5e07-b85f-583e0342ce23")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -5165,7 +5165,7 @@
 		(on_board no)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "e3be33ec-3ff1-48ec-b7f1-e7d3e6a87a53")
+		(uuid "35012e90-2d60-52ce-ba4e-2a91b8aea2ae")
 		(property "Reference" "#PWR25"
 			(at 78.74000000000001 115.57 0)
 			(hide yes)
@@ -5202,7 +5202,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "e253ac71-211f-447e-bc78-50609f20c4ba")
+			(uuid "6020eec2-67b9-5d51-910a-c033ec7263cf")
 		)
 		(instances
 			(project "meteohubsensor-v1"
@@ -5223,7 +5223,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "9bab5d7e-a47c-4563-a8c3-f59ae9189024")
+		(uuid "eeee3fd0-f83b-5368-9dba-369a0b4602e3")
 		(property "Reference" "H1"
 			(at 330.2 215.89999999999998 0)
 			(effects
@@ -5277,7 +5277,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "e19fb3c6-285f-4a5b-b772-4d617718eab0")
+		(uuid "98484885-7bc3-54fa-b67b-7465d4ee3e13")
 		(property "Reference" "H2"
 			(at 342.9 215.89999999999998 0)
 			(effects
@@ -5331,7 +5331,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "947b797c-4ffd-4a81-849e-5fc1030e5693")
+		(uuid "1fc68ca4-5078-5789-b55c-793e1e95a2d5")
 		(property "Reference" "H3"
 			(at 355.6 215.89999999999998 0)
 			(effects
@@ -5385,7 +5385,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "bcb05dc6-3c72-4f20-8103-568862fb6831")
+		(uuid "041830d7-0310-5434-975f-8eabffd41ff4")
 		(property "Reference" "H4"
 			(at 368.3 215.89999999999998 0)
 			(effects

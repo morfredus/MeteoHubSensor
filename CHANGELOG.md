@@ -5,6 +5,70 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.32.14] - 2026-10-09
+
+- `hardware/pcb-v1/`: generate the fabrication files (Gerber for both copper layers, masks, silkscreen and outline,
+  Excellon drill files split into plated and non-plated) with `kicad-cli`, packed in `meteohubsensor-v1-gerber.zip`.
+  Generated files are kept out of git (`fabrication/` ignored); they are rebuilt from the PCB.
+
+## [0.32.13] - 2026-10-09
+
+- `hardware/pcb-v1/BOM.md`: detailed bill of materials (values, quantities, JST-XH pin counts and pinouts, housings and
+  crimp contacts to supply, 52 solder pads in total). No supplier part numbers.
+
+## [0.32.12] - 2026-10-09
+
+- `hardware/pcb-v1/`: add the missing silkscreen labels "DHT22" (J3) and "GIROUETTE" (J6). DRC and ERC clean.
+
+## [0.32.11] - 2026-10-09
+
+- `hardware/pcb-v1/`: J2 (BMP280) is now 3V3, SCL, SDA, GND: same logic as the other connectors (+, signals, GND), 3V3 and
+  GND no longer neighbours, and SCL / SDA reach their GPIOs without crossing, so the back-layer hop is gone.
+- The stitching via near J2 is removed: DRC no longer reports any isolated copper without it.
+- DRC and ERC clean (schematic parity OK).
+
+## [0.32.10] - 2026-10-09
+
+- `hardware/pcb-v1/`: regulator module re-oriented so that, seen from above with the pins down, VIN and VOUT are on the
+  lower pin of each pair and GND on the upper pin (VIN on the left, VOUT on the right). VBAT and 3V3 tracks re-routed.
+- J2 (BMP280) now follows the usual I2C connector order GND, 3V3, SDA, SCL (Qwiic / STEMMA QT), with a short back-layer
+  hop for SDA. Other connectors unchanged: J1 + / -, J3 to J6 3V3, signal, GND (DHT22 / AM2302 datasheet order).
+- README documents every connector pinout. DRC and ERC clean (schematic parity OK).
+
+## [0.32.9] - 2026-10-09
+
+- `hardware/pcb-v1/`: regulator module pin pairs back to 22.86 mm centre to centre (9 pitches). The 0.32.8 value
+  (22.16 mm) came from reading the measured 22.8 mm as an overall dimension; standard 0.64 mm pins that fit a
+  breadboard sit on the 2.54 mm grid, so 22.8 mm was the centre distance. Board outline 25.6 x 11.3 mm kept.
+  DRC and ERC clean.
+
+## [0.32.8] - 2026-10-09
+
+- `hardware/pcb-v1/`: regulator module footprint updated from measurements: 25.6 x 11.3 mm board, pin pairs 22.16 mm
+  apart centre to centre (22.8 mm overall), 2.54 mm pitch inside each pair; outline and 3D model follow. ESP32-S3
+  socket spacing confirmed (15.9 mm overall = 15.24 mm centre to centre). DRC and ERC still clean.
+
+## [0.32.7] - 2026-10-09
+
+- Add `hardware/pcb-v1/BOM.md`: bill of materials of the v1 board (through-hole parts only) plus the parts to supply
+  separately (module, sensors, battery, JST housings). No supplier part numbers, none was checked.
+
+## [0.32.6] - 2026-10-09
+
+- `hardware/pcb-v1/`: make every identifier in the generated schematic and PCB deterministic, and pin the root sheet
+  identifier to the one already stored in the `.kicad_pro`. Before, each regeneration produced new identifiers, so a
+  `.kicad_pro` kept from an earlier delivery no longer matched the schematic (different root sheet UUID), which is a
+  suspect for the two schematic parity warnings seen in the KiCad editor (J1 pin 2, U2 VOUT). `kicad-cli` never
+  reproduced them.
+- Ignore exported ERC/DRC reports (`*.rpt`) in the board folder.
+
+## [0.32.5] - 2026-10-09
+
+- `hardware/pcb-v1/`: remove the explicit GND tracks added in 0.32.4 (and the four ground vias that went with them).
+  They cluttered the drawing for no benefit: the ground pours on both layers and the through-hole pads already connect
+  every GND pin. The single stitching via near J2 stays.
+- DRC clean (0 error, 0 unconnected, schematic parity OK), ERC clean.
+
 ## [0.32.4] - 2026-10-09
 
 - `hardware/pcb-v1/`: add explicit GND tracks on the front layer (0.4 mm, tree from the ESP32-S3 GND pad) on top of the

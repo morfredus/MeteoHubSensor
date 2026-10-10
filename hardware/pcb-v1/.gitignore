@@ -6,3 +6,9 @@ fp-info-cache
 _autosave-*
 *.bak
 .history/
+
+# Rapports ERC/DRC exportes depuis KiCad
+*.rpt
+
+# Fichiers de fabrication generes (Gerber, perçage, zip) : se regenerent depuis le PCB
+fabrication/
