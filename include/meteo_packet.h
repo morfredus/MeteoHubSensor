@@ -315,7 +315,7 @@ inline void sealOtaOffer(OtaOffer& o) {
     o.magic[0] = METEO_OTA_MAGIC_0;
     o.magic[1] = METEO_OTA_MAGIC_1;
     o.protocol_version = METEO_PROTOCOL_VERSION;
-    o.md5[sizeof(o.md5) - 1] = ' ';
+    o.md5[sizeof(o.md5) - 1] = '\0';
     o.crc16 = calculateCrc16(reinterpret_cast<const uint8_t*>(&o), sizeof(OtaOffer) - sizeof(uint16_t));
 }
 
