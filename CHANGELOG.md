@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.33.4] - 2026-11-07
+
+### Fixed
+
+- The wake-up watchdog is only armed when its 90 s timeout was really applied. Otherwise the probe would have kept
+  the 5 s default and rebooted before sending anything.
+
+## [0.33.3] - 2026-11-07
+
+### Fixed
+
+- A wake-up is now guarded by a 90 s task watchdog. A frozen radio call (scan, re-association after a run of
+  no-ACK cycles) used to leave the probe awake and silent for hours until a manual power cycle (2026-11-05 14:54
+  to 2026-11-06 14:45). The probe now reboots (reset reason `TASK_WDT`, reported to the hub in the packet) and
+  tries again at once. Pairing and the OTA download suspend the guard while they run.
+
 ## [0.33.2] - 2026-10-10
 
 - Version bump only: build used to test the OTA update end to end (probe on 0.33.0/0.33.1, binary uploaded to the hub).

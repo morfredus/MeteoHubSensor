@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <esp_system.h>   // esp_reset_reason() pour le diagnostic (paquet v2)
+#include <esp_task_wdt.h> // garde-fou d'un reveil (CYCLE_WATCHDOG_S)
 #include <esp_sleep.h>    // esp_light_sleep_start() (mode light sleep experimental)
 #include <driver/rtc_io.h> // liberation de GPIO0 apres un reveil ext0 (bouton BOOT)
 #include "board_config.h"
@@ -50,6 +51,21 @@ static void noteOtaFlag(const SyncControl& ctrl) {
     g_otaOfferPending = espNowSender.waitOtaOffer(g_otaOffer, OTA_OFFER_WAIT_MS);
 }
 
+// Garde-fou : la tache principale est surveillee pendant un reveil. Les operations longues
+// par nature (appairage, telechargement OTA) la suspendent le temps de leur duree.
+static void cycleWdtArm() {
+    // La tache n'est surveillee que si le delai a bien ete applique : sinon elle heriterait du
+    // delai court par defaut (5 s) et la sonde redemarrerait a chaque reveil, avant d'emettre.
+#if ESP_ARDUINO_VERSION_MAJOR >= 3
+    const esp_task_wdt_config_t cfg = { CYCLE_WATCHDOG_S * 1000U, 0, true };
+    const bool ok = esp_task_wdt_reconfigure(&cfg) == ESP_OK;
+#else
+    const bool ok = esp_task_wdt_init(CYCLE_WATCHDOG_S, true) == ESP_OK;
+#endif
+    if (ok) esp_task_wdt_add(nullptr);
+}
+static void cycleWdtPause() { esp_task_wdt_delete(nullptr); }
+
 static void runOtaIfOffered() {
     if (!g_otaOfferPending) return;
     g_otaOfferPending = false;
@@ -69,11 +85,13 @@ static void runOtaIfOffered() {
                   (unsigned)g_otaOffer.fw_version, (unsigned)g_otaOffer.size,
                   (unsigned)g_otaTries, (unsigned)mhota::MAX_TRIES_PER_TARGET);
     powerManager.setLedColor(150, 0, 150);
+    cycleWdtPause();
     if (otaFromHub(g_otaOffer, espNowSender.channel(), espNowSender.hubApMac())) {
         Serial.println("[OTA] Image ecrite et verifiee : redemarrage");
         delay(200);
         ESP.restart();
     }
+    cycleWdtArm();
     Serial.println("[OTA] Echec : firmware actuel conserve, nouvel essai au prochain reveil");
     powerManager.blinkStatus(150, 0, 0, 60);
     powerManager.turnOffLed();
@@ -118,7 +136,9 @@ static BootGesture readBootGesture(uint32_t pressStartMs) {
 static void runPairing() {
     Serial.println("[PAIR] Appui long sur BOOT : appairage d'un nouveau hub");
     powerManager.setLedColor(0, 0, 150);
+    cycleWdtPause();
     const PairingReport r = espNowSender.pair(syncManager.ackWatermark(), PAIRING_TIMEOUT_MS);
+    cycleWdtArm();
     const bool ok = (r.result == PairingReport::PAIRED);
     for (int i = 0; i < 3; i++) {
         powerManager.blinkStatus(ok ? 0 : 150, ok ? 150 : 0, 0, 250);
@@ -297,6 +317,7 @@ void performCycle(const MeteoPacket* preread = nullptr) {
 }
 
 void setup() {
+    cycleWdtArm();
     // Diagnostic v2, capte AU PLUS TOT : raison du reset de ce boot + incrementation
     // du compteur de reveils (RTC). Un power-cycle a remis g_wakeCount a 0.
     g_resetReason = (uint8_t)esp_reset_reason();
@@ -406,6 +427,7 @@ void setup() {
 }
 
 void loop() {
+    esp_task_wdt_reset(); // mode continu / light sleep : la boucle prouve qu'elle tourne
     if (USE_LIGHT_SLEEP) {
         // Light sleep : on eteint la LED, on arme le timer et on dort. La RAM et le
         // contexte sont conserves (pas de reboot) ; au reveil, l'execution reprend

@@ -134,6 +134,11 @@ constexpr uint32_t PAIRING_LONG_PRESS_MS = 3000;   // appui minimal pour lancer
 // compris entre PAIRING_LONG_PRESS_MS et PAIRING_STUCK_MS : un appui permanent ne
 // se relache jamais, il ne peut donc rien declencher.
 constexpr uint32_t PAIRING_STUCK_MS = 10000;
+// Garde-fou d'un reveil : au-dela, la sonde redemarre (reset TASK_WDT, remonte au hub dans le
+// paquet). Une radio figee (scan, re-association) laissait la sonde eveillee et muette pendant
+// des heures, jusqu'a un power-cycle manuel (hub silencieux du 2026-11-05 14:54 au 2026-11-06).
+// Un cycle normal dure moins de 20 s ; l'appairage et l'OTA suspendent la garde.
+constexpr uint32_t CYCLE_WATCHDOG_S = 90;
 constexpr uint32_t PAIRING_TIMEOUT_MS = 60000;     // abandon (association inchangee)
 constexpr uint8_t  PAIRING_MAX_CHANNEL = 13;       // canaux Wi-Fi balayes (Europe)
 constexpr uint8_t  PAIRING_REQUESTS_PER_CHANNEL = 3; // demandes par canal
