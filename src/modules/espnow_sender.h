@@ -88,7 +88,9 @@ public:
 
 private:
     uint8_t _channel;
-    uint8_t _destMac[6]{}; // MAC du hub (unicast) : NVS, sinon ESPNOW_RECEIVER_MAC
+    // MAC du hub (unicast) : NVS, sinon ESPNOW_RECEIVER_MAC. STATIQUE : le callback de
+    // reception (onDataRecv, statique) la compare a l'emetteur de chaque trame de controle.
+    static uint8_t _destMac[6];
     uint8_t _apMac[6]{};   // BSSID du SoftAP du hub (connu apres appairage)
     bool _haveAp = false;  // false : scan par SSID seul (comportement historique)
     bool _paired = false;

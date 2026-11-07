@@ -24,6 +24,7 @@ volatile bool EspNowSender::_ctrlReceived = false;
 SyncControl EspNowSender::_lastCtrl{};
 volatile bool EspNowSender::_offerReceived = false;
 OtaOffer EspNowSender::_lastOffer{};
+uint8_t EspNowSender::_destMac[6] = {0, 0, 0, 0, 0, 0};
 
 namespace {
 // Delai d'attente de l'ACK apres un esp_now_send unicast. L'ACK 802.11 revient
@@ -97,6 +98,11 @@ void EspNowSender::onDataRecv(const uint8_t *mac_addr, const uint8_t *data, int 
             return;
         }
     }
+    // Seules les trames de controle venant du hub APPAIRE comptent : une offre OTA ou un
+    // accuse envoye par n'importe quel emetteur a portee etait accepte (risque radio hostile,
+    // et surtout une autre sonde / un autre hub ferait elaguer le buffer a tort).
+    if (mac_addr == nullptr || memcmp(mac_addr, _destMac, 6) != 0) return;
+
     // Offre OTA du hub (magic 'M','O') : mise de cote pour waitOtaOffer().
     OtaOffer offer;
     if (isValidOtaOffer(data, len, &offer)) {
