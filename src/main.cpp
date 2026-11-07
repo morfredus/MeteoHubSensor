@@ -63,6 +63,7 @@ static void cycleWdtArm() {
     const bool ok = esp_task_wdt_init(CYCLE_WATCHDOG_S, true) == ESP_OK;
 #endif
     if (ok) esp_task_wdt_add(nullptr);
+    else Serial.println("[WDT] [WARN] Garde-fou du reveil non arme (delai non applique)");
 }
 static void cycleWdtPause() { esp_task_wdt_delete(nullptr); }
 
