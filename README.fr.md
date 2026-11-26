@@ -1,6 +1,6 @@
 # MeteoHubSensor
 
-[![Version](https://img.shields.io/badge/version-0.33.6-blue.svg)](VERSION)
+[![Version](https://img.shields.io/badge/version-0.34.0-blue.svg)](VERSION)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Platform: ESP32-S3](https://img.shields.io/badge/Platform-ESP32--S3-orange.svg)](https://www.espressif.com/)
 
@@ -153,3 +153,12 @@ Si le port série n'apparaît pas : tenir BOOT, tap RESET, relâcher BOOT.
 
 Développé par **morfredus** pour la station météo **MeteoHub**.  
 Licence : **GPL v3**.
+
+## Intégration continue
+
+Des workflows GitHub Actions vivent dans `.github/workflows/` (générés par le script morfTools
+`gen-ci-workflows.py`) :
+
+- **`ci.yml`** : à chaque pull request (et push sur `main`/`dev`), compile et lance les tests sous
+  PlatformIO (le firmware, plus les tests natifs s'il y en a). Les changements de documentation seule l'ignorent et un run périmé est annulé
+  par un commit plus récent.
